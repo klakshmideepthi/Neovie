@@ -1,0 +1,707 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D85EA7922C5252AE00A15915 /* NeovieApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7912C5252AE00A15915 /* NeovieApp.swift */; };
+		D85EA7942C5252AE00A15915 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7932C5252AE00A15915 /* ContentView.swift */; };
+		D85EA7962C5252B000A15915 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D85EA7952C5252B000A15915 /* Assets.xcassets */; };
+		D85EA7992C5252B000A15915 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D85EA7982C5252B000A15915 /* Preview Assets.xcassets */; };
+		D85EA7A32C5252B000A15915 /* NeovieTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7A22C5252B000A15915 /* NeovieTests.swift */; };
+		D85EA7AD2C5252B000A15915 /* NeovieUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7AC2C5252B000A15915 /* NeovieUITests.swift */; };
+		D85EA7AF2C5252B000A15915 /* NeovieUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7AE2C5252B000A15915 /* NeovieUITestsLaunchTests.swift */; };
+		D85EA7BD2C52532D00A15915 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D85EA7BC2C52532D00A15915 /* FirebaseAuth */; };
+		D85EA7BF2C52532D00A15915 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = D85EA7BE2C52532D00A15915 /* FirebaseDatabase */; };
+		D85EA7C12C52532D00A15915 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D85EA7C02C52532D00A15915 /* FirebaseFirestore */; };
+		D85EA7C32C52532D00A15915 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D85EA7C22C52532D00A15915 /* FirebaseStorage */; };
+		D85EA7C52C5253D500A15915 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D85EA7C42C5253D500A15915 /* GoogleService-Info.plist */; };
+		D85EA7C92C52547600A15915 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = D85EA7C82C52547600A15915 /* GoogleSignIn */; };
+		D85EA7CB2C52547600A15915 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D85EA7CA2C52547600A15915 /* GoogleSignInSwift */; };
+		D85EA7CD2C52549800A15915 /* GoogleSignInManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */; };
+		D85EA7CF2C5254B200A15915 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7CE2C5254B200A15915 /* OnboardingView.swift */; };
+		D85EA7D12C5254C900A15915 /* UserInfo1.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7D02C5254C900A15915 /* UserInfo1.swift */; };
+		D85EA7D32C5254E100A15915 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7D22C5254E100A15915 /* UserProfile.swift */; };
+		D85EA7D52C5254F800A15915 /* ProgressState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7D42C5254F800A15915 /* ProgressState.swift */; };
+		D85EA7D72C52551600A15915 /* UserInfo2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7D62C52551600A15915 /* UserInfo2.swift */; };
+		D85EA7D92C52552A00A15915 /* UserInfo3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7D82C52552A00A15915 /* UserInfo3.swift */; };
+		D85EA7DB2C52554700A15915 /* UserInfo4.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7DA2C52554700A15915 /* UserInfo4.swift */; };
+		D85EA7DD2C52555800A15915 /* FirestoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7DC2C52555800A15915 /* FirestoreManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D85EA79F2C5252B000A15915 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D85EA7862C5252AE00A15915 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D85EA78D2C5252AE00A15915;
+			remoteInfo = Neovie;
+		};
+		D85EA7A92C5252B000A15915 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D85EA7862C5252AE00A15915 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D85EA78D2C5252AE00A15915;
+			remoteInfo = Neovie;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D85EA78E2C5252AE00A15915 /* Neovie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Neovie.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D85EA7912C5252AE00A15915 /* NeovieApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeovieApp.swift; sourceTree = "<group>"; };
+		D85EA7932C5252AE00A15915 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D85EA7952C5252B000A15915 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D85EA7982C5252B000A15915 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D85EA79E2C5252B000A15915 /* NeovieTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NeovieTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D85EA7A22C5252B000A15915 /* NeovieTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeovieTests.swift; sourceTree = "<group>"; };
+		D85EA7A82C5252B000A15915 /* NeovieUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NeovieUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D85EA7AC2C5252B000A15915 /* NeovieUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeovieUITests.swift; sourceTree = "<group>"; };
+		D85EA7AE2C5252B000A15915 /* NeovieUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeovieUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D85EA7C42C5253D500A15915 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		D85EA7C62C52540D00A15915 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInManager.swift; sourceTree = "<group>"; };
+		D85EA7CE2C5254B200A15915 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		D85EA7D02C5254C900A15915 /* UserInfo1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo1.swift; sourceTree = "<group>"; };
+		D85EA7D22C5254E100A15915 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		D85EA7D42C5254F800A15915 /* ProgressState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressState.swift; sourceTree = "<group>"; };
+		D85EA7D62C52551600A15915 /* UserInfo2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo2.swift; sourceTree = "<group>"; };
+		D85EA7D82C52552A00A15915 /* UserInfo3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo3.swift; sourceTree = "<group>"; };
+		D85EA7DA2C52554700A15915 /* UserInfo4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo4.swift; sourceTree = "<group>"; };
+		D85EA7DC2C52555800A15915 /* FirestoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreManager.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D85EA78B2C5252AE00A15915 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D85EA7C92C52547600A15915 /* GoogleSignIn in Frameworks */,
+				D85EA7BF2C52532D00A15915 /* FirebaseDatabase in Frameworks */,
+				D85EA7C32C52532D00A15915 /* FirebaseStorage in Frameworks */,
+				D85EA7CB2C52547600A15915 /* GoogleSignInSwift in Frameworks */,
+				D85EA7BD2C52532D00A15915 /* FirebaseAuth in Frameworks */,
+				D85EA7C12C52532D00A15915 /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D85EA79B2C5252B000A15915 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D85EA7A52C5252B000A15915 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D85EA7852C5252AE00A15915 = {
+			isa = PBXGroup;
+			children = (
+				D85EA7902C5252AE00A15915 /* Neovie */,
+				D85EA7A12C5252B000A15915 /* NeovieTests */,
+				D85EA7AB2C5252B000A15915 /* NeovieUITests */,
+				D85EA78F2C5252AE00A15915 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D85EA78F2C5252AE00A15915 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D85EA78E2C5252AE00A15915 /* Neovie.app */,
+				D85EA79E2C5252B000A15915 /* NeovieTests.xctest */,
+				D85EA7A82C5252B000A15915 /* NeovieUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D85EA7902C5252AE00A15915 /* Neovie */ = {
+			isa = PBXGroup;
+			children = (
+				D85EA7C62C52540D00A15915 /* Info.plist */,
+				D85EA7C42C5253D500A15915 /* GoogleService-Info.plist */,
+				D85EA7912C5252AE00A15915 /* NeovieApp.swift */,
+				D85EA7CE2C5254B200A15915 /* OnboardingView.swift */,
+				D85EA7D22C5254E100A15915 /* UserProfile.swift */,
+				D85EA7DA2C52554700A15915 /* UserInfo4.swift */,
+				D85EA7D42C5254F800A15915 /* ProgressState.swift */,
+				D85EA7D82C52552A00A15915 /* UserInfo3.swift */,
+				D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */,
+				D85EA7DC2C52555800A15915 /* FirestoreManager.swift */,
+				D85EA7D02C5254C900A15915 /* UserInfo1.swift */,
+				D85EA7D62C52551600A15915 /* UserInfo2.swift */,
+				D85EA7932C5252AE00A15915 /* ContentView.swift */,
+				D85EA7952C5252B000A15915 /* Assets.xcassets */,
+				D85EA7972C5252B000A15915 /* Preview Content */,
+			);
+			path = Neovie;
+			sourceTree = "<group>";
+		};
+		D85EA7972C5252B000A15915 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				D85EA7982C5252B000A15915 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		D85EA7A12C5252B000A15915 /* NeovieTests */ = {
+			isa = PBXGroup;
+			children = (
+				D85EA7A22C5252B000A15915 /* NeovieTests.swift */,
+			);
+			path = NeovieTests;
+			sourceTree = "<group>";
+		};
+		D85EA7AB2C5252B000A15915 /* NeovieUITests */ = {
+			isa = PBXGroup;
+			children = (
+				D85EA7AC2C5252B000A15915 /* NeovieUITests.swift */,
+				D85EA7AE2C5252B000A15915 /* NeovieUITestsLaunchTests.swift */,
+			);
+			path = NeovieUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D85EA78D2C5252AE00A15915 /* Neovie */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D85EA7B22C5252B000A15915 /* Build configuration list for PBXNativeTarget "Neovie" */;
+			buildPhases = (
+				D85EA78A2C5252AE00A15915 /* Sources */,
+				D85EA78B2C5252AE00A15915 /* Frameworks */,
+				D85EA78C2C5252AE00A15915 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Neovie;
+			packageProductDependencies = (
+				D85EA7BC2C52532D00A15915 /* FirebaseAuth */,
+				D85EA7BE2C52532D00A15915 /* FirebaseDatabase */,
+				D85EA7C02C52532D00A15915 /* FirebaseFirestore */,
+				D85EA7C22C52532D00A15915 /* FirebaseStorage */,
+				D85EA7C82C52547600A15915 /* GoogleSignIn */,
+				D85EA7CA2C52547600A15915 /* GoogleSignInSwift */,
+			);
+			productName = Neovie;
+			productReference = D85EA78E2C5252AE00A15915 /* Neovie.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D85EA79D2C5252B000A15915 /* NeovieTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D85EA7B52C5252B000A15915 /* Build configuration list for PBXNativeTarget "NeovieTests" */;
+			buildPhases = (
+				D85EA79A2C5252B000A15915 /* Sources */,
+				D85EA79B2C5252B000A15915 /* Frameworks */,
+				D85EA79C2C5252B000A15915 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D85EA7A02C5252B000A15915 /* PBXTargetDependency */,
+			);
+			name = NeovieTests;
+			productName = NeovieTests;
+			productReference = D85EA79E2C5252B000A15915 /* NeovieTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D85EA7A72C5252B000A15915 /* NeovieUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D85EA7B82C5252B000A15915 /* Build configuration list for PBXNativeTarget "NeovieUITests" */;
+			buildPhases = (
+				D85EA7A42C5252B000A15915 /* Sources */,
+				D85EA7A52C5252B000A15915 /* Frameworks */,
+				D85EA7A62C5252B000A15915 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D85EA7AA2C5252B000A15915 /* PBXTargetDependency */,
+			);
+			name = NeovieUITests;
+			productName = NeovieUITests;
+			productReference = D85EA7A82C5252B000A15915 /* NeovieUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D85EA7862C5252AE00A15915 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					D85EA78D2C5252AE00A15915 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+					D85EA79D2C5252B000A15915 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = D85EA78D2C5252AE00A15915;
+					};
+					D85EA7A72C5252B000A15915 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = D85EA78D2C5252AE00A15915;
+					};
+				};
+			};
+			buildConfigurationList = D85EA7892C5252AE00A15915 /* Build configuration list for PBXProject "Neovie" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D85EA7852C5252AE00A15915;
+			packageReferences = (
+				D85EA7BB2C52532D00A15915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D85EA7C72C52547600A15915 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
+			productRefGroup = D85EA78F2C5252AE00A15915 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D85EA78D2C5252AE00A15915 /* Neovie */,
+				D85EA79D2C5252B000A15915 /* NeovieTests */,
+				D85EA7A72C5252B000A15915 /* NeovieUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D85EA78C2C5252AE00A15915 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D85EA7992C5252B000A15915 /* Preview Assets.xcassets in Resources */,
+				D85EA7962C5252B000A15915 /* Assets.xcassets in Resources */,
+				D85EA7C52C5253D500A15915 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D85EA79C2C5252B000A15915 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D85EA7A62C5252B000A15915 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D85EA78A2C5252AE00A15915 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D85EA7942C5252AE00A15915 /* ContentView.swift in Sources */,
+				D85EA7D92C52552A00A15915 /* UserInfo3.swift in Sources */,
+				D85EA7CF2C5254B200A15915 /* OnboardingView.swift in Sources */,
+				D85EA7DB2C52554700A15915 /* UserInfo4.swift in Sources */,
+				D85EA7D32C5254E100A15915 /* UserProfile.swift in Sources */,
+				D85EA7D12C5254C900A15915 /* UserInfo1.swift in Sources */,
+				D85EA7922C5252AE00A15915 /* NeovieApp.swift in Sources */,
+				D85EA7CD2C52549800A15915 /* GoogleSignInManager.swift in Sources */,
+				D85EA7D52C5254F800A15915 /* ProgressState.swift in Sources */,
+				D85EA7D72C52551600A15915 /* UserInfo2.swift in Sources */,
+				D85EA7DD2C52555800A15915 /* FirestoreManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D85EA79A2C5252B000A15915 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D85EA7A32C5252B000A15915 /* NeovieTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D85EA7A42C5252B000A15915 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D85EA7AF2C5252B000A15915 /* NeovieUITestsLaunchTests.swift in Sources */,
+				D85EA7AD2C5252B000A15915 /* NeovieUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D85EA7A02C5252B000A15915 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D85EA78D2C5252AE00A15915 /* Neovie */;
+			targetProxy = D85EA79F2C5252B000A15915 /* PBXContainerItemProxy */;
+		};
+		D85EA7AA2C5252B000A15915 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D85EA78D2C5252AE00A15915 /* Neovie */;
+			targetProxy = D85EA7A92C5252B000A15915 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D85EA7B02C5252B000A15915 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D85EA7B12C5252B000A15915 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D85EA7B32C5252B000A15915 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Neovie/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Neovie/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.Neovie;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D85EA7B42C5252B000A15915 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Neovie/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Neovie/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.Neovie;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D85EA7B62C5252B000A15915 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Neovie.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Neovie";
+			};
+			name = Debug;
+		};
+		D85EA7B72C5252B000A15915 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Neovie.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Neovie";
+			};
+			name = Release;
+		};
+		D85EA7B92C5252B000A15915 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Neovie;
+			};
+			name = Debug;
+		};
+		D85EA7BA2C5252B000A15915 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Neovie;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D85EA7892C5252AE00A15915 /* Build configuration list for PBXProject "Neovie" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D85EA7B02C5252B000A15915 /* Debug */,
+				D85EA7B12C5252B000A15915 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D85EA7B22C5252B000A15915 /* Build configuration list for PBXNativeTarget "Neovie" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D85EA7B32C5252B000A15915 /* Debug */,
+				D85EA7B42C5252B000A15915 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D85EA7B52C5252B000A15915 /* Build configuration list for PBXNativeTarget "NeovieTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D85EA7B62C5252B000A15915 /* Debug */,
+				D85EA7B72C5252B000A15915 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D85EA7B82C5252B000A15915 /* Build configuration list for PBXNativeTarget "NeovieUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D85EA7B92C5252B000A15915 /* Debug */,
+				D85EA7BA2C5252B000A15915 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D85EA7BB2C52532D00A15915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.29.0;
+			};
+		};
+		D85EA7C72C52547600A15915 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D85EA7BC2C52532D00A15915 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D85EA7BB2C52532D00A15915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		D85EA7BE2C52532D00A15915 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D85EA7BB2C52532D00A15915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		D85EA7C02C52532D00A15915 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D85EA7BB2C52532D00A15915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		D85EA7C22C52532D00A15915 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D85EA7BB2C52532D00A15915 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		D85EA7C82C52547600A15915 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D85EA7C72C52547600A15915 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		D85EA7CA2C52547600A15915 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D85EA7C72C52547600A15915 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D85EA7862C5252AE00A15915 /* Project object */;
+}

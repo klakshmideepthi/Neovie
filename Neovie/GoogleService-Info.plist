@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>914442871410-a2pfpd5daaec5alr9436iiudjpk2bvia.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.914442871410-a2pfpd5daaec5alr9436iiudjpk2bvia</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC2GpJyNL7CT4jnXOKdGiK8ZbUaOU70Y2o</string>
+	<key>GCM_SENDER_ID</key>
+	<string>914442871410</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.deepthi.Neovie</string>
+	<key>PROJECT_ID</key>
+	<string>neovie-b4924</string>
+	<key>STORAGE_BUCKET</key>
+	<string>neovie-b4924.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:914442871410:ios:9d274efa0a48b9f87998eb</string>
+</dict>
+</plist>
