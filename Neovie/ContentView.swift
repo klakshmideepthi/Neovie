@@ -6,78 +6,44 @@ struct ContentView: View {
     @StateObject private var signInManager = GoogleSignInManager.shared
     @Environment(\.colorScheme) var colorScheme
     @State private var verificationMessage: String = ""
+    @State private var isShowingOnboarding = false
     
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
                 Color(colorScheme == .dark ? .black : .white)
                     .edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 30) {
-                    // Logo
-                    Image("Icon4") // Replace with your app's icon
+                    Image("Icon4")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 150, height: 150)
                         .padding(.top, 50)
                     
                     if signInManager.isSignedIn {
-                        signedInView
+                        Text("Signed In")
+                            .onAppear {
+                                isShowingOnboarding = true
+                            }
                     } else {
                         signedOutView
                     }
                     
-                    // Verification message
                     Text(verificationMessage)
                         .foregroundColor(.green)
                         .padding()
                 }
             }
             .navigationBarHidden(true)
+            .fullScreenCover(isPresented: $isShowingOnboarding) {
+                OnboardingView()
+            }
         }
-    }
-    
-    private var signedInView: some View {
-        VStack(spacing: 20) {
-            Text("Welcome, \(signInManager.userProfile?.name ?? "User")!")
-                .font(.title2)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-            
-            NavigationLink(destination: OnboardingView()) {
-                Text("Continue to App")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal)
-            
-            Button(action: {
-                signInManager.signOut()
-            }) {
-                Text("Sign Out")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal)
-            
-            Button(action: verifyDataStorage) {
-                Text("Verify Data Storage")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal)
+        .onReceive(NotificationCenter.default.publisher(for: .userDidSignOut)) { _ in
+            isShowingOnboarding = false
+            signInManager.isSignedIn = false
         }
-        .padding()
     }
     
     private var signedOutView: some View {
@@ -96,7 +62,7 @@ struct ContentView: View {
                 signInManager.signIn()
             }) {
                 HStack {
-                    Image("google_logo") // Add a Google logo image to your assets
+                    Image("google_logo")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 25, height: 25)
@@ -112,22 +78,5 @@ struct ContentView: View {
             .padding(.horizontal)
         }
         .padding()
-    }
-    
-    private func verifyDataStorage() {
-        FirestoreManager.shared.getUserProfile { result in
-            switch result {
-            case .success(let userProfile):
-                let heightString: String
-                if userProfile.heightCm > 0 {
-                    heightString = "\(userProfile.heightCm) cm"
-                } else {
-                    heightString = "\(userProfile.heightFt)'\(userProfile.heightIn)\""
-                }
-                verificationMessage = "Data verified: \(userProfile.name), Height: \(heightString), Weight: \(String(format: "%.1f", userProfile.weight)), Target Weight: \(String(format: "%.1f", userProfile.targetWeight))"
-            case .failure(let error):
-                verificationMessage = "Error verifying data: \(error.localizedDescription)"
-            }
-        }
     }
 }

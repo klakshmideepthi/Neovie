@@ -5,6 +5,8 @@ struct UserInfo2: View {
     @Binding var progressState: ProgressState
     @State private var heightUnit: HeightUnit = .cm
     @State private var weightUnit: WeightUnit = .kg
+    @State private var weightString: String = ""
+    @State private var targetWeightString: String = ""
     @Environment(\.presentationMode) var presentationMode
 
     enum HeightUnit: String, CaseIterable {
@@ -17,8 +19,8 @@ struct UserInfo2: View {
 
     private var isFormValid: Bool {
         (heightUnit == .cm ? userProfile.heightCm > 0 : (userProfile.heightFt > 0 || userProfile.heightIn > 0)) &&
-        userProfile.weight > 0 &&
-        userProfile.targetWeight > 0
+        !weightString.isEmpty && Float(weightString) ?? 0 > 0 &&
+        !targetWeightString.isEmpty && Float(targetWeightString) ?? 0 > 0
     }
 
     var body: some View {
@@ -45,6 +47,14 @@ struct UserInfo2: View {
             .edgesIgnoringSafeArea(.all)
         }
         .navigationBarHidden(true)
+        .onAppear {
+            if userProfile.weight > 0 {
+                weightString = String(format: "%.1f", userProfile.weight)
+            }
+            if userProfile.targetWeight > 0 {
+                targetWeightString = String(format: "%.1f", userProfile.targetWeight)
+            }
+        }
     }
     
     private var progressBar: some View {
@@ -161,11 +171,23 @@ struct UserInfo2: View {
     private var weightInput: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Weight (\(weightUnit.rawValue))").font(.headline)
-            TextField("Enter weight", value: $userProfile.weight, format: .number)
+            TextField("Enter weight", text: $weightString)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.decimalPad)
-                .onChange(of: userProfile.weight) { oldValue, newValue in
-                    userProfile.weight = max(0, newValue)
+                .onChange(of: weightString) { oldValue, newValue in
+                    let filtered = newValue.filter { "0123456789.".contains($0) }
+                    if filtered != newValue {
+                        weightString = filtered
+                    }
+                    if let dotIndex = filtered.firstIndex(of: ".") {
+                        let decimalPlaces = filtered.distance(from: dotIndex, to: filtered.endIndex) - 1
+                        if decimalPlaces > 1 {
+                            weightString = String(filtered.prefix(filtered.count - 1))
+                        }
+                    }
+                    if let weight = Float(filtered) {
+                        userProfile.weight = Double(weight)
+                    }
                 }
         }
     }
@@ -173,11 +195,23 @@ struct UserInfo2: View {
     private var targetWeightInput: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Target Weight (\(weightUnit.rawValue))").font(.headline)
-            TextField("Enter target weight", value: $userProfile.targetWeight, format: .number)
+            TextField("Enter target weight", text: $targetWeightString)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.decimalPad)
-                .onChange(of: userProfile.targetWeight) { oldValue, newValue in
-                    userProfile.targetWeight = max(0, newValue)
+                .onChange(of: targetWeightString) { oldValue, newValue in
+                    let filtered = newValue.filter { "0123456789.".contains($0) }
+                    if filtered != newValue {
+                        targetWeightString = filtered
+                    }
+                    if let dotIndex = filtered.firstIndex(of: ".") {
+                        let decimalPlaces = filtered.distance(from: dotIndex, to: filtered.endIndex) - 1
+                        if decimalPlaces > 1 {
+                            targetWeightString = String(filtered.prefix(filtered.count - 1))
+                        }
+                    }
+                    if let targetWeight = Float(filtered) {
+                        userProfile.targetWeight = Double(targetWeight)
+                    }
                 }
         }
     }

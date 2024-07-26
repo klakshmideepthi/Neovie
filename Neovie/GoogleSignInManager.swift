@@ -2,6 +2,7 @@ import Foundation
 import GoogleSignIn
 import Firebase
 import GoogleSignInSwift
+import SwiftUI
 
 class GoogleSignInManager: ObservableObject {
     @Published var isSignedIn: Bool = false
@@ -59,6 +60,7 @@ class GoogleSignInManager: ObservableObject {
             self.isSignedIn = false
             self.userProfile = nil
             print("User signed out successfully")
+            NotificationCenter.default.post(name: .userDidSignOut, object: nil)
         } catch let signOutError as NSError {
             print("Error signing out: \(signOutError)")
         }
@@ -95,4 +97,8 @@ class GoogleSignInManager: ObservableObject {
             print("User signed in successfully")
         }
     }
+}
+
+extension Notification.Name {
+    static let userDidSignOut = Notification.Name("userDidSignOut")
 }

@@ -116,7 +116,7 @@ struct UserInfo4: View {
         })
         .padding(.vertical, 40)
     }
-
+    
     private func saveDosageInfo() {
         // Save the dosage information to Firestore
         FirestoreManager.shared.saveDosageInfo(dosage: selectedDosage) { result in

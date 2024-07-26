@@ -31,3 +31,23 @@ struct UserProfile {
         return ageComponents.year ?? 0
     }
 }
+
+struct WeightEntry: Identifiable {
+    let id = UUID()
+    let date: Date
+    let weight: Double
+}
+
+struct SideEffect: Identifiable {
+    let id = UUID()
+    let type: String
+    let severity: Int
+    let date: Date
+}
+
+struct Emotion: Identifiable {
+    let id = UUID()
+    let type: String
+    let intensity: Int
+    let date: Date
+}
