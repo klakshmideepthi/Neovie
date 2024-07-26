@@ -19,8 +19,15 @@ class FirestoreManager {
         
         let data: [String: Any] = [
             "name": userProfile.name,
-            "height": userProfile.height,
-            "weight": userProfile.weight
+            "heightCm": userProfile.heightCm,
+            "heightFt": userProfile.heightFt,
+            "heightIn": userProfile.heightIn,
+            "weight": userProfile.weight,
+            "targetWeight": userProfile.targetWeight,
+            "gender": userProfile.gender,
+            "dateOfBirth": Timestamp(date: userProfile.dateOfBirth),
+            "medicationName": userProfile.medicationName,
+            "dosage": userProfile.dosage
         ]
         
         print("Attempting to save user profile: \(data)")
@@ -51,9 +58,16 @@ class FirestoreManager {
             } else if let document = document, document.exists {
                 if let data = document.data(),
                    let name = data["name"] as? String,
-                   let height = data["height"] as? Double,
-                   let weight = data["weight"] as? Double {
-                    let userProfile = UserProfile(name: name, height: height, weight: weight)
+                   let heightCm = data["heightCm"] as? Int,
+                   let heightFt = data["heightFt"] as? Int,
+                   let heightIn = data["heightIn"] as? Int,
+                   let weight = data["weight"] as? Double,
+                   let targetWeight = data["targetWeight"] as? Double,
+                   let gender = data["gender"] as? String,
+                   let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue(),
+                   let medicationName = data["medicationName"] as? String,
+                   let dosage = data["dosage"] as? String {
+                    let userProfile = UserProfile(name: name, heightCm: heightCm, heightFt: heightFt, heightIn: heightIn, weight: weight, targetWeight: targetWeight, gender: gender, dateOfBirth: dateOfBirth, medicationName: medicationName, dosage: dosage)
                     print("User profile retrieved successfully: \(userProfile)")
                     completion(.success(userProfile))
                 } else {
@@ -67,7 +81,7 @@ class FirestoreManager {
         }
     }
     
-    func saveAdditionalInfo(gender: String, age: Int, completion: @escaping (Result<Void, Error>) -> Void) {
+    func saveAdditionalInfo(gender: String, dateOfBirth: Date, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let uid = getCurrentUserID() else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
             return
@@ -75,7 +89,7 @@ class FirestoreManager {
         
         let data: [String: Any] = [
             "gender": gender,
-            "age": age
+            "dateOfBirth": Timestamp(date: dateOfBirth)
         ]
         
         db.collection("users").document(uid).setData(data, merge: true) { error in
@@ -87,14 +101,14 @@ class FirestoreManager {
         }
     }
     
-    func saveMedicationInfo(medication: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func saveMedicationInfo(medicationName: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let uid = getCurrentUserID() else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
             return
         }
         
         let data: [String: Any] = [
-            "medication": medication
+            "medicationName": medicationName
         ]
         
         db.collection("users").document(uid).setData(data, merge: true) { error in

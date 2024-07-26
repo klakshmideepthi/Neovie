@@ -118,7 +118,13 @@ struct ContentView: View {
         FirestoreManager.shared.getUserProfile { result in
             switch result {
             case .success(let userProfile):
-                verificationMessage = "Data verified: \(userProfile.name), Height: \(userProfile.height), Weight: \(userProfile.weight)"
+                let heightString: String
+                if userProfile.heightCm > 0 {
+                    heightString = "\(userProfile.heightCm) cm"
+                } else {
+                    heightString = "\(userProfile.heightFt)'\(userProfile.heightIn)\""
+                }
+                verificationMessage = "Data verified: \(userProfile.name), Height: \(heightString), Weight: \(String(format: "%.1f", userProfile.weight)), Target Weight: \(String(format: "%.1f", userProfile.targetWeight))"
             case .failure(let error):
                 verificationMessage = "Error verifying data: \(error.localizedDescription)"
             }

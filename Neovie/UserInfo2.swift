@@ -2,16 +2,23 @@ import SwiftUI
 
 struct UserInfo2: View {
     @Binding var userProfile: UserProfile
-    @ObservedObject var progressState: ProgressState
+    @Binding var progressState: ProgressState
+    @State private var heightUnit: HeightUnit = .cm
+    @State private var weightUnit: WeightUnit = .kg
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectedGender: String = ""
-    @State private var dateOfBirth: Date = Date()
-    
-    let genders = ["Male", "Female", "Other"]
-    let genderImages = ["Icon1", "Icon2", "Icon3"]
+
+    enum HeightUnit: String, CaseIterable {
+        case cm, ft
+    }
+
+    enum WeightUnit: String, CaseIterable {
+        case kg, lb
+    }
 
     private var isFormValid: Bool {
-        !selectedGender.isEmpty
+        (heightUnit == .cm ? userProfile.heightCm > 0 : (userProfile.heightFt > 0 || userProfile.heightIn > 0)) &&
+        userProfile.weight > 0 &&
+        userProfile.targetWeight > 0
     }
 
     var body: some View {
@@ -20,10 +27,12 @@ struct UserInfo2: View {
                 progressBar
                 
                 ScrollView {
-                    VStack(spacing: 40) {
+                    VStack(spacing: 20) {
                         headerText
-                        genderSelection
-                        dateOfBirthPicker
+                        preferredUnitsSection
+                        heightPicker
+                        weightInput
+                        targetWeightInput
                     }
                     .padding(.horizontal)
                 }
@@ -65,7 +74,7 @@ struct UserInfo2: View {
     
     private var progressView: some View {
         HStack {
-            ProgressView(value: 0.50)
+            ProgressView(value: min(1, max(0, progressState.progress)))
                 .progressViewStyle(LinearProgressViewStyle())
                 .frame(width: UIScreen.main.bounds.width * 0.6, height: 10)
             Text("2/4")
@@ -75,60 +84,106 @@ struct UserInfo2: View {
     }
     
     private var headerText: some View {
-        Text("Tell us more about you")
+        Text("Your measurements")
             .font(.title)
             .fontWeight(.bold)
             .multilineTextAlignment(.center)
             .padding()
     }
     
-    private var genderSelection: some View {
+    private var preferredUnitsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Gender")
-                .font(.headline)
-
+            Text("Preferred Units").font(.headline)
             HStack(spacing: 20) {
-                ForEach(0..<genders.count, id: \.self) { index in
-                    genderButton(index: index)
+                VStack(alignment: .leading) {
+                    Text("Height:")
+                    Picker("Height Unit", selection: $heightUnit) {
+                        ForEach(HeightUnit.allCases, id: \.self) { unit in
+                            Text(unit.rawValue.uppercased()).tag(unit)
+                        }
+                    }.pickerStyle(SegmentedPickerStyle())
+                }
+
+                VStack(alignment: .leading) {
+                    Text("Weight:")
+                    Picker("Weight Unit", selection: $weightUnit) {
+                        ForEach(WeightUnit.allCases, id: \.self) { unit in
+                            Text(unit.rawValue.uppercased()).tag(unit)
+                        }
+                    }.pickerStyle(SegmentedPickerStyle())
                 }
             }
-            .frame(maxWidth: .infinity)
         }
     }
     
-    private func genderButton(index: Int) -> some View {
-        Button(action: {
-            selectedGender = genders[index]
-        }) {
-            VStack {
-                Image(genderImages[index])
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 70, height: 70)
-                    .background(RoundedRectangle(cornerRadius: 15)
-                        .fill(selectedGender == genders[index] ? Color.blue.opacity(0.2) : Color.clear))
-                    .cornerRadius(15)
-                Text(genders[index])
-                    .foregroundColor(.black)
-            }
-            .padding(10)
-            .background(RoundedRectangle(cornerRadius: 15)
-                .stroke(selectedGender == genders[index] ? Color.blue : Color.gray, lineWidth: 2))
-        }
-    }
-    
-    private var dateOfBirthPicker: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Date of Birth")
+    private var heightPicker: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Height (\(heightUnit.rawValue))")
                 .font(.headline)
-            DatePicker("", selection: $dateOfBirth, displayedComponents: .date)
-                .datePickerStyle(WheelDatePickerStyle())
-                .labelsHidden()
+                .padding(.bottom, 5)
+            
+            ZStack {
+                if heightUnit == .cm {
+                    Picker("Height (cm)", selection: $userProfile.heightCm) {
+                        ForEach(50...250, id: \.self) { cm in
+                            Text("\(cm) cm").tag(cm)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                } else {
+                    HStack(spacing: 0) {
+                        Picker("Feet", selection: $userProfile.heightFt) {
+                            ForEach(1...8, id: \.self) { ft in
+                                Text("\(ft) ft").tag(ft)
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+
+                        Picker("Inches", selection: $userProfile.heightIn) {
+                            ForEach(0...11, id: \.self) { inch in
+                                Text("\(inch) in").tag(inch)
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                    }
+                }
+            }
+            .frame(height: 150)
+        }
+        .frame(height: 200)
+        .padding(.vertical, 10)
+    }
+    
+    private var weightInput: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Weight (\(weightUnit.rawValue))").font(.headline)
+            TextField("Enter weight", value: $userProfile.weight, format: .number)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardType(.decimalPad)
+                .onChange(of: userProfile.weight) { oldValue, newValue in
+                    userProfile.weight = max(0, newValue)
+                }
+        }
+    }
+    
+    private var targetWeightInput: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Target Weight (\(weightUnit.rawValue))").font(.headline)
+            TextField("Enter target weight", value: $userProfile.targetWeight, format: .number)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardType(.decimalPad)
+                .onChange(of: userProfile.targetWeight) { oldValue, newValue in
+                    userProfile.targetWeight = max(0, newValue)
+                }
         }
     }
     
     private var nextButton: some View {
-        NavigationLink(destination: UserInfo3(userProfile: $userProfile, progressState: progressState)) {
+        NavigationLink(destination: UserInfo3(userProfile: $userProfile, progressState: $progressState)) {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -141,26 +196,38 @@ struct UserInfo2: View {
         .simultaneousGesture(TapGesture().onEnded {
             if isFormValid {
                 progressState.progress += 0.25
-                saveAdditionalInfo()
+                saveUserProfile()
             }
         })
         .padding(.vertical, 40)
     }
     
-    private func saveAdditionalInfo() {
-        // Calculate age from date of birth
-        let calendar = Calendar.current
-        let ageComponents = calendar.dateComponents([.year], from: dateOfBirth, to: Date())
-        let age = ageComponents.year ?? 0
-        
-        // Save additional info to Firestore
-        FirestoreManager.shared.saveAdditionalInfo(gender: selectedGender, age: age) { result in
+    private func saveUserProfile() {
+        let (heightCm, heightFt, heightIn) = calculateHeightValues()
+
+        userProfile.heightCm = heightCm
+        userProfile.heightFt = heightFt
+        userProfile.heightIn = heightIn
+
+        FirestoreManager.shared.saveUserProfile(userProfile) { result in
             switch result {
             case .success:
-                print("Additional info saved successfully")
+                print("User profile saved successfully")
             case .failure(let error):
-                print("Failed to save additional info: \(error.localizedDescription)")
+                print("Failed to save user profile: \(error.localizedDescription)")
             }
+        }
+    }
+    
+    private func calculateHeightValues() -> (cm: Int, ft: Int, in: Int) {
+        if heightUnit == .cm {
+            let totalInches = Double(userProfile.heightCm) / 2.54
+            let feet = Int(totalInches / 12)
+            let inches = Int(totalInches.truncatingRemainder(dividingBy: 12))
+            return (userProfile.heightCm, feet, inches)
+        } else {
+            let cm = Int((Double(userProfile.heightFt) * 30.48) + (Double(userProfile.heightIn) * 2.54))
+            return (cm, userProfile.heightFt, userProfile.heightIn)
         }
     }
 }

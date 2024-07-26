@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @StateObject var progressState = ProgressState()
+    @State var progressState = ProgressState()
     @State private var userProfile = UserProfile()
 
     var body: some View {
@@ -20,7 +20,7 @@ struct OnboardingView: View {
                                 .foregroundColor(.red)
                         }
                         
-                        Text("Welcome to MedZen")
+                        Text("Welcome to Neovie")
                             .font(.largeTitle)
                             .multilineTextAlignment(.center)
                             .padding()
@@ -31,7 +31,7 @@ struct OnboardingView: View {
                             .multilineTextAlignment(.center)
                             .padding()
 
-                        NavigationLink(destination: UserInfo1(userProfile: $userProfile, progressState: progressState).navigationBarBackButtonHidden(true)) {
+                        NavigationLink(destination: UserInfo1(userProfile: $userProfile, progressState: $progressState).navigationBarBackButtonHidden(true)) {
                             Text("Great!")
                                 .frame(maxWidth: .infinity)
                                 .padding()

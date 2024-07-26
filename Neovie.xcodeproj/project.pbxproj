@@ -30,6 +30,8 @@
 		D85EA7D92C52552A00A15915 /* UserInfo3.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7D82C52552A00A15915 /* UserInfo3.swift */; };
 		D85EA7DB2C52554700A15915 /* UserInfo4.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7DA2C52554700A15915 /* UserInfo4.swift */; };
 		D85EA7DD2C52555800A15915 /* FirestoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7DC2C52555800A15915 /* FirestoreManager.swift */; };
+		D85EA7DF2C537B5100A15915 /* NotificationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7DE2C537B5100A15915 /* NotificationRequest.swift */; };
+		D85EA7E12C53810B00A15915 /* HomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7E02C53810B00A15915 /* HomePage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +73,8 @@
 		D85EA7D82C52552A00A15915 /* UserInfo3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo3.swift; sourceTree = "<group>"; };
 		D85EA7DA2C52554700A15915 /* UserInfo4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInfo4.swift; sourceTree = "<group>"; };
 		D85EA7DC2C52555800A15915 /* FirestoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreManager.swift; sourceTree = "<group>"; };
+		D85EA7DE2C537B5100A15915 /* NotificationRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRequest.swift; sourceTree = "<group>"; };
+		D85EA7E02C53810B00A15915 /* HomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,9 +137,11 @@
 				D85EA7CE2C5254B200A15915 /* OnboardingView.swift */,
 				D85EA7D22C5254E100A15915 /* UserProfile.swift */,
 				D85EA7DA2C52554700A15915 /* UserInfo4.swift */,
+				D85EA7E02C53810B00A15915 /* HomePage.swift */,
 				D85EA7D42C5254F800A15915 /* ProgressState.swift */,
 				D85EA7D82C52552A00A15915 /* UserInfo3.swift */,
 				D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */,
+				D85EA7DE2C537B5100A15915 /* NotificationRequest.swift */,
 				D85EA7DC2C52555800A15915 /* FirestoreManager.swift */,
 				D85EA7D02C5254C900A15915 /* UserInfo1.swift */,
 				D85EA7D62C52551600A15915 /* UserInfo2.swift */,
@@ -320,8 +326,10 @@
 				D85EA7DB2C52554700A15915 /* UserInfo4.swift in Sources */,
 				D85EA7D32C5254E100A15915 /* UserProfile.swift in Sources */,
 				D85EA7D12C5254C900A15915 /* UserInfo1.swift in Sources */,
+				D85EA7E12C53810B00A15915 /* HomePage.swift in Sources */,
 				D85EA7922C5252AE00A15915 /* NeovieApp.swift in Sources */,
 				D85EA7CD2C52549800A15915 /* GoogleSignInManager.swift in Sources */,
+				D85EA7DF2C537B5100A15915 /* NotificationRequest.swift in Sources */,
 				D85EA7D52C5254F800A15915 /* ProgressState.swift in Sources */,
 				D85EA7D72C52551600A15915 /* UserInfo2.swift in Sources */,
 				D85EA7DD2C52555800A15915 /* FirestoreManager.swift in Sources */,

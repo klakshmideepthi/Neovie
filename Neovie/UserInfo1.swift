@@ -2,137 +2,149 @@ import SwiftUI
 
 struct UserInfo1: View {
     @Binding var userProfile: UserProfile
-    @ObservedObject var progressState: ProgressState
-    @State private var heightUnit: HeightUnit = .cm
-    @State private var weightUnit: WeightUnit = .kg
-
-    enum HeightUnit: String, CaseIterable {
-        case cm, ft
-    }
-
-    enum WeightUnit: String, CaseIterable {
-        case kg, lb
-    }
+    @Binding var progressState: ProgressState
+    @State private var selectedGender: String = ""
+    
+    let genders = ["Male", "Female", "Other"]
+    let genderImages = ["Icon1", "Icon2", "Icon3"]
 
     private var isFormValid: Bool {
-        !userProfile.name.isEmpty &&
-        userProfile.height > 0 &&
-        userProfile.weight > 0
+        !userProfile.name.isEmpty && !selectedGender.isEmpty
     }
 
     var body: some View {
         NavigationStack {
-            GeometryReader { geometry in
-                VStack(spacing: 0) {
-                    // Progress bar (unchanged)
-                    VStack(spacing: 0) {
-                        Spacer()
-                            .frame(height: 60)
-                        
-                        HStack {
-                            ProgressView(value: 0.25)
-                                .progressViewStyle(LinearProgressViewStyle())
-                                .frame(width: geometry.size.width * 0.6, height: 10)
-                            Text("1/4")
-                                .font(.caption)
-                                .padding(.leading, 5)
-                        }
-                        .padding()
+            VStack(spacing: 0) {
+                progressBar
+                
+                ScrollView {
+                    VStack(spacing: 20) {
+                        headerText
+                        nameInput
+                        genderSelection
+                        dateOfBirthPicker
                     }
-                    .frame(width: geometry.size.width)
-                    .background(Color.blue.opacity(0.1))
-                    
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            Text("Tell us more about you")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .multilineTextAlignment(.center)
-                                .padding()
-
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("Name")
-                                    .font(.headline)
-                                TextField("Name", text: $userProfile.name)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .padding(.horizontal)
-                            }
-
-                            // Preferred Units section (unchanged)
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Preferred Units")
-                                    .font(.headline)
-                                
-                                HStack(spacing: 20) {
-                                    VStack(alignment: .leading) {
-                                        Text("Height:")
-                                        Picker("Height Unit", selection: $heightUnit) {
-                                            ForEach(HeightUnit.allCases, id: \.self) { unit in
-                                                Text(unit.rawValue.uppercased()).tag(unit)
-                                            }
-                                        }
-                                        .pickerStyle(SegmentedPickerStyle())
-                                    }
-                                    .frame(maxWidth: .infinity)
-
-                                    VStack(alignment: .leading) {
-                                        Text("Weight:")
-                                        Picker("Weight Unit", selection: $weightUnit) {
-                                            ForEach(WeightUnit.allCases, id: \.self) { unit in
-                                                Text(unit.rawValue.uppercased()).tag(unit)
-                                            }
-                                        }
-                                        .pickerStyle(SegmentedPickerStyle())
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                }
-                                .padding(.horizontal)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("Height (\(heightUnit.rawValue))")
-                                    .font(.headline)
-                                TextField("Enter height", value: $userProfile.height, format: .number)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal)
-                            }
-
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("Weight (\(weightUnit.rawValue))")
-                                    .font(.headline)
-                                TextField("Enter weight", value: $userProfile.weight, format: .number)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal)
-                            }
-                        }
-                        .padding()
-                    }
-                    
-                    NavigationLink(destination: UserInfo2(userProfile: $userProfile, progressState: progressState)) {
-                        Text("Next")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(isFormValid ? Color.blue : Color.blue.opacity(0.3))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                    }
-                    .disabled(!isFormValid)
-                    .simultaneousGesture(TapGesture().onEnded {
-                        if isFormValid {
-                            progressState.progress = 0.25
-                            saveUserProfile()
-                        }
-                    })
-                    .padding(.vertical, 40)
+                    .padding(.horizontal)
                 }
-                .background(Color.white)
-                .edgesIgnoringSafeArea(.all)
+                
+                Spacer()
+                
+                nextButton
             }
+            .background(Color.white)
+            .edgesIgnoringSafeArea(.all)
         }
         .navigationBarHidden(true)
+    }
+    
+    private var progressBar: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: 60)
+            HStack {
+                Spacer()
+                progressView
+                Spacer()
+            }
+            .padding()
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color.blue.opacity(0.1))
+    }
+    
+    private var progressView: some View {
+        HStack {
+            ProgressView(value: min(1, max(0, progressState.progress)))
+                .progressViewStyle(LinearProgressViewStyle())
+                .frame(width: UIScreen.main.bounds.width * 0.6, height: 10)
+            Text("1/4")
+                .font(.caption)
+                .padding(.leading, 5)
+        }
+    }
+    
+    private var headerText: some View {
+        Text("Tell us about you")
+            .font(.title)
+            .fontWeight(.bold)
+            .multilineTextAlignment(.center)
+            .padding()
+    }
+    
+    private var nameInput: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Name").font(.headline)
+            TextField("Name", text: $userProfile.name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .accessibility(label: Text("Enter your name"))
+        }
+    }
+    
+    private var genderSelection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Gender")
+                .font(.headline)
+
+            HStack(spacing: 20) {
+                ForEach(0..<genders.count, id: \.self) { index in
+                    genderButton(index: index)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
+    private func genderButton(index: Int) -> some View {
+        Button(action: {
+            selectedGender = genders[index]
+            userProfile.gender = genders[index]
+        }) {
+            VStack {
+                Image(genderImages[index])
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 70, height: 70)
+                    .background(RoundedRectangle(cornerRadius: 15)
+                        .fill(selectedGender == genders[index] ? Color.blue.opacity(0.2) : Color.clear))
+                    .cornerRadius(15)
+                Text(genders[index])
+                    .foregroundColor(.black)
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 15)
+                .stroke(selectedGender == genders[index] ? Color.blue : Color.gray, lineWidth: 2))
+        }
+        .accessibility(label: Text("Select gender: \(genders[index])"))
+    }
+    
+    private var dateOfBirthPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Date of Birth")
+                .font(.headline)
+            DatePicker("Date of Birth", selection: $userProfile.dateOfBirth, in: ...Date(), displayedComponents: .date)
+                .datePickerStyle(WheelDatePickerStyle())
+                .labelsHidden()
+                .accessibility(label: Text("Select your date of birth"))
+        }
+    }
+    
+    private var nextButton: some View {
+        NavigationLink(destination: UserInfo2(userProfile: $userProfile, progressState: $progressState)) {
+            Text("Next")
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(isFormValid ? Color.blue : Color.blue.opacity(0.3))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .padding(.horizontal)
+        }
+        .disabled(!isFormValid)
+        .simultaneousGesture(TapGesture().onEnded {
+            if isFormValid {
+                progressState.progress = 0.25
+                saveUserProfile()
+            }
+        })
+        .padding(.vertical, 40)
     }
     
     private func saveUserProfile() {

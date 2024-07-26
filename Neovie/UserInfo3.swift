@@ -2,7 +2,7 @@ import SwiftUI
 
 struct UserInfo3: View {
     @Binding var userProfile: UserProfile
-    @ObservedObject var progressState: ProgressState
+    @Binding var progressState: ProgressState
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedMedication: String = ""
     
@@ -92,7 +92,7 @@ struct UserInfo3: View {
     }
     
     private var nextButton: some View {
-        NavigationLink(destination: UserInfo4(userProfile: $userProfile, progressState: progressState)) {
+        NavigationLink(destination: UserInfo4(userProfile: $userProfile, progressState: $progressState)) {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -112,11 +112,11 @@ struct UserInfo3: View {
     }
     
     private func saveMedicationInfo() {
-        // Save the selected medication to Firestore
-        FirestoreManager.shared.saveMedicationInfo(medication: selectedMedication) { result in
+        FirestoreManager.shared.saveMedicationInfo(medicationName: selectedMedication) { result in
             switch result {
             case .success:
                 print("Medication info saved successfully")
+                userProfile.medicationName = selectedMedication
             case .failure(let error):
                 print("Failed to save medication info: \(error.localizedDescription)")
             }
@@ -133,28 +133,27 @@ struct MedicationButton: View {
     var body: some View {
         Button(action: action) {
             VStack {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white)
-                        .shadow(color: .gray.opacity(0.3), radius: 5, x: 0, y: 2)
-                    
-                    Image(imageName)
-                        .resizable()
-                        .scaledToFit()
-                        .padding(20)
-                }
-                .frame(height: 200)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 4)
-                )
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(10)
+                    .frame(height: 150)
                 
                 Text(name)
                     .foregroundColor(.black)
-                    .padding(.top, 5)
+                    .font(.subheadline)
+                    .padding(.bottom, 5)
             }
+            .frame(height: 210)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isSelected ? Color.blue : Color.gray, lineWidth: 2)
+            )
         }
         .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
         .cornerRadius(10)
+        .padding(5)
     }
 }

@@ -1,5 +1,13 @@
 import SwiftUI
 
-class ProgressState: ObservableObject {
-    @Published var progress: Double = 0.0
+struct ProgressState {
+    var progress: Double {
+        didSet {
+            progress = min(1, max(0, progress))
+        }
+    }
+    
+    init(progress: Double = 0.0) {
+        self.progress = min(1, max(0, progress))
+    }
 }
