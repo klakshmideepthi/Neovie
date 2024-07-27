@@ -6,55 +6,61 @@ struct NewLogView: View {
     @State private var weight = ""
     @State private var selectedSideEffect = ""
     @State private var selectedEmotion = ""
-    @State private var intensity = 3
+    @State private var foodNoise = 3
     
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Log Weight")) {
+                Section(header: Text("Weight")) {
                     TextField("Weight (kg)", text: $weight)
                         .keyboardType(.decimalPad)
                 }
                 
-                Section(header: Text("Log Side Effect")) {
+                Section(header: Text("Side Effect")) {
                     Picker("Side Effect", selection: $selectedSideEffect) {
+                        Text("None").tag("")
                         ForEach(viewModel.sideEffects, id: \.self) { effect in
                             Text(effect)
                         }
                     }
                 }
                 
-                Section(header: Text("Log Emotion")) {
+                Section(header: Text("Food Noise")) {
+                    Stepper(value: $foodNoise, in: 1...5) {
+                        Text("Food Noise: \(foodNoise)")
+                    }
+                }
+                
+                Section(header: Text("Emotion")) {
                     Picker("Emotion", selection: $selectedEmotion) {
+                        Text("None").tag("")
                         ForEach(viewModel.emotions, id: \.self) { emotion in
                             Text(emotion)
                         }
                     }
-                    
-                    Stepper(value: $intensity, in: 1...5) {
-                        Text("Intensity: \(intensity)")
-                    }
                 }
                 
                 Button("Save") {
-                    if let weightValue = Double(weight) {
-                        viewModel.logWeight(weightValue)
-                    }
-                    if !selectedSideEffect.isEmpty {
-                        let sideEffect = SideEffect(type: selectedSideEffect, severity: intensity, date: Date())
-                        viewModel.logSideEffect(sideEffect)
-                    }
-                    if !selectedEmotion.isEmpty {
-                        let emotion = Emotion(type: selectedEmotion, intensity: intensity, date: Date())
-                        viewModel.logEmotion(emotion)
-                    }
+                    saveLog()
                     presentationMode.wrappedValue.dismiss()
                 }
+                .disabled(weight.isEmpty)
             }
-            .navigationTitle("New Entry")
+            .navigationTitle("New Log Entry")
             .navigationBarItems(trailing: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
             })
         }
     }
+    
+    private func saveLog() {
+        guard let weightValue = Double(weight) else { return }
+        viewModel.logEntry(
+            weight: weightValue,
+            sideEffect: selectedSideEffect.isEmpty ? "None" : selectedSideEffect,
+            emotion: selectedEmotion.isEmpty ? "None" : selectedEmotion,
+            foodNoise: foodNoise
+        )
+    }
 }
+

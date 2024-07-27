@@ -4,7 +4,6 @@ import UserNotifications
 struct NotificationRequest: View {
     @State private var isNotificationsEnabled = false
     @State private var navigateToHomePage = false
-    @State private var showAlert = false
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.scenePhase) var scenePhase
 
@@ -62,20 +61,6 @@ struct NotificationRequest: View {
             .padding()
             .background(Color.white)
             .edgesIgnoringSafeArea(.all)
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text("Notifications Disabled"),
-                    message: Text("To enable notifications, go to Settings > Notifications > Neovie and turn on Allow Notifications."),
-                    primaryButton: .default(Text("Open Settings")) {
-                        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(settingsUrl)
-                        }
-                    },
-                    secondaryButton: .cancel(Text("Skip")) {
-                        navigateToHomePage = true
-                    }
-                )
-            }
             .navigationDestination(isPresented: $navigateToHomePage) {
                 HomePage().navigationBarBackButtonHidden(true)
             }
@@ -97,7 +82,8 @@ struct NotificationRequest: View {
                     navigateToHomePage = true
                 } else {
                     print("Notification permission denied")
-                    showAlert = true
+                    // The user denied permission, but we'll still navigate to the home page
+                    navigateToHomePage = true
                 }
             }
         }

@@ -30,7 +30,7 @@ class FirestoreManager {
             "dosage": userProfile.dosage
         ]
         
-        db.collection("users").document(uid).setData(data) { error in
+        db.collection("users").document(uid).setData(data, merge: true) { error in
             if let error = error {
                 completion(.failure(error))
             } else {
@@ -71,17 +71,21 @@ class FirestoreManager {
         }
     }
     
-    func saveMedicationInfo(medicationName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func saveLog(_ log: LogData.LogEntry, completion: @escaping (Result<Void, Error>) -> Void) {
             guard let uid = getCurrentUserID() else {
                 completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
                 return
             }
             
             let data: [String: Any] = [
-                "medicationName": medicationName
+                "date": Timestamp(date: log.date),
+                "weight": log.weight,
+                "sideEffectType": log.sideEffectType,
+                "emotionType": log.emotionType,
+                "foodNoise": log.foodNoise
             ]
             
-            db.collection("users").document(uid).setData(data, merge: true) { error in
+            db.collection("users").document(uid).collection("logs").addDocument(data: data) { error in
                 if let error = error {
                     completion(.failure(error))
                 } else {
@@ -89,106 +93,77 @@ class FirestoreManager {
                 }
             }
         }
+        
+        func getLogs(completion: @escaping (Result<[LogData.LogEntry], Error>) -> Void) {
+            guard let uid = getCurrentUserID() else {
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+                return
+            }
+            
+            db.collection("users").document(uid).collection("logs")
+                .order(by: "date", descending: true)
+                .getDocuments { (snapshot, error) in
+                if let error = error {
+                    completion(.failure(error))
+                } else if let documents = snapshot?.documents {
+                    let logs = documents.compactMap { doc -> LogData.LogEntry? in
+                        guard let date = (doc["date"] as? Timestamp)?.dateValue(),
+                              let weight = doc["weight"] as? Double,
+                              let sideEffectType = doc["sideEffectType"] as? String,
+                              let emotionType = doc["emotionType"] as? String,
+                              let foodNoise = doc["foodNoise"] as? Int else {
+                            return nil
+                        }
+                        
+                        return LogData.LogEntry(
+                            id: doc.documentID,
+                            date: date,
+                            weight: weight,
+                            sideEffectType: sideEffectType,
+                            emotionType: emotionType,
+                            foodNoise: foodNoise
+                        )
+                    }
+                    completion(.success(logs))
+                } else {
+                    completion(.success([]))
+                }
+            }
+        }
+    
+    
+    
+    
+    func saveMedicationInfo(medicationName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let uid = getCurrentUserID() else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        let data: [String: Any] = [
+            "medicationName": medicationName
+        ]
+        
+        db.collection("users").document(uid).setData(data, merge: true) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                completion(.success(()))
+            }
+        }
+    }
     
     func saveDosageInfo(dosage: String, completion: @escaping (Result<Void, Error>) -> Void) {
-            guard let uid = getCurrentUserID() else {
-                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
-                return
-            }
-            
-            let data: [String: Any] = [
-                "dosage": dosage
-            ]
-            
-            db.collection("users").document(uid).setData(data, merge: true) { error in
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    completion(.success(()))
-                }
-            }
-        }
-    
-    func getWeightLogs(completion: @escaping (Result<[WeightEntry], Error>) -> Void) {
-        guard let uid = getCurrentUserID() else {
-            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
-            return
-        }
-        
-        db.collection("users").document(uid).collection("weightLogs")
-            .order(by: "date", descending: true)
-            .getDocuments { (querySnapshot, error) in
-                if let error = error {
-                    completion(.failure(error))
-                    return
-                }
-                
-                let weightLogs = querySnapshot?.documents.compactMap { document -> WeightEntry? in
-                    guard let date = (document.data()["date"] as? Timestamp)?.dateValue(),
-                          let weight = document.data()["weight"] as? Double else {
-                        return nil
-                    }
-                    return WeightEntry(date: date, weight: weight)
-                } ?? []
-                
-                completion(.success(weightLogs))
-            }
-    }
-    
-    func saveWeightLog(_ weightEntry: WeightEntry, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let uid = getCurrentUserID() else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
             return
         }
         
         let data: [String: Any] = [
-            "date": Timestamp(date: weightEntry.date),
-            "weight": weightEntry.weight
+            "dosage": dosage
         ]
         
-        db.collection("users").document(uid).collection("weightLogs").addDocument(data: data) { error in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                completion(.success(()))
-            }
-        }
-    }
-    
-    func saveSideEffectLog(_ sideEffect: SideEffect, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let uid = getCurrentUserID() else {
-            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
-            return
-        }
-        
-        let data: [String: Any] = [
-            "date": Timestamp(date: sideEffect.date),
-            "type": sideEffect.type,
-            "severity": sideEffect.severity
-        ]
-        
-        db.collection("users").document(uid).collection("sideEffects").addDocument(data: data) { error in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                completion(.success(()))
-            }
-        }
-    }
-    
-    func saveEmotionLog(_ emotion: Emotion, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let uid = getCurrentUserID() else {
-            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
-            return
-        }
-        
-        let data: [String: Any] = [
-            "date": Timestamp(date: emotion.date),
-            "type": emotion.type,
-            "intensity": emotion.intensity
-        ]
-        
-        db.collection("users").document(uid).collection("emotions").addDocument(data: data) { error in
+        db.collection("users").document(uid).setData(data, merge: true) { error in
             if let error = error {
                 completion(.failure(error))
             } else {
