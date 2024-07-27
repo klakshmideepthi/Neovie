@@ -4,8 +4,8 @@ import UserNotifications
 struct NotificationRequest: View {
     @State private var isNotificationsEnabled = false
     @State private var navigateToHomePage = false
+    @State private var showAlert = false
     @Environment(\.presentationMode) var presentationMode
-    @State private var showSettings = false
     @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
@@ -62,8 +62,19 @@ struct NotificationRequest: View {
             .padding()
             .background(Color.white)
             .edgesIgnoringSafeArea(.all)
-            .sheet(isPresented: $showSettings) {
-                SettingsView(isPresented: $showSettings)
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text("Notifications Disabled"),
+                    message: Text("To enable notifications, go to Settings > Notifications > Neovie and turn on Allow Notifications."),
+                    primaryButton: .default(Text("Open Settings")) {
+                        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(settingsUrl)
+                        }
+                    },
+                    secondaryButton: .cancel(Text("Skip")) {
+                        navigateToHomePage = true
+                    }
+                )
             }
             .navigationDestination(isPresented: $navigateToHomePage) {
                 HomePage().navigationBarBackButtonHidden(true)
@@ -86,7 +97,7 @@ struct NotificationRequest: View {
                     navigateToHomePage = true
                 } else {
                     print("Notification permission denied")
-                    showSettings = true
+                    showAlert = true
                 }
             }
         }
@@ -103,45 +114,3 @@ struct NotificationRequest: View {
         }
     }
 }
-
-struct SettingsView: View {
-    @Binding var isPresented: Bool
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Please enable notifications in Settings")
-                .font(.title)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            VStack(spacing: 10) {
-                Button(action: {
-                    if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(settingsUrl)
-                    }
-                }) {
-                    Text("Open Settings")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-
-                Button(action: {
-                    isPresented = false
-                }) {
-                    Text("Close")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-            }
-            .padding(.horizontal)
-        }
-        .padding(.vertical)
-    }
-}
-

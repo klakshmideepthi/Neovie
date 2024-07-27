@@ -5,11 +5,12 @@ struct HomePage: View {
     @StateObject private var viewModel = HomePageViewModel()
     @State private var showingSettingsHome = false
     @State private var selectedTab = 0
+    @State private var showingNewLog = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationView {
-                HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome)
+                HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog)
             }
             .tabItem {
                 Image(systemName: "house.fill")
@@ -29,6 +30,9 @@ struct HomePage: View {
         .sheet(isPresented: $showingSettingsHome) {
             SettingsHomeView()
         }
+        .sheet(isPresented: $showingNewLog) {
+            NewLogView(viewModel: viewModel)
+        }
         .onAppear {
             viewModel.fetchUserData()
         }
@@ -38,6 +42,7 @@ struct HomePage: View {
 struct HomeTabContent: View {
     @ObservedObject var viewModel: HomePageViewModel
     @Binding var showingSettingsHome: Bool
+    @Binding var showingNewLog: Bool
     
     var body: some View {
         List {
@@ -95,15 +100,22 @@ struct HomeTabContent: View {
                 }
             }
         }
-        .sheet(isPresented: $viewModel.showWeightLoggingSheet) {
-            WeightLoggingView(viewModel: viewModel)
-        }
-        .sheet(isPresented: $viewModel.showSideEffectLoggingSheet) {
-            SideEffectLoggingView(viewModel: viewModel)
-        }
-        .sheet(isPresented: $viewModel.showEmotionLoggingSheet) {
-            EmotionLoggingView(viewModel: viewModel)
-        }
+        
+        .overlay(
+            Button(action: {
+                showingNewLog = true
+            }) {
+                Image(systemName: "plus")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 60, height: 60)
+                    .background(Color.blue)
+                    .cornerRadius(15)  // Adjust this value for more or less rounded corners
+                    .shadow(radius: 3)
+            }
+            .padding()
+            , alignment: .bottomTrailing
+        )
     }
 }
 
@@ -115,6 +127,9 @@ class HomePageViewModel: ObservableObject {
     @Published var showWeightLoggingSheet = false
     @Published var showSideEffectLoggingSheet = false
     @Published var showEmotionLoggingSheet = false
+    
+    let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
+    let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
     
     func fetchUserData() {
         FirestoreManager.shared.getUserProfile { result in
@@ -181,13 +196,6 @@ class HomePageViewModel: ObservableObject {
     }
 }
 
-struct ChatbotView: View {
-    var body: some View {
-        Text("Chatbot View")
-            .font(.largeTitle)
-    }
-}
-
 struct WeightProgressChart: View {
     let data: [WeightEntry]
     
@@ -203,108 +211,12 @@ struct WeightProgressChart: View {
     }
 }
 
-struct WeightLoggingView: View {
-    @ObservedObject var viewModel: HomePageViewModel
-    @State private var weight: String = ""
-    @Environment(\.presentationMode) var presentationMode
-    
+struct ChatbotView: View {
     var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Log Weight")) {
-                    TextField("Weight (kg)", text: $weight)
-                        .keyboardType(.decimalPad)
-                }
-                
-                Button("Save") {
-                    if let weightValue = Double(weight) {
-                        viewModel.logWeight(weightValue)
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-            }
-            .navigationTitle("Log Weight")
-            .navigationBarItems(trailing: Button("Cancel") {
-                presentationMode.wrappedValue.dismiss()
-            })
-        }
+        Text("Chatbot View")
+            .font(.largeTitle)
     }
 }
 
-struct SideEffectLoggingView: View {
-    @ObservedObject var viewModel: HomePageViewModel
-    @State private var selectedSideEffect: String = ""
-    @State private var severity: Int = 1
-    @Environment(\.presentationMode) var presentationMode
-    
-    let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Select Side Effect")) {
-                    Picker("Side Effect", selection: $selectedSideEffect) {
-                        ForEach(sideEffects, id: \.self) { effect in
-                            Text(effect)
-                        }
-                    }
-                }
-                
-                Section(header: Text("Severity (1-5)")) {
-                    Stepper(value: $severity, in: 1...5) {
-                        Text("Severity: \(severity)")
-                    }
-                }
-                
-                Button("Save") {
-                    let sideEffect = SideEffect(type: selectedSideEffect, severity: severity, date: Date())
-                    viewModel.logSideEffect(sideEffect)
-                    presentationMode.wrappedValue.dismiss()
-                }
-            }
-            .navigationTitle("Log Side Effect")
-            .navigationBarItems(trailing: Button("Cancel") {
-                presentationMode.wrappedValue.dismiss()
-            })
-        }
-    }
-}
-
-struct EmotionLoggingView: View {
-    @ObservedObject var viewModel: HomePageViewModel
-    @State private var selectedEmotion: String = ""
-    @State private var intensity: Int = 1
-    @Environment(\.presentationMode) var presentationMode
-    
-    let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Select Emotion")) {
-                    Picker("Emotion", selection: $selectedEmotion) {
-                        ForEach(emotions, id: \.self) { emotion in
-                            Text(emotion)
-                        }
-                    }
-                }
-                
-                Section(header: Text("Intensity (1-5)")) {
-                    Stepper(value: $intensity, in: 1...5) {
-                        Text("Intensity: \(intensity)")
-                    }
-                }
-                
-                Button("Save") {
-                    let emotion = Emotion(type: selectedEmotion, intensity: intensity, date: Date())
-                    viewModel.logEmotion(emotion)
-                    presentationMode.wrappedValue.dismiss()
-                }
-            }
-            .navigationTitle("Log Emotion")
-            .navigationBarItems(trailing: Button("Cancel") {
-                presentationMode.wrappedValue.dismiss()
-            })
-        }
-    }
-}
+// Note: WeightLoggingView, SideEffectLoggingView, and EmotionLoggingView
+// should be defined in separate files or at the bottom of this file.

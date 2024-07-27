@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D85E8F1B2C55213A00CC2ACF /* NewLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */; };
 		D85EA7922C5252AE00A15915 /* NeovieApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7912C5252AE00A15915 /* NeovieApp.swift */; };
 		D85EA7942C5252AE00A15915 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85EA7932C5252AE00A15915 /* ContentView.swift */; };
 		D85EA7962C5252B000A15915 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D85EA7952C5252B000A15915 /* Assets.xcassets */; };
@@ -53,6 +54,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewLogView.swift; sourceTree = "<group>"; };
 		D85EA78E2C5252AE00A15915 /* Neovie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Neovie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D85EA7912C5252AE00A15915 /* NeovieApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeovieApp.swift; sourceTree = "<group>"; };
 		D85EA7932C5252AE00A15915 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				D85EA7DA2C52554700A15915 /* UserInfo4.swift */,
 				D85EA7E02C53810B00A15915 /* HomePage.swift */,
 				D85EA7E42C53A74300A15915 /* SettingsHomePage.swift */,
+				D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */,
 				D85EA7D42C5254F800A15915 /* ProgressState.swift */,
 				D85EA7D82C52552A00A15915 /* UserInfo3.swift */,
 				D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */,
@@ -330,6 +333,7 @@
 				D85EA7DB2C52554700A15915 /* UserInfo4.swift in Sources */,
 				D85EA7D32C5254E100A15915 /* UserProfile.swift in Sources */,
 				D85EA7D12C5254C900A15915 /* UserInfo1.swift in Sources */,
+				D85E8F1B2C55213A00CC2ACF /* NewLogView.swift in Sources */,
 				D85EA7E12C53810B00A15915 /* HomePage.swift in Sources */,
 				D85EA7922C5252AE00A15915 /* NeovieApp.swift in Sources */,
 				D85EA7CD2C52549800A15915 /* GoogleSignInManager.swift in Sources */,
