@@ -9,9 +9,11 @@ struct HomePage: View {
     
     var body: some View {
         ZStack {
+            
             TabView(selection: $selectedTab) {
                 NavigationView {
                     HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog)
+                        .background(Color(hex: 0xE7ECEE))
                 }
                 .tabItem {
                     Image(systemName: "house.fill")
@@ -20,8 +22,9 @@ struct HomePage: View {
                 .tag(0)
                 
                 NavigationView {
-                                    LogsView(viewModel: viewModel)
-                                }
+                    LogsView(viewModel: viewModel)
+                        .background(Color(hex: 0xE7ECEE))
+                }
                 .tabItem {
                     Image(systemName: "list.bullet.clipboard")
                     Text("Logs")
@@ -30,12 +33,29 @@ struct HomePage: View {
                 
                 NavigationView {
                     ChatbotView()
+                        .background(Color(hex: 0xC8A2C8))
                 }
                 .tabItem {
                     Image(systemName: "message.fill")
                     Text("Chatbot")
                 }
                 .tag(2)
+            }
+            .onAppear {
+                let appearance = UITabBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(Color(hex: 0xF3F6F7))
+                
+                appearance.stackedLayoutAppearance.normal.iconColor = .gray
+                appearance.stackedLayoutAppearance.normal.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.gray]
+                
+                appearance.stackedLayoutAppearance.selected.iconColor = .black
+                appearance.stackedLayoutAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+                
+                UITabBar.appearance().standardAppearance = appearance
+                if #available(iOS 15.0, *) {
+                    UITabBar.appearance().scrollEdgeAppearance = appearance
+                }
             }
         }
         .sheet(isPresented: $showingSettingsHome) {
@@ -56,39 +76,15 @@ struct HomeTabContent: View {
     @Binding var showingNewLog: Bool
     
     var body: some View {
-        List {
-            Section(header: Text("Today's Overview")) {
-                HStack {
-                    Text("Current Weight:")
-                    Spacer()
-                    Text("\(viewModel.currentWeight, specifier: "%.1f") kg")
-                }
-                HStack {
-                    Text("Medication:")
-                    Spacer()
-                    Text(viewModel.medicationName)
-                }
-                HStack {
-                    Text("Next Dose:")
-                    Spacer()
-                    Text(viewModel.nextDose)
-                }
+        ScrollView {
+            VStack(spacing: 20) {
+                todaysOverviewSection
+                quickActionsSection
+                progressSection
             }
-            
-            Section(header: Text("Quick Actions")) {
-                Button(action: {
-                    showingNewLog = true
-                }) {
-                    Label("New Log Entry", systemImage: "plus.circle")
-                }
-            }
-            
-            Section(header: Text("Progress")) {
-                WeightProgressChart(data: viewModel.logs)
-                    .frame(height: 200)
-            }
+            .padding()
         }
-        .listStyle(InsetGroupedListStyle())
+        .background(Color(hex: 0xE7ECEE))
         .navigationTitle("Home")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -96,24 +92,84 @@ struct HomeTabContent: View {
                     showingSettingsHome = true
                 }) {
                     Image(systemName: "gear")
+                        .foregroundColor(.gray)
                 }
             }
         }
-        .overlay(
+        .overlay(newLogButton, alignment: .bottomTrailing)
+    }
+    
+    private var todaysOverviewSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Today's Overview")
+                .font(.headline)
+            
+            HStack {
+                Text("Current Weight:")
+                Spacer()
+                Text("\(viewModel.currentWeight, specifier: "%.1f") kg")
+            }
+            HStack {
+                Text("Medication:")
+                Spacer()
+                Text(viewModel.medicationName)
+            }
+            HStack {
+                Text("Next Dose:")
+                Spacer()
+                Text(viewModel.nextDose)
+            }
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(10)
+    }
+    
+    private var quickActionsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Quick Actions")
+                .font(.headline)
+            
             Button(action: {
                 showingNewLog = true
             }) {
-                Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 60, height: 60)
-                    .background(Color.blue)
-                    .cornerRadius(15)
-                    .shadow(radius: 3)
+                Label("New Log Entry", systemImage: "plus.circle")
             }
             .padding()
-            , alignment: .bottomTrailing
-        )
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white)
+            .cornerRadius(10)
+            .foregroundColor(Color(hex: 0x394F56))
+        }
+    }
+    
+    private var progressSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Progress")
+                .font(.headline)
+            
+            WeightProgressChart(data: viewModel.logs)
+                .frame(height: 200)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .foregroundColor(Color(hex: 0x394F56))
+        }
+    }
+    
+    private var newLogButton: some View {
+        Button(action: {
+            showingNewLog = true
+        }) {
+            Image(systemName: "plus")
+                .font(.system(size: 24))
+                .foregroundColor(.white)
+                .frame(width: 60, height: 60)
+                .background(Color(hex: 0x708E99))
+                .cornerRadius(15)
+                .shadow(radius: 3)
+        }
+        .padding()
     }
 }
 
@@ -202,3 +258,14 @@ struct ChatbotView: View {
     }
 }
 
+extension Color {
+    init(hex: UInt, alpha: Double = 1) {
+        self.init(
+            .sRGB,
+            red: Double((hex >> 16) & 0xff) / 255,
+            green: Double((hex >> 08) & 0xff) / 255,
+            blue: Double((hex >> 00) & 0xff) / 255,
+            opacity: alpha
+        )
+    }
+}
