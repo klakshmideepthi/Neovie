@@ -32,7 +32,7 @@ struct HomePage: View {
                 .tag(1)
                 
                 NavigationView {
-                    ChatbotView()
+                    ChatbotWelcomeView()
                         .background(Color(hex: 0xC8A2C8))
                 }
                 .tabItem {
@@ -248,13 +248,6 @@ struct WeightProgressChart: View {
                 )
             }
         }
-    }
-}
-
-struct ChatbotView: View {
-    var body: some View {
-        Text("Chatbot View")
-            .font(.largeTitle)
     }
 }
 
