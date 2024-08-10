@@ -2,12 +2,30 @@ import SwiftUI
 import Firebase
 import GoogleSignIn
 import FirebaseFirestore
+import FirebaseFunctions
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
         print("Firebase configured")
         return true
+    }
+    
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        updateCurrentUserAge()
+    }
+
+    private func updateCurrentUserAge() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
+        FirestoreManager.shared.updateUserAge(for: userId) { result in
+            switch result {
+            case .success:
+                print("User age updated successfully")
+            case .failure(let error):
+                print("Failed to update user age: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
@@ -17,10 +35,7 @@ struct NeovieApp: App {
     
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                ContentView()
-            }
+            MainView()
         }
     }
 }
-

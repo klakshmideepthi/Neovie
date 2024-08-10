@@ -49,9 +49,10 @@ struct NewLogView: View {
             .navigationTitle("New Log Entry")
             .navigationBarItems(trailing: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
-            })
+            }.foregroundColor(Color(hex: 0xC67C4E)))
         }
     }
+
     
     private func saveLog() {
         guard let weightValue = Double(weight) else { return }

@@ -10,7 +10,7 @@ struct UserInfo3: View {
     let medicationImages = ["Img1", "Img3", "Img4", "Img2"]
     
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack(spacing: 0) {
                 progressBar
                 
@@ -44,7 +44,7 @@ struct UserInfo3: View {
             .padding()
         }
         .frame(maxWidth: .infinity)
-        .background(Color.blue.opacity(0.1))
+        .background(Color(hex: 0x394F56).opacity(0.1))
     }
     
     private var backButton: some View {
@@ -52,7 +52,7 @@ struct UserInfo3: View {
             presentationMode.wrappedValue.dismiss()
         }) {
             Image(systemName: "chevron.left")
-                .foregroundColor(.blue)
+                .foregroundColor(Color(hex: 0x394F56))
         }
         .padding(.leading)
     }
@@ -96,7 +96,7 @@ struct UserInfo3: View {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(!selectedMedication.isEmpty ? Color.blue : Color.gray)
+                .background(!selectedMedication.isEmpty ? Color(hex: 0x394F56) : Color(hex: 0x394F56).opacity(0.3))
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .padding(.horizontal)
@@ -108,7 +108,7 @@ struct UserInfo3: View {
                 saveMedicationInfo()
             }
         })
-        .padding(.vertical, 40)
+        .padding(.vertical, 60)
     }
     
     private func saveMedicationInfo() {
@@ -149,10 +149,10 @@ struct MedicationButton: View {
             .background(Color.white)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(isSelected ? Color.blue : Color.gray, lineWidth: 2)
+                    .stroke(isSelected ? Color(hex: 0x394F56): Color.gray, lineWidth: 2)
             )
         }
-        .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+        .background(isSelected ? Color(hex: 0x394F56).opacity(0.1) : Color.clear)
         .cornerRadius(10)
         .padding(5)
     }

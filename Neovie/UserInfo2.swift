@@ -8,6 +8,7 @@ struct UserInfo2: View {
     @State private var weightString: String = ""
     @State private var targetWeightString: String = ""
     @Environment(\.presentationMode) var presentationMode
+    @State private var keyboardHeight: CGFloat = 0
 
     enum HeightUnit: String, CaseIterable {
         case cm, ft
@@ -24,7 +25,7 @@ struct UserInfo2: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack(spacing: 0) {
                 progressBar
                 
@@ -38,6 +39,7 @@ struct UserInfo2: View {
                     }
                     .padding(.horizontal)
                 }
+                .padding(.bottom, keyboardHeight)
                 
                 Spacer()
                 
@@ -45,6 +47,9 @@ struct UserInfo2: View {
             }
             .background(Color.white)
             .edgesIgnoringSafeArea(.all)
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -53,6 +58,18 @@ struct UserInfo2: View {
             }
             if userProfile.targetWeight > 0 {
                 targetWeightString = String(format: "%.1f", userProfile.targetWeight)
+            }
+            
+            // Add keyboard observers
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
+                if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+                    let keyboardRectangle = keyboardFrame.cgRectValue
+                    keyboardHeight = keyboardRectangle.height
+                }
+            }
+            
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+                keyboardHeight = 0
             }
         }
     }
@@ -69,7 +86,7 @@ struct UserInfo2: View {
             .padding()
         }
         .frame(maxWidth: .infinity)
-        .background(Color.blue.opacity(0.1))
+        .background(Color(hex: 0x394F56).opacity(0.1))
     }
     
     private var backButton: some View {
@@ -77,7 +94,7 @@ struct UserInfo2: View {
             presentationMode.wrappedValue.dismiss()
         }) {
             Image(systemName: "chevron.left")
-                .foregroundColor(.blue)
+                .foregroundColor(Color(hex: 0x394F56))
         }
         .padding(.leading)
     }
@@ -171,23 +188,11 @@ struct UserInfo2: View {
     private var weightInput: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Weight (\(weightUnit.rawValue))").font(.headline)
-            TextField("Enter weight", text: $weightString)
+            TextField("Enter weight", text: weightBinding)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.decimalPad)
-                .onChange(of: weightString) { oldValue, newValue in
-                    let filtered = newValue.filter { "0123456789.".contains($0) }
-                    if filtered != newValue {
-                        weightString = filtered
-                    }
-                    if let dotIndex = filtered.firstIndex(of: ".") {
-                        let decimalPlaces = filtered.distance(from: dotIndex, to: filtered.endIndex) - 1
-                        if decimalPlaces > 1 {
-                            weightString = String(filtered.prefix(filtered.count - 1))
-                        }
-                    }
-                    if let weight = Float(filtered) {
-                        userProfile.weight = Double(weight)
-                    }
+                .onSubmit {
+                    hideKeyboard()
                 }
         }
     }
@@ -195,25 +200,57 @@ struct UserInfo2: View {
     private var targetWeightInput: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Target Weight (\(weightUnit.rawValue))").font(.headline)
-            TextField("Enter target weight", text: $targetWeightString)
+            TextField("Enter target weight", text: targetWeightBinding)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.decimalPad)
-                .onChange(of: targetWeightString) { oldValue, newValue in
-                    let filtered = newValue.filter { "0123456789.".contains($0) }
-                    if filtered != newValue {
-                        targetWeightString = filtered
-                    }
-                    if let dotIndex = filtered.firstIndex(of: ".") {
-                        let decimalPlaces = filtered.distance(from: dotIndex, to: filtered.endIndex) - 1
-                        if decimalPlaces > 1 {
-                            targetWeightString = String(filtered.prefix(filtered.count - 1))
-                        }
-                    }
-                    if let targetWeight = Float(filtered) {
-                        userProfile.targetWeight = Double(targetWeight)
-                    }
+                .onSubmit {
+                    hideKeyboard()
                 }
         }
+    }
+    
+    private var weightBinding: Binding<String> {
+        Binding<String>(
+            get: { self.weightString },
+            set: {
+                let filtered = $0.filter { "0123456789.".contains($0) }
+                if let dotIndex = filtered.firstIndex(of: ".") {
+                    let decimalPlaces = filtered.distance(from: dotIndex, to: filtered.endIndex) - 1
+                    if decimalPlaces > 1 {
+                        self.weightString = String(filtered.prefix(filtered.count - 1))
+                    } else {
+                        self.weightString = filtered
+                    }
+                } else {
+                    self.weightString = filtered
+                }
+                if let weight = Float(self.weightString) {
+                    self.userProfile.weight = Double(weight)
+                }
+            }
+        )
+    }
+    
+    private var targetWeightBinding: Binding<String> {
+        Binding<String>(
+            get: { self.targetWeightString },
+            set: {
+                let filtered = $0.filter { "0123456789.".contains($0) }
+                if let dotIndex = filtered.firstIndex(of: ".") {
+                    let decimalPlaces = filtered.distance(from: dotIndex, to: filtered.endIndex) - 1
+                    if decimalPlaces > 1 {
+                        self.targetWeightString = String(filtered.prefix(filtered.count - 1))
+                    } else {
+                        self.targetWeightString = filtered
+                    }
+                } else {
+                    self.targetWeightString = filtered
+                }
+                if let targetWeight = Float(self.targetWeightString) {
+                    self.userProfile.targetWeight = Double(targetWeight)
+                }
+            }
+        )
     }
     
     private var nextButton: some View {
@@ -221,7 +258,7 @@ struct UserInfo2: View {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(isFormValid ? Color.blue : Color.blue.opacity(0.3))
+                .background(isFormValid ? Color(hex: 0x394F56) : Color(hex: 0x394F56).opacity(0.3))
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .padding(.horizontal)
@@ -233,7 +270,7 @@ struct UserInfo2: View {
                 saveUserProfile()
             }
         })
-        .padding(.vertical, 40)
+        .padding(.vertical, 60)
     }
     
     private func saveUserProfile() {
@@ -263,5 +300,9 @@ struct UserInfo2: View {
             let cm = Int((Double(userProfile.heightFt) * 30.48) + (Double(userProfile.heightIn) * 2.54))
             return (cm, userProfile.heightFt, userProfile.heightIn)
         }
+    }
+    
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

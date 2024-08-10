@@ -27,7 +27,8 @@ class FirestoreManager {
             "gender": userProfile.gender,
             "dateOfBirth": Timestamp(date: userProfile.dateOfBirth),
             "medicationName": userProfile.medicationName,
-            "dosage": userProfile.dosage
+            "dosage": userProfile.dosage,
+            "age": userProfile.age
         ]
         
         db.collection("users").document(uid).setData(data, merge: true) { error in
@@ -60,7 +61,16 @@ class FirestoreManager {
                    let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue(),
                    let medicationName = data["medicationName"] as? String,
                    let dosage = data["dosage"] as? String {
-                    let userProfile = UserProfile(name: name, heightCm: heightCm, heightFt: heightFt, heightIn: heightIn, weight: weight, targetWeight: targetWeight, gender: gender, dateOfBirth: dateOfBirth, medicationName: medicationName, dosage: dosage)
+                    var userProfile = UserProfile(name: name, heightCm: heightCm, heightFt: heightFt, heightIn: heightIn, weight: weight, targetWeight: targetWeight, gender: gender, dateOfBirth: dateOfBirth, medicationName: medicationName, dosage: dosage)
+                    
+                    // Update age
+                    userProfile.updateAge()
+                    
+                    // If the age has changed, update it in Firestore
+                    if userProfile.age != (data["age"] as? Int ?? 0) {
+                        self.updateUserAge(for: uid) { _ in }
+                    }
+                    
                     completion(.success(userProfile))
                 } else {
                     completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"])))
@@ -70,6 +80,34 @@ class FirestoreManager {
             }
         }
     }
+    
+    func updateUserAge(for userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+            let userRef = db.collection("users").document(userId)
+            
+            userRef.getDocument { (document, error) in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let document = document, document.exists,
+                      let data = document.data(),
+                      let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue() else {
+                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user data"])))
+                    return
+                }
+                
+                let newAge = Calendar.current.dateComponents([.year], from: dateOfBirth, to: Date()).year ?? 0
+                
+                userRef.updateData(["age": newAge]) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        completion(.success(()))
+                    }
+                }
+            }
+        }
     
     func saveLog(_ log: LogData.LogEntry, completion: @escaping (Result<Void, Error>) -> Void) {
             guard let uid = getCurrentUserID() else {
@@ -171,4 +209,80 @@ class FirestoreManager {
             }
         }
     }
+    
+    func getWeightLossData(completion: @escaping (Result<WeightLossData, Error>) -> Void) {
+            guard let uid = Auth.auth().currentUser?.uid else {
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+                return
+            }
+            
+            db.collection("users").document(uid).getDocument { (document, error) in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let document = document, document.exists else {
+                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Document does not exist"])))
+                    return
+                }
+                
+                guard let data = document.data() else {
+                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Document data is empty"])))
+                    return
+                }
+                
+                var missingFields: [String] = []
+                
+                let name = data["name"] as? String ?? ""
+                let height = data["heightCm"] as? Int ?? 0
+                let weight = data["weight"] as? Double ?? 0.0
+                let targetWeight = data["targetWeight"] as? Double ?? 0.0
+                let gender = data["gender"] as? String ?? ""
+                let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue() ?? Date()
+                let activityLevel = data["activityLevel"] as? String ?? "Sedentary"
+                let medicalConditions = data["medicalConditions"] as? [String] ?? []
+                let dietaryPreferences = data["dietaryPreferences"] as? [String] ?? []
+                
+                if name.isEmpty { missingFields.append("name") }
+                if height == 0 { missingFields.append("heightCm") }
+                if weight == 0.0 { missingFields.append("weight") }
+                if targetWeight == 0.0 { missingFields.append("targetWeight") }
+                if gender.isEmpty { missingFields.append("gender") }
+                if dateOfBirth == Date() { missingFields.append("dateOfBirth") }
+                
+                if !missingFields.isEmpty {
+                    let errorMessage = "Missing or invalid fields: \(missingFields.joined(separator: ", "))"
+                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: errorMessage])))
+                    return
+                }
+                
+                let weightLossData = WeightLossData(
+                    name: name,
+                    height: height,
+                    weight: weight,
+                    targetWeight: targetWeight,
+                    gender: gender,
+                    dateOfBirth: dateOfBirth,
+                    activityLevel: activityLevel,
+                    medicalConditions: medicalConditions,
+                    dietaryPreferences: dietaryPreferences
+                )
+                
+                completion(.success(weightLossData))
+            }
+        }
+}
+
+
+struct WeightLossData {
+    let name: String
+    let height: Int
+    let weight: Double
+    let targetWeight: Double
+    let gender: String
+    let dateOfBirth: Date
+    let activityLevel: String
+    let medicalConditions: [String]
+    let dietaryPreferences: [String]
 }

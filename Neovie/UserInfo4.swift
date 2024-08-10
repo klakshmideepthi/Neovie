@@ -15,7 +15,7 @@ struct UserInfo4: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             GeometryReader { geometry in
                 VStack(spacing: 0) {
                     // Progress bar and back button
@@ -32,7 +32,7 @@ struct UserInfo4: View {
                         .padding()
                     }
                     .frame(width: geometry.size.width)
-                    .background(Color.blue.opacity(0.1))
+                    .background(Color(hex: 0x394F56).opacity(0.1))
                     
                     ScrollView {
                         VStack(spacing: 20) {
@@ -66,7 +66,7 @@ struct UserInfo4: View {
             presentationMode.wrappedValue.dismiss()
         }) {
             Image(systemName: "chevron.left")
-                .foregroundColor(.blue)
+                .foregroundColor(Color(hex: 0x394F56))
         }
         .padding(.leading)
     }
@@ -90,7 +90,7 @@ struct UserInfo4: View {
                 Text(dosage)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(selectedDosage == dosage ? Color.blue : Color.gray.opacity(0.2))
+                    .background(selectedDosage == dosage ? Color(hex: 0x394F56) : Color.gray.opacity(0.2))
                     .foregroundColor(selectedDosage == dosage ? .white : .black)
                     .cornerRadius(10)
             }
@@ -102,7 +102,7 @@ struct UserInfo4: View {
             Text("Done!")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(!selectedDosage.isEmpty ? Color.blue : Color.gray)
+                .background(!selectedDosage.isEmpty ? Color(hex: 0x394F56) : Color(hex: 0x394F56).opacity(0.3))
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .padding(.horizontal)
@@ -114,7 +114,7 @@ struct UserInfo4: View {
                 saveDosageInfo()
             }
         })
-        .padding(.vertical, 40)
+        .padding(.vertical, 60)
     }
     
     private func saveDosageInfo() {

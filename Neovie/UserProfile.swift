@@ -11,8 +11,9 @@ struct UserProfile {
     var dateOfBirth: Date
     var medicationName: String
     var dosage: String
+    var age: Int
     
-    init(name: String = "", heightCm: Int = 170, heightFt: Int = 5, heightIn: Int = 7, weight: Double = 0, targetWeight: Double = 0, gender: String = "", dateOfBirth: Date = Date(), medicationName: String = "", dosage: String = "") {
+    init(name: String = "", heightCm: Int = 170, heightFt: Int = 5, heightIn: Int = 7, weight: Double = 0, targetWeight: Double = 0, gender: String = "", dateOfBirth: Date = Date(), medicationName: String = "", dosage: String = "",age: Int = 0) {
         self.name = name
         self.heightCm = heightCm
         self.heightFt = heightFt
@@ -23,13 +24,15 @@ struct UserProfile {
         self.dateOfBirth = dateOfBirth
         self.medicationName = medicationName
         self.dosage = dosage
+        self.age = age
     }
     
-    var age: Int {
-        let calendar = Calendar.current
-        let ageComponents = calendar.dateComponents([.year], from: dateOfBirth, to: Date())
-        return ageComponents.year ?? 0
-    }
+    mutating func updateAge() {
+            let newAge = Calendar.current.dateComponents([.year], from: dateOfBirth, to: Date()).year ?? 0
+            if newAge != age {
+                age = newAge
+            }
+        }
 }
 
 struct WeightEntry: Identifiable {

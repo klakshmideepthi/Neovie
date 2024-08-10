@@ -1,103 +1,133 @@
 import SwiftUI
 
 struct ChatbotHomeView: View {
-    @State private var showNewChat = false
+    @State private var isShowingChatbot = false
+    @State private var searchText = ""
+    
+    let prompts: [(String, String)] = [
+        (" The founding story of McDonalds", "building.2"),
+        (" The tallest Ferris wheel", "circle"),
+        (" Did dinosaurs go extinct?", "fossil.shell"),
+        (" The origins of a joker card", "suit.club.fill"),
+        (" Are all mushrooms edible?", "leaf.fill")
+    ]
     
     var body: some View {
         NavigationView {
-            ZStack {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        Text("Helpyy")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .padding(.top)
+            GeometryReader { geometry in
+                ZStack {
+                    
+                    VStack(spacing: 10) {
                         
-                        Text("Updates")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                        Spacer()
+                    
+                        Text("Your personalized AI")
+                            .font(.title)
+                        Spacer().frame(height: 10)
                         
-                        UpdateCard(title: "Today's medication", description: "Remember to take your daily dose")
-                        
-                        Text("Chat history")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        ForEach(1...6, id: \.self) { _ in
-                            ChatHistoryItem()
+                        ForEach(prompts, id: \.0) { prompt in
+                            TopicButton(title: prompt.0, icon: prompt.1)
+                                .onTapGesture {
+                                    searchText = prompt.0
+                                    isShowingChatbot = true
+                                }
                         }
+                    
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                                    isShowingChatbot = true
+                        }) {
+                            HStack {
+                                Text("Ask me anything!!")
+                                    .foregroundColor(.gray)
+                                     .padding()
+                                
+                                Spacer()
+                            }
+                             .frame(height: 50)
+                             .background(Color.gray.opacity(0.1))
+                             .cornerRadius(20)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding()
                 }
-                .background(Color.gray.opacity(0.1))
-                
-                VStack {
-                    Spacer()
-                    Button(action: {
-                        showNewChat = true
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .frame(width: 60, height: 60)
-                            .background(Color(hex: 0x708E99))
-                            .clipShape(Circle())
-                            .shadow(radius: 4)
-                    }
-                    .padding(.bottom, 20)
-                }
+                .background(Color(hex: 0xEDEDED))
             }
-            .navigationBarHidden(true)
-        }
-        .sheet(isPresented: $showNewChat) {
-            ChatbotView()
+            .sheet(isPresented: $isShowingChatbot) {
+                ChatbotView()
+            }
         }
     }
 }
 
-struct UpdateCard: View {
+struct TopicButton: View {
     let title: String
-    let description: String
+    let icon: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .foregroundColor(Color(hex: 0xC67C4E))
+                .font(.system(size: 20))
+                .frame(width: 24, height: 24)
+            
             Text(title)
-                .font(.headline)
-            Text(description)
-                .font(.subheadline)
                 .foregroundColor(.gray)
+                .font(.caption)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
         }
-        .padding()
-        .background(Color.white)
+        .padding(.horizontal, 10)
+        .frame(width: UIScreen.main.bounds.width * 0.85 - 4, height: 50) // Subtract 4 to account for the 2px border on each side
+        .background(Color.white) // White background
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color(hex: 0x313131), lineWidth: 2) // Black border
+        )
         .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
 }
 
-struct ChatHistoryItem: View {
+struct ChatMessage: Identifiable {
+    let id = UUID()
+    let content: String
+    let isUser: Bool
+}
+
+struct ChatBubble: View {
+    let message: ChatMessage
+    
     var body: some View {
         HStack {
-            Circle()
-                .fill(Color.gray)
-                .frame(width: 40, height: 40)
-            
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Last conversation")
-                    .font(.headline)
-                Text("2 hours ago")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+            if message.isUser {
+                Spacer()
             }
             
-            Spacer()
+            Text(message.content)
+                .padding(10)
+                .background(message.isUser ? Color(hex: 0xC67C4E) : Color.gray)
+                .foregroundColor(.white)
+                .cornerRadius(10)
             
-            Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+            if !message.isUser {
+                Spacer()
+            }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
 }
 
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content) -> some View {
+        
+        ZStack(alignment: alignment) {
+            placeholder().opacity(shouldShow ? 1 : 0)
+            self
+        }
+    }
+}

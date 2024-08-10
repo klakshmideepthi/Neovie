@@ -5,7 +5,7 @@ struct NotificationRequest: View {
     @State private var isNotificationsEnabled = false
     @State private var navigateToHomePage = false
     @Environment(\.presentationMode) var presentationMode
-    @Environment(\.scenePhase) var scenePhase
+    @State private var isActive = false // New state for navigation
 
     var body: some View {
         NavigationView {
@@ -57,20 +57,17 @@ struct NotificationRequest: View {
                 .padding(.horizontal)
 
                 Spacer()
+
+                NavigationLink(destination: HomePage().navigationBarBackButtonHidden(true), isActive: $navigateToHomePage) {
+                    EmptyView()
+                }
             }
             .padding()
             .background(Color.white)
             .edgesIgnoringSafeArea(.all)
-            .navigationDestination(isPresented: $navigateToHomePage) {
-                HomePage().navigationBarBackButtonHidden(true)
-            }
         }
         .navigationBarHidden(true)
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active {
-                checkNotificationStatus()
-            }
-        }
+        .onAppear(perform: checkNotificationStatus)
     }
 
     private func requestNotificationPermission() {

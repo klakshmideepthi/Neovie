@@ -1,4 +1,5 @@
 import SwiftUI
+import Lottie
 
 struct OnboardingView: View {
     @State var progressState = ProgressState()
@@ -11,22 +12,14 @@ struct OnboardingView: View {
             ScrollView {
                 VStack {
                     Spacer()
-                    VStack(spacing: 20) {
-                        if let uiImage = UIImage(named: "Icon4") {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 300, height: 300)
-                        } else {
-                            Text("Image not found")
-                                .foregroundColor(.red)
-                        }
+                    VStack(spacing: 18) {
+                        LottieView(name: "network-fitness-app-and-healthy-lifestyle")
+                            .frame(width: 400, height: 400)
                         
                         Text("Welcome to Neovie")
-                            .font(.largeTitle)
+                            .font(.system(size: 34, weight: .bold))
                             .multilineTextAlignment(.center)
                             .padding()
-                            .fontWeight(.bold)
                         
                         Text("Your personalized weight loss journey")
                             .font(.title)
@@ -37,7 +30,7 @@ struct OnboardingView: View {
                             Text("Great!")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.blue)
+                                .background(Color(hex: 0xC67C4E))
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                                 .padding(.horizontal)
@@ -46,12 +39,14 @@ struct OnboardingView: View {
                     .padding()
                     Spacer()
                 }
-                .background(Color.white)
+                .background(Color(hex: 0xEDEDED))
                 .edgesIgnoringSafeArea(.all)
             }
         }
         .onAppear {
-            userStateManager.checkUserInfoStatus()
+            userStateManager.checkUserInfoStatus { _ in
+                // You can add any additional logic here if needed
+            }
         }
     }
 
@@ -65,42 +60,64 @@ struct OnboardingView: View {
     }
 }
 
+// LottieView component remains unchanged
+
+// UserStateManager remains unchanged
+// LottieView component
+struct LottieView: UIViewRepresentable {
+    var name: String
+    var loopMode: LottieLoopMode = .loop
+    
+    func makeUIView(context: UIViewRepresentableContext<LottieView>) -> UIView {
+        let view = UIView(frame: .zero)
+        
+        let animationView = LottieAnimationView()
+        let animation = LottieAnimation.named(name)
+        animationView.animation = animation
+        animationView.contentMode = .scaleAspectFit
+        animationView.loopMode = loopMode
+        animationView.play()
+        
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(animationView)
+        NSLayoutConstraint.activate([
+            animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
+            animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
+        ])
+        
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIViewType, context: Context) {
+    }
+}
+
+// ... Rest of your code (UserStateManager) remains unchanged
 class UserStateManager: ObservableObject {
     @Published var hasCompletedOnboarding: Bool = false
     @Published var hasCompletedUserInfo: Bool = false
     
-    func checkOnboardingStatus() {
+    func checkUserInfoStatus(completion: @escaping (Bool) -> Void) {
         FirestoreManager.shared.getUserProfile { result in
             switch result {
             case .success(let userProfile):
+                let hasCompletedInfo = !userProfile.name.isEmpty &&
+                                       !userProfile.gender.isEmpty &&
+                                       userProfile.dateOfBirth != Date() &&
+                                       userProfile.heightCm > 0 &&
+                                       userProfile.weight > 0 &&
+                                       userProfile.targetWeight > 0 &&
+                                       !userProfile.medicationName.isEmpty &&
+                                       !userProfile.dosage.isEmpty
+                
                 DispatchQueue.main.async {
-                    self.hasCompletedOnboarding = !userProfile.name.isEmpty && !userProfile.medicationName.isEmpty
-                }
-            case .failure:
-                DispatchQueue.main.async {
-                    self.hasCompletedOnboarding = false
-                }
-            }
-        }
-    }
-    
-    func checkUserInfoStatus() {
-        FirestoreManager.shared.getUserProfile { result in
-            switch result {
-            case .success(let userProfile):
-                DispatchQueue.main.async {
-                    self.hasCompletedUserInfo = !userProfile.name.isEmpty &&
-                                                !userProfile.gender.isEmpty &&
-                                                userProfile.dateOfBirth != Date() &&
-                                                userProfile.heightCm > 0 &&
-                                                userProfile.weight > 0 &&
-                                                userProfile.targetWeight > 0 &&
-                                                !userProfile.medicationName.isEmpty &&
-                                                !userProfile.dosage.isEmpty
+                    self.hasCompletedUserInfo = hasCompletedInfo
+                    completion(hasCompletedInfo)
                 }
             case .failure:
                 DispatchQueue.main.async {
                     self.hasCompletedUserInfo = false
+                    completion(false)
                 }
             }
         }

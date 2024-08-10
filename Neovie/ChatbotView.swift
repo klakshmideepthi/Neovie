@@ -1,156 +1,165 @@
 import SwiftUI
-
+import Firebase
+import Combine
 
 struct ChatbotView: View {
-        @Environment(\.presentationMode) var presentationMode
-        @State private var messages: [ChatMessage] = []
-        @State private var newMessage: String = ""
-        @State private var isLoading: Bool = false
-        @State private var errorMessage: String? = nil
-        
-    private let anthropicService = AnthropicService(apiKey: "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")
-
-        var body: some View {
-            VStack(spacing: 0) {
-                // Custom navigation bar
-                HStack {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.blue)
-                            .imageScale(.large)
-                    }
-                    Spacer()
-                    Text("Chat with Helpyy")
-                        .font(.headline)
-                    Spacer()
-                    Color.clear.frame(width: 22, height: 22)
-                }
-                .padding()
-                .background(Color.white)
-                .shadow(color: Color.gray.opacity(0.3), radius: 2, x: 0, y: 1)
-
-                ScrollView {
-                    LazyVStack(spacing: 15) {
-                        ForEach(messages) { message in
-                            ChatBubble(message: message)
+    @Environment(\.dismiss) private var dismiss
+    @State private var messages: [ChatMessage] = []
+    @State private var inputMessage = ""
+    @State private var isLoading = false
+    @State private var scrollToBottom = false
+    @State private var keyboardHeight: CGFloat = 0 // New state variable
+    
+    private let anthropicService = AnthropicService()
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
+                
+                VStack(spacing: 0) {
+                    // Custom navigation bar
+                    HStack {
+                        Text("New Thread")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .font(.system(size: 22))
                         }
                     }
                     .padding()
-                }
-
-                HStack {
-                    TextField("Message Helpyy...", text: $newMessage)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(20)
-
-                    Button(action: sendMessage) {
-                        Image(systemName: "paperplane.fill")
-                            .foregroundColor(.blue)
+                    .background(Color(UIColor.systemBackground))
+                    
+                    // Chat messages
+                    ScrollViewReader { scrollView in
+                        ScrollView {
+                            LazyVStack(spacing: 10) {
+                                if messages.isEmpty {
+                                    Image("mega-creator")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 200, height: 200)
+                                        .padding(.top, geometry.size.height / 4)
+                                } else {
+                                    ForEach(messages) { message in
+                                        ChatBubble(message: message)
+                                    }
+                                    if isLoading {
+                                        ProgressView()
+                                            .padding()
+                                    }
+                                    Color.clear.frame(height: 1).id("bottomAnchor")
+                                }
+                            }
+                            .padding()
+                        }
+                        .onChange(of: scrollToBottom) { _ in
+                            withAnimation {
+                                scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+                            }
+                        }
+                        .background(Color(hex: 0xEDEDED))
                     }
-                    .disabled(isLoading || newMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-                .padding()
-            }
-            .navigationBarHidden(true)
-            .overlay(
-                Group {
-                    if isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                            .scaleEffect(1.5)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color.black.opacity(0.4))
-                            .edgesIgnoringSafeArea(.all)
+                    
+                    // Input field
+                    VStack {
+                        HStack {
+                            TextField("Ask anything...", text: $inputMessage)
+                                .padding(15)
+                                .background(Color(hex: 0xEDEDED))
+                                .cornerRadius(25)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .disabled(isLoading)
+                                .accentColor(Color(hex: 0x313131))
+                            
+                            Button(action: sendMessage) {
+                                Image(systemName: "paperplane.fill")
+                                    .foregroundColor(inputMessage.isEmpty || isLoading ? Color(hex: 0x9B9B9B) : .white)
+                                    .padding(15)
+                                    .background(inputMessage.isEmpty || isLoading ? Color(hex: 0xEDEDED) : Color(hex: 0xC67C4E))
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    )
+                            }
+                            .disabled(inputMessage.isEmpty || isLoading)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        .padding(.bottom, 30)
                     }
+                    .background(Color.white)
+                    .padding(.bottom, geometry.safeAreaInsets.bottom)
                 }
-            )
-            .alert(item: Binding(
-                get: { errorMessage.map { ErrorWrapper(error: $0) } },
-                set: { errorMessage = $0?.error }
-            )) { errorWrapper in
-                Alert(title: Text("Error"), message: Text(errorWrapper.error), dismissButton: .default(Text("OK")))
+                .padding(.bottom, keyboardHeight) // Add padding to lift the content
             }
         }
-
-        func sendMessage() {
-            guard !newMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-            let userMessage = ChatMessage(content: newMessage, isUser: true)
-            messages.append(userMessage)
-            
-            isLoading = true
-            anthropicService.sendMessage(newMessage) { result in
-                DispatchQueue.main.async {
-                    isLoading = false
-                    switch result {
-                    case .success(let response):
-                        print("Received successful response: \(response)")
-                        let botResponse = ChatMessage(content: response, isUser: false)
-                        messages.append(botResponse)
-                    case .failure(let error):
-                        print("Error in ChatbotView: \(error.localizedDescription)")
-                        errorMessage = error.localizedDescription
-                        let errorChatMessage = ChatMessage(content: "Error: Unable to get response. Please try again.", isUser: false)
-                        messages.append(errorChatMessage)
-                    }
-                }
-            }
-            
-            newMessage = ""
-        }
+        .edgesIgnoringSafeArea(.bottom)
+        .onAppear(perform: addKeyboardObservers)
+        .onDisappear(perform: removeKeyboardObservers)
     }
-
-    struct ChatMessage: Identifiable {
-        let id = UUID()
-        let content: String
-        let isUser: Bool
-    }
-
-    struct ChatBubble: View {
-        let message: ChatMessage
-        @State private var userProfile = UserProfile()
+    
+    private func sendMessage() {
+        guard !inputMessage.isEmpty else { return }
         
-        var body: some View {
-            HStack(alignment: .bottom, spacing: 8) {
-                if !message.isUser {
-                    Image(systemName: "person.fill.viewfinder")
-                        .foregroundColor(Color(hex: 0x708E99))
-                        .font(.system(size: 24))
-                }
-                
-                if message.isUser {
-                    Spacer()
-                }
-                
-                Text(message.content)
-                    .padding(10)
-                    .background(message.isUser ? Color(hex: 0x949E94): Color.gray.opacity(0.2))
-                    .foregroundColor(message.isUser ? .white : .black)
-                    .cornerRadius(20)
-                
-                if message.isUser {
-                    let firstLetter = getFirstLetter()
-                    Image(systemName: "figure.wave")
-                        .foregroundColor(Color(hex: 0x708E99))
-                        .font(.system(size: 24))
-                } else {
-                    Spacer()
-                }
-            }
-            .padding(.horizontal, 8)
+        let userMessage = ChatMessage(content: inputMessage, isUser: true)
+        messages.append(userMessage)
+        scrollToBottom.toggle()
+        
+        let sentMessage = inputMessage
+        inputMessage = "" // Clear the input field immediately
+        
+        isLoading = true
+        
+        // Get the current user's ID
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("User not authenticated")
+            isLoading = false
+            return
         }
-        private func getFirstLetter() -> String {
-                let name = userProfile.name
-                let firstLetter = String(name.prefix(1))
-                print(userProfile.name) // Debug print statement
-                return firstLetter
+        
+        anthropicService.sendMessage(sentMessage, userId: userId) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                
+                switch result {
+                case .success(let response):
+                    let botMessage = ChatMessage(content: response, isUser: false)
+                    messages.append(botMessage)
+                case .failure(let error):
+                    let errorMessage = ChatMessage(content: "Error: \(error.localizedDescription)", isUser: false)
+                    messages.append(errorMessage)
+                }
+                
+                scrollToBottom.toggle()
             }
+        }
     }
-
-    struct ErrorWrapper: Identifiable {
-        let id = UUID()
-        let error: String
-    }
-
+    
+    private func addKeyboardObservers() {
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
+                if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+                    let keyboardRectangle = keyboardFrame.cgRectValue
+                    keyboardHeight = keyboardRectangle.height
+                }
+            }
+            
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+                keyboardHeight = 0
+            }
+        }
+        
+        // New function to remove keyboard observers
+        private func removeKeyboardObservers() {
+            NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+            NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+        }
+}

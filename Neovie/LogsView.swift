@@ -1,22 +1,33 @@
 import SwiftUI
 
 struct LogsView: View {
-    @ObservedObject var viewModel: HomePageViewModel
+    @ObservedObject var viewModel = HomePageViewModel()
     
     var body: some View {
-        List {
-            ForEach(groupedLogs.keys.sorted(by: >), id: \.self) { date in
-                Section(header: Text(formatDate(date))) {
-                    ForEach(groupedLogs[date]!, id: \.id) { log in
-                        LogEntryRow(log: log)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 20) {
+                        ForEach(groupedLogs.keys.sorted(by: >), id: \.self) { date in
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(formatDate(date))
+                                    .font(.headline)
+                                    .padding(.leading)
+                                
+                                ForEach(groupedLogs[date]!, id: \.id) { log in
+                                    LogEntryRow(log: log)
+                                        .background(Color.white)
+                                        .cornerRadius(10)
+                                        .shadow(color: Color.gray.opacity(0.2), radius: 5, x: 0, y: 2)
+                                        .frame(maxWidth: .infinity) // This makes the LogEntryRow take full width
+                                }
+                            }
+                            .frame(maxWidth: .infinity) // This makes the VStack take full width
+                        }
                     }
                 }
             }
+            .background(Color(hex: 0xEDEDED).edgesIgnoringSafeArea(.all))
         }
-        .listStyle(InsetGroupedListStyle())
-        .navigationTitle("Logs")
-    }
-    
     private var groupedLogs: [Date: [LogData.LogEntry]] {
         Dictionary(grouping: viewModel.logs) { log in
             Calendar.current.startOfDay(for: log.date)
@@ -65,15 +76,16 @@ struct LogEntryRow: View {
                     Text("Emotion: \(log.emotionType)")
                 }
             }
-            if log.sideEffectType != "None" {
+            if log.foodNoise != 0 {
                 HStack {
                     Image(systemName: "fork.knife")
-                        .foregroundColor(.red)
+                        .foregroundColor(.orange)
                     Text("Food Noise: \(log.foodNoise)")
                 }
             }
         }
-        .padding(.vertical, 4)
+        .frame(width: UIScreen.main.bounds.width * 0.8, alignment: .leading)
+        .padding()
     }
     
     private func formatTime(_ date: Date) -> String {
@@ -82,4 +94,3 @@ struct LogEntryRow: View {
         return formatter.string(from: date)
     }
 }
-

@@ -13,7 +13,7 @@ struct UserInfo1: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack(spacing: 0) {
                 progressBar
                 
@@ -48,7 +48,7 @@ struct UserInfo1: View {
             .padding()
         }
         .frame(maxWidth: .infinity)
-        .background(Color.blue.opacity(0.1))
+        .background(Color(hex: 0x394F56).opacity(0.1))
     }
     
     private var progressView: some View {
@@ -104,14 +104,14 @@ struct UserInfo1: View {
                     .scaledToFit()
                     .frame(width: 70, height: 70)
                     .background(RoundedRectangle(cornerRadius: 15)
-                        .fill(selectedGender == genders[index] ? Color.blue.opacity(0.2) : Color.clear))
+                        .fill(selectedGender == genders[index] ? Color(hex: 0x394F56).opacity(0.2) : Color.clear))
                     .cornerRadius(15)
                 Text(genders[index])
                     .foregroundColor(.black)
             }
             .padding(10)
             .background(RoundedRectangle(cornerRadius: 15)
-                .stroke(selectedGender == genders[index] ? Color.blue : Color.gray, lineWidth: 2))
+                .stroke(selectedGender == genders[index] ? Color(hex: 0x394F56): Color.gray, lineWidth: 2))
         }
         .accessibility(label: Text("Select gender: \(genders[index])"))
     }
@@ -124,7 +124,16 @@ struct UserInfo1: View {
                 .datePickerStyle(WheelDatePickerStyle())
                 .labelsHidden()
                 .accessibility(label: Text("Select your date of birth"))
+                .onChange(of: userProfile.dateOfBirth) { newValue in
+                    userProfile.age = calculateAge(from: newValue)
+                }
         }
+    }
+    
+    private func calculateAge(from dateOfBirth: Date) -> Int {
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: dateOfBirth, to: Date())
+        return ageComponents.year ?? 0
     }
     
     private var nextButton: some View {
@@ -132,7 +141,7 @@ struct UserInfo1: View {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(isFormValid ? Color.blue : Color.blue.opacity(0.3))
+                .background(isFormValid ? Color(hex: 0x394F56) : Color(hex: 0x394F56).opacity(0.3))
                 .foregroundColor(.white)
                 .cornerRadius(10)
                 .padding(.horizontal)
@@ -144,7 +153,7 @@ struct UserInfo1: View {
                 saveUserProfile()
             }
         })
-        .padding(.vertical, 40)
+        .padding(.vertical, 60)
     }
     
     private func saveUserProfile() {
