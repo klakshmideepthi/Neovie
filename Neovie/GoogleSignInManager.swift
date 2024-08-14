@@ -6,7 +6,8 @@ import SwiftUI
 
 class GoogleSignInManager: ObservableObject {
     @Published var isSignedIn: Bool = false
-    @Published var userProfile: GIDProfileData?
+    @Published var googleProfile: GIDProfileData?
+    @Published var userProfile: UserProfile?
     
     static let shared = GoogleSignInManager()
     
@@ -25,6 +26,7 @@ class GoogleSignInManager: ObservableObject {
             }
         } else {
             self.isSignedIn = false
+            self.googleProfile = nil
             self.userProfile = nil
         }
     }
@@ -54,15 +56,47 @@ class GoogleSignInManager: ObservableObject {
     }
     
     func signOut() {
-        do {
-            try Auth.auth().signOut()
-            GIDSignIn.sharedInstance.signOut()
-            self.isSignedIn = false
-            self.userProfile = nil
-            print("User signed out successfully")
-            NotificationCenter.default.post(name: .userDidSignOut, object: nil)
-        } catch let signOutError as NSError {
-            print("Error signing out: \(signOutError)")
+        resetChatbotWelcomeStatus { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                try Auth.auth().signOut()
+                GIDSignIn.sharedInstance.signOut()
+                self.isSignedIn = false
+                self.googleProfile = nil
+                self.userProfile = nil
+                print("User signed out successfully")
+                NotificationCenter.default.post(name: .userDidSignOut, object: nil)
+            } catch let signOutError as NSError {
+                print("Error signing out: \(signOutError)")
+            }
+        }
+    }
+    
+    private func resetChatbotWelcomeStatus(completion: @escaping () -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("No user ID found, unable to reset chatbot welcome status")
+            completion()
+            return
+        }
+
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(var profile):
+                profile.hasSeenChatbotWelcome = false
+                FirestoreManager.shared.saveUserProfile(profile) { saveResult in
+                    switch saveResult {
+                    case .success:
+                        print("User profile updated to before seeing ChatbotWelcomeView")
+                    case .failure(let error):
+                        print("Error updating user profile: \(error.localizedDescription)")
+                    }
+                    completion()
+                }
+            case .failure(let error):
+                print("Error fetching user profile: \(error.localizedDescription)")
+                completion()
+            }
         }
     }
     
@@ -89,7 +123,7 @@ class GoogleSignInManager: ObservableObject {
             if let firebaseUser = authResult?.user {
                 print("Firebase Authentication successful. UID: \(firebaseUser.uid)")
                 self?.isSignedIn = true
-                self?.userProfile = user.profile
+                self?.googleProfile = user.profile
             } else {
                 print("Firebase Authentication successful, but no user returned")
             }

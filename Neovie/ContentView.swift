@@ -8,6 +8,7 @@ struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var isShowingOnboarding = false
     @State private var isShowingHomePage = false
+    @State private var isLoading = true
     
     var body: some View {
         Group {
@@ -17,7 +18,7 @@ struct ContentView: View {
                 } else if isShowingOnboarding {
                     OnboardingView()
                 } else {
-                    ProgressView("Loading...")
+                    SplashScreenView()
                         .onAppear(perform: checkUserStatus)
                 }
             } else {
@@ -36,59 +37,73 @@ struct ContentView: View {
     }
     
     private var signedOutView: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Image("Icon4")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 150, height: 150)
-                    .padding(.top, 50)
-                
-                Text("Welcome to Neovie")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                
-                Text("Sign in to start your personalized weight loss journey")
-                    .font(.title3)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                Button(action: {
-                    signInManager.signIn()
-                }) {
-                    HStack {
-                        Image("google_logo")
+        GeometryReader { geometry in
+            NavigationView {
+                ZStack {
+                    AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
+                    
+                    VStack(spacing: 20) {
+                        Spacer()
+                        
+                        Image("Icon4")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 25, height: 25)
-                        Text("Sign In with Google")
-                            .fontWeight(.semibold)
+                            .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
+                        
+                        Text("Welcome to Neovie")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(AppColors.textColor)
+                        
+                        Text("Sign in to start your personalized weight loss journey")
+                            .font(.title3)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .foregroundColor(AppColors.textColor)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            signInManager.signIn()
+                        }) {
+                            HStack {
+                                Image("google_logo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 25, height: 25)
+                                Text("Sign In with Google")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(AppColors.accentColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                     }
-                    .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
                 }
-                .padding(.horizontal)
             }
-            .padding()
+            .navigationViewStyle(StackNavigationViewStyle())
             .navigationBarHidden(true)
         }
     }
     
     private func checkUserStatus() {
-        userStateManager.checkUserInfoStatus { hasCompletedUserInfo in
-            DispatchQueue.main.async {
-                if hasCompletedUserInfo {
-                    isShowingHomePage = true
-                    isShowingOnboarding = false
-                } else {
-                    isShowingOnboarding = true
-                    isShowingHomePage = false
+            userStateManager.checkUserInfoStatus { hasCompletedUserInfo in
+                DispatchQueue.main.async {
+                    if hasCompletedUserInfo {
+                        isShowingHomePage = true
+                        isShowingOnboarding = false
+                    } else {
+                        isShowingOnboarding = true
+                        isShowingHomePage = false
+                    }
+                    isLoading = false
                 }
             }
         }
-    }
 }

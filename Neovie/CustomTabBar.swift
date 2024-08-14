@@ -14,7 +14,7 @@ struct CustomTabBar: View {
         .padding(.horizontal, 60)
         .padding(.bottom, 30)
         .padding(.top, 20)
-        .background(Color(hex: 0xFFFFFF))
+        .background(AppColors.secondaryBackgroundColor)
     }
     
     private func tabButton(image: String, tag: Int) -> some View {

@@ -2,46 +2,54 @@ import SwiftUI
 import Lottie
 
 struct OnboardingView: View {
-    @State var progressState = ProgressState()
     @State private var userProfile = UserProfile()
     @StateObject private var userStateManager = UserStateManager()
     @State private var navigateToHomePage = false
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack {
-                    Spacer()
-                    VStack(spacing: 18) {
-                        LottieView(name: "network-fitness-app-and-healthy-lifestyle")
-                            .frame(width: 400, height: 400)
+            GeometryReader { geometry in
+                ZStack {
+                    AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
+                    
+                    VStack {
+                        Spacer()
                         
-                        Text("Welcome to Neovie")
-                            .font(.system(size: 34, weight: .bold))
-                            .multilineTextAlignment(.center)
-                            .padding()
-                        
-                        Text("Your personalized weight loss journey")
-                            .font(.title)
-                            .multilineTextAlignment(.center)
-                            .padding()
-
-                        NavigationLink(destination: destinationView) {
-                            Text("Great!")
+                        VStack(spacing: geometry.size.height * 0.05) {
+                            LottieView(name: "network-fitness-app-and-healthy-lifestyle")
+                                .frame(width: geometry.size.width * 0.9, height: geometry.size.width * 0.9)
+                            
+                            Text("Welcome to Neovie")
+                                .font(.system(size: 34, weight: .bold))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(AppColors.textColor)
+                            
+                            Text("Your personalized weight loss journey")
+                                .font(.title2)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color(hex: 0xC67C4E))
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
                                 .padding(.horizontal)
+                                .foregroundColor(AppColors.textColor)
+                            
+                            NavigationLink(destination: destinationView) {
+                                Text("Great!")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(AppColors.accentColor)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                            .padding()
                         }
+                        
+                        Spacer()
                     }
                     .padding()
-                    Spacer()
                 }
-                .background(Color(hex: 0xEDEDED))
-                .edgesIgnoringSafeArea(.all)
             }
+            .navigationBarHidden(true)
         }
         .onAppear {
             userStateManager.checkUserInfoStatus { _ in
@@ -55,15 +63,11 @@ struct OnboardingView: View {
         if userStateManager.hasCompletedUserInfo {
             HomePage().navigationBarBackButtonHidden(true)
         } else {
-            UserInfo1(userProfile: $userProfile, progressState: $progressState).navigationBarBackButtonHidden(true)
+            UserInfo1(userProfile: $userProfile).navigationBarBackButtonHidden(true)
         }
     }
 }
 
-// LottieView component remains unchanged
-
-// UserStateManager remains unchanged
-// LottieView component
 struct LottieView: UIViewRepresentable {
     var name: String
     var loopMode: LottieLoopMode = .loop
@@ -92,7 +96,6 @@ struct LottieView: UIViewRepresentable {
     }
 }
 
-// ... Rest of your code (UserStateManager) remains unchanged
 class UserStateManager: ObservableObject {
     @Published var hasCompletedOnboarding: Bool = false
     @Published var hasCompletedUserInfo: Bool = false

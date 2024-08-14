@@ -26,12 +26,12 @@ struct NotificationRequest: View {
                     .font(.title)
                     .multilineTextAlignment(.center)
                     .padding()
-                    .foregroundColor(.customTextColor)
+                    .foregroundColor(AppColors.textColor)
 
                 Text("Enable notifications to receive reminders for logging your progress and taking your medication.")
                     .multilineTextAlignment(.center)
                     .padding()
-                    .foregroundColor(.customTextColor)
+                    .foregroundColor(AppColors.textColor)
 
                 VStack(spacing: 20) {
                     Button(action: {
@@ -40,7 +40,7 @@ struct NotificationRequest: View {
                         Text("Allow")
                             .frame(minWidth: 0, maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(AppColors.accentColor)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
@@ -51,8 +51,8 @@ struct NotificationRequest: View {
                         Text("Skip")
                             .frame(minWidth: 0, maxWidth: .infinity)
                             .padding()
-                            .background(Color.gray)
-                            .foregroundColor(.white)
+                            .background(AppColors.secondaryBackgroundColor)
+                            .foregroundColor(AppColors.textColor)
                             .cornerRadius(10)
                     }
                 }
@@ -65,7 +65,7 @@ struct NotificationRequest: View {
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(AppColors.backgroundColor)
             .edgesIgnoringSafeArea(.all)
         }
         .navigationBarHidden(true)

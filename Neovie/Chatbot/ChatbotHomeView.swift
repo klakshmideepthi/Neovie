@@ -1,44 +1,53 @@
 import SwiftUI
 
 struct ChatbotHomeView: View {
-    @State private var isShowingChatbot = false
+    @State private var _isShowingChatbot = false
     @State private var selectedPrompt: String?
+    
+    var isShowingChatbot: Binding<Bool> {
+        Binding(
+            get: { _isShowingChatbot },
+            set: { newValue in
+                if !newValue {
+                    // Reset selectedPrompt when closing the sheet
+                    selectedPrompt = nil
+                }
+                _isShowingChatbot = newValue
+            }
+        )
+    }
     
     let prompts: [(String, String)] = [
         ("The founding story of McDonalds", "building.2"),
         ("The tallest Ferris wheel", "circle"),
         ("Did dinosaurs go extinct?", "fossil.shell"),
-        ("The origins of a joker card", "suit.club.fill"),
         ("Are all mushrooms edible?", "leaf.fill")
     ]
     
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 Text("Your personalized AI")
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(AppColors.textColor)
-                    .padding(.top)
+                    .padding()
                 
                 ScrollView {
                     VStack(spacing: 15) {
                         ForEach(prompts, id: \.0) { prompt in
                             TopicButton(title: prompt.0, icon: prompt.1)
                                 .onTapGesture {
-                                    selectedPrompt = prompt.0
-                                    isShowingChatbot = true
+                                    presentChatbot(with: prompt.0)
                                 }
                         }
                     }
                     .padding(.horizontal)
                 }
-                
                 Spacer()
                 
                 Button(action: {
-                    selectedPrompt = nil
-                    isShowingChatbot = true
+                    presentChatbot(with: nil)
                 }) {
                     Text("Ask me anything!")
                         .font(.headline)
@@ -54,9 +63,14 @@ struct ChatbotHomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(AppColors.backgroundColor.edgesIgnoringSafeArea(.all))
         }
-        .sheet(isPresented: $isShowingChatbot) {
+        .sheet(isPresented: isShowingChatbot) {
             ChatbotView(initialPrompt: selectedPrompt)
         }
+    }
+    
+    private func presentChatbot(with prompt: String?) {
+        selectedPrompt = prompt
+        _isShowingChatbot = true
     }
 }
 
@@ -88,10 +102,14 @@ struct TopicButton: View {
     }
 }
 
-struct ChatMessage: Identifiable {
+struct ChatMessage: Identifiable, Equatable {
     let id = UUID()
-    let content: String
+    var content: String
     let isUser: Bool
+    
+    static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
+        return lhs.id == rhs.id && lhs.content == rhs.content && lhs.isUser == rhs.isUser
+    }
 }
 
 struct ChatBubble: View {

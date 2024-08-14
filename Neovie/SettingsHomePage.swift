@@ -11,7 +11,7 @@ struct SettingsHomeView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: 0xEDEDED).edgesIgnoringSafeArea(.all)
+                AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
                 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -24,7 +24,7 @@ struct SettingsHomeView: View {
             .navigationTitle("Settings")
             .navigationBarItems(trailing: Button("Done") {
                 presentationMode.wrappedValue.dismiss()
-            }.foregroundColor(Color(hex: 0xC67C4E)))
+            }.foregroundColor(AppColors.accentColor))
         }
         .sheet(isPresented: $isEditingProfile) {
             ProfileEditView(userProfile: $userProfile)
@@ -48,7 +48,7 @@ struct SettingsHomeView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Account")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppColors.textColor.opacity(0.6))
             
             Button(action: {
                 isEditingProfile = true
@@ -58,10 +58,10 @@ struct SettingsHomeView: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
-                .foregroundColor(Color(hex: 0xC67C4E))
+                .foregroundColor(AppColors.accentColor)
             }
             .padding()
-            .background(Color.white)
+            .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
             
             Button(action: {
@@ -72,42 +72,47 @@ struct SettingsHomeView: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
-                .foregroundColor(Color(hex: 0xC67C4E))
+                .foregroundColor(AppColors.accentColor)
             }
             .padding()
-            .background(Color.white)
+            .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
         }
     }
     
     private var profileInformationSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Profile Information")
-                .font(.headline)
-                .foregroundColor(.secondary)
-            
+        Group {
             VStack(alignment: .leading, spacing: 10) {
-                infoRow(title: "Name", value: userProfile.name)
-                infoRow(title: "Gender", value: userProfile.gender)
-                infoRow(title: "Age", value: "\(userProfile.age)")
-                infoRow(title: "Height", value: "\(userProfile.heightCm) cm")
-                infoRow(title: "Current Weight", value: String(format: "%.1f kg", userProfile.weight))
-                infoRow(title: "Target Weight", value: String(format: "%.1f kg", userProfile.targetWeight))
-                infoRow(title: "Medication", value: userProfile.medicationName)
-                infoRow(title: "Dosage", value: userProfile.dosage)
+                Text("Profile Information")
+                    .font(.headline)
+                    .foregroundColor(AppColors.textColor.opacity(0.6))
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    infoRow(title: "Name", value: userProfile.name)
+                    infoRow(title: "Gender", value: userProfile.gender)
+                    infoRow(title: "Age", value: "\(userProfile.age)")
+                    infoRow(title: "Height", value: "\(userProfile.heightCm) cm")
+                    infoRow(title: "Current Weight", value: String(format: "%.1f kg", userProfile.weight))
+                    infoRow(title: "Target Weight", value: String(format: "%.1f kg", userProfile.targetWeight))
+                    infoRow(title: "Medication", value: userProfile.medicationName)
+                    infoRow(title: "Dosage", value: userProfile.dosage)
+                }
+                .padding()
+                .background(AppColors.secondaryBackgroundColor)
+                .cornerRadius(10)
+                .foregroundColor(AppColors.textColor)
             }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(10)
         }
+        
     }
     
     private func infoRow(title: String, value: String) -> some View {
         HStack {
             Text(title)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppColors.textColor.opacity(0.6))
             Spacer()
             Text(value)
+                .foregroundColor(AppColors.textColor)
         }
     }
     
@@ -143,7 +148,7 @@ struct ProfileEditView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: 0xEDEDED).edgesIgnoringSafeArea(.all)
+                AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
                 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -158,12 +163,12 @@ struct ProfileEditView: View {
             .navigationBarItems(
                 leading: Button("Cancel") {
                     presentationMode.wrappedValue.dismiss()
-                }.foregroundColor(Color(hex: 0xC67C4E)),
+                }.foregroundColor(AppColors.accentColor),
                 trailing: Button("Save") {
                     if !isNameEmpty {
                         saveProfile()
                     }
-                }.foregroundColor(Color(hex: 0xC67C4E))
+                }.foregroundColor(AppColors.accentColor)
                  .disabled(isNameEmpty)
             )
         }
@@ -177,13 +182,13 @@ struct ProfileEditView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Personal Information")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppColors.textColor.opacity(0.6))
             
             VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Name")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColors.textColor.opacity(0.6))
                     TextField("Enter your name", text: $tempProfile.name)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .onChange(of: tempProfile.name) { newValue in
@@ -198,7 +203,7 @@ struct ProfileEditView: View {
                 
                 Text("Gender")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(AppColors.textColor.opacity(0.6))
                 
                 Picker("Gender", selection: $tempProfile.gender) {
                     Text("Male").tag("Male")
@@ -208,10 +213,10 @@ struct ProfileEditView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 
                 DatePicker("Date of Birth", selection: $tempProfile.dateOfBirth, displayedComponents: .date)
-                    .accentColor(Color(hex: 0xC67C4E))
+                    .accentColor(AppColors.accentColor)
             }
             .padding()
-            .background(Color.white)
+            .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
         }
     }
@@ -220,7 +225,7 @@ struct ProfileEditView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Body Measurements")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppColors.textColor.opacity(0.6))
             
             VStack(spacing: 10) {
                 HStack {
@@ -251,8 +256,9 @@ struct ProfileEditView: View {
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
+            .foregroundColor(AppColors.textColor)
         }
     }
     
@@ -260,7 +266,7 @@ struct ProfileEditView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Medication")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppColors.textColor.opacity(0.6))
             
             VStack(spacing: 10) {
                 TextField("Medication Name", text: $tempProfile.medicationName)
@@ -270,7 +276,7 @@ struct ProfileEditView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
             }
             .padding()
-            .background(Color.white)
+            .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
         }
     }

@@ -1,5 +1,6 @@
 import SwiftUI
 import Firebase
+import FirebaseFunctions
 import Combine
 
 struct ChatbotView: View {
@@ -9,6 +10,7 @@ struct ChatbotView: View {
     @State private var isLoading = false
     @State private var scrollToBottom = false
     @State private var keyboardHeight: CGFloat = 0
+    @State private var currentStreamingMessage: ChatMessage?
     let initialPrompt: String?
     
     private let anthropicService = AnthropicService()
@@ -40,22 +42,17 @@ struct ChatbotView: View {
                     ScrollViewReader { scrollView in
                         ScrollView {
                             LazyVStack(spacing: 10) {
-                                if messages.isEmpty {
-                                    Image("mega-creator")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 200, height: 200)
-                                        .padding(.top, geometry.size.height / 4)
-                                } else {
-                                    ForEach(messages) { message in
-                                        ChatBubble(message: message)
-                                    }
-                                    if isLoading {
-                                        ProgressView()
-                                            .padding()
-                                    }
-                                    Color.clear.frame(height: 1).id("bottomAnchor")
+                                ForEach(messages) { message in
+                                    ChatBubble(message: message)
                                 }
+                                if let streamingMessage = currentStreamingMessage {
+                                    ChatBubble(message: streamingMessage)
+                                }
+                                if isLoading {
+                                    ProgressView()
+                                        .padding()
+                                }
+                                Color.clear.frame(height: 1).id("bottomAnchor")
                             }
                             .padding()
                         }
@@ -120,6 +117,7 @@ struct ChatbotView: View {
         
         let userMessage = ChatMessage(content: messageToSend, isUser: true)
         messages.append(userMessage)
+        print("Added user message: \(userMessage.content)")
         scrollToBottom.toggle()
         
         inputMessage = "" // Clear the input field
@@ -129,25 +127,70 @@ struct ChatbotView: View {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("User not authenticated")
             isLoading = false
+            displayErrorMessage("User not authenticated. Please sign in and try again.")
             return
         }
         
-        anthropicService.sendMessage(messageToSend, userId: userId) { result in
+        currentStreamingMessage = ChatMessage(content: "", isUser: false)
+        
+        anthropicService.sendMessage(messageToSend, userId: userId, onPartialResponse: { partialResponse in
+            print("Received partial response: \(partialResponse)")
             DispatchQueue.main.async {
-                isLoading = false
+                self.currentStreamingMessage?.content += partialResponse
+                self.scrollToBottom.toggle()
+            }
+        }) { result in
+            DispatchQueue.main.async {
+                self.isLoading = false
                 
                 switch result {
-                case .success(let response):
-                    let botMessage = ChatMessage(content: response, isUser: false)
-                    messages.append(botMessage)
+                case .success:
+                    if let finalMessage = self.currentStreamingMessage {
+                        print("Adding final message to chat: \(finalMessage.content)")
+                        self.messages.append(finalMessage)
+                        self.currentStreamingMessage = nil
+                    } else {
+                        print("No final message to display")
+                    }
                 case .failure(let error):
-                    let errorMessage = ChatMessage(content: "Error: \(error.localizedDescription)", isUser: false)
-                    messages.append(errorMessage)
+                    self.handleError(error)
                 }
                 
-                scrollToBottom.toggle()
+                self.scrollToBottom.toggle()
             }
         }
+    }
+
+    private func handleError(_ error: Error) {
+        let errorMessage: String
+        
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                switch FunctionsErrorCode(rawValue: error.code) {
+                case .some(.internal):
+                    errorMessage = "An internal error occurred. Please try again later or contact support if the issue persists."
+                case .some(.unavailable):
+                    errorMessage = "The service is currently unavailable. Please try again later."
+                case .some(.resourceExhausted):
+                    errorMessage = "You've reached the usage limit. Please try again later or upgrade your plan."
+                default:
+                    errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
+                }
+            } else {
+                errorMessage = "An error occurred: \(error.localizedDescription)"
+            }
+        } else {
+            errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
+        }
+        
+        print("Error occurred: \(errorMessage)")
+        displayErrorMessage(errorMessage)
+    }
+    
+    private func displayErrorMessage(_ message: String) {
+        let errorMessage = ChatMessage(content: "Error: \(message)", isUser: false)
+        messages.append(errorMessage)
+        print("Added error message: \(errorMessage.content)")
     }
     
     private func addKeyboardObservers() {

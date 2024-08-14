@@ -10,11 +10,85 @@ class AnthropicService {
         }
     }
 
-    func sendMessage(_ message: String, userId: String, completion: @escaping (Result<String, Error>) -> Void) {
-        functions.httpsCallable("callAnthropicAPI").call(["message": message, "userId": userId]) { result, error in
-            self.handleFunctionResult(result: result, error: error, completion: completion)
+    func sendMessage(_ message: String, userId: String, onPartialResponse: @escaping (String) -> Void, completion: @escaping (Result<Void, Error>) -> Void) {
+            functions.httpsCallable("callAnthropicAPI").call(["message": message, "userId": userId]) { result, error in
+                if let error = error as NSError? {
+                    print("Error calling Cloud Function: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                print("Raw response data: \(String(describing: result?.data))")
+                
+                if let stringResponse = result?.data as? String {
+                    // Handle string response
+                    print("Received string response: \(stringResponse)")
+                    onPartialResponse(stringResponse)
+                    completion(.success(()))
+                } else if let data = result?.data as? [String: Any] {
+                    // Handle dictionary response
+                    print("Received dictionary response: \(data)")
+                    if let errorMessage = data["error"] as? String {
+                        let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMessage])
+                        print("Error from server: \(errorMessage)")
+                        completion(.failure(error))
+                        return
+                    }
+                    
+                    if let responseMessage = data["response"] as? String {
+                        onPartialResponse(responseMessage)
+                        completion(.success(()))
+                    } else {
+                        let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
+                        completion(.failure(error))
+                    }
+                } else {
+                    let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])
+                    completion(.failure(error))
+                }
+            }
         }
-    }
+        
+        private func startStreaming(streamToken: String, onPartialResponse: @escaping (String) -> Void, completion: @escaping (Result<Void, Error>) -> Void) {
+            functions.httpsCallable("streamAnthropicResponse").call(["streamToken": streamToken]) { result, error in
+                if let error = error {
+                    print("Error in streaming: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                print("Raw streaming response data: \(String(describing: result?.data))")
+                
+                guard let data = result?.data as? [String: Any] else {
+                    let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Streaming response data is not a dictionary"])
+                    print("Error: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                if let errorMessage = data["error"] as? String {
+                    let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMessage])
+                    print("Error from streaming server: \(errorMessage)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let responseChunk = data["responseChunk"] as? String else {
+                    let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Response chunk not found in streaming response"])
+                    print("Error: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                onPartialResponse(responseChunk)
+                
+                if let isComplete = data["isComplete"] as? Bool, isComplete {
+                    completion(.success(()))
+                } else {
+                    self.startStreaming(streamToken: streamToken, onPartialResponse: onPartialResponse, completion: completion)
+                }
+            }
+        }
 
     private func handleFunctionResult(result: HTTPSCallableResult?, error: Error?, completion: @escaping (Result<String, Error>) -> Void) {
         if let error = error as NSError? {

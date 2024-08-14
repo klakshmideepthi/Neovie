@@ -7,6 +7,7 @@ struct HomePage: View {
     @State private var selectedTab = 0
     @State private var showingNewLog = false
     @State private var showingWeightLossAdvice = false
+    @State private var userProfile: UserProfile?
     
     var body: some View {
         ZStack {
@@ -24,8 +25,15 @@ struct HomePage: View {
                     LogsView(viewModel: viewModel)
                         .tag(1)
                     
-                    ChatbotWelcomeView()
+                    if let userProfile = userProfile, userProfile.hasSeenChatbotWelcome {
+                        ChatbotHomeView()
+                            .tag(2)
+                    } else {
+                        ChatbotWelcomeView(onCompletion: {
+                            updateUserProfileAfterWelcome()
+                        })
                         .tag(2)
+                    }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 
@@ -33,6 +41,7 @@ struct HomePage: View {
             }
             .edgesIgnoringSafeArea(.bottom)
         }
+        .background(AppColors.backgroundColor.ignoresSafeArea())
         .sheet(isPresented: $showingSettingsHome) {
             SettingsHomeView()
         }
@@ -44,6 +53,7 @@ struct HomePage: View {
         }
         .onAppear {
             viewModel.fetchUserData()
+            checkChatbotWelcomeStatus()
         }
     }
     
@@ -57,6 +67,41 @@ struct HomePage: View {
             return "Chatbot"
         default:
             return ""
+        }
+    }
+    
+    private func checkChatbotWelcomeStatus() {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(let profile):
+                DispatchQueue.main.async {
+                    self.userProfile = profile
+                }
+            case .failure(let error):
+                print("Error fetching user profile: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func updateUserProfileAfterWelcome() {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(var profile):
+                profile.hasSeenChatbotWelcome = true
+                FirestoreManager.shared.saveUserProfile(profile) { saveResult in
+                    switch saveResult {
+                    case .success:
+                        DispatchQueue.main.async {
+                            self.userProfile = profile
+                        }
+                        print("User profile updated after seeing ChatbotWelcomeView")
+                    case .failure(let error):
+                        print("Error updating user profile: \(error.localizedDescription)")
+                    }
+                }
+            case .failure(let error):
+                print("Error fetching user profile: \(error.localizedDescription)")
+            }
         }
     }
 }
@@ -78,7 +123,7 @@ struct HomeTabContent: View {
             }
             .padding()
         }
-        .background(Color(hex: 0xEDEDED))
+        .background(AppColors.backgroundColor)
         .overlay(newLogButton, alignment: .bottomTrailing)
     }
     
@@ -86,25 +131,26 @@ struct HomeTabContent: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Today's Overview")
                 .font(.headline)
+                .foregroundColor(AppColors.textColor)
             
             HStack {
-                Text("Current Weight:")
+                Text("Current Weight:").foregroundColor(AppColors.textColor)
                 Spacer()
-                Text("\(viewModel.currentWeight, specifier: "%.1f") kg")
+                Text("\(viewModel.currentWeight, specifier: "%.1f") kg").foregroundColor(AppColors.textColor)
             }
             HStack {
-                Text("Medication:")
+                Text("Medication:").foregroundColor(.customTextColor)
                 Spacer()
-                Text(viewModel.medicationName)
+                Text(viewModel.medicationName).foregroundColor(.customTextColor)
             }
             HStack {
-                Text("Next Dose:")
+                Text("Next Dose:").foregroundColor(.customTextColor)
                 Spacer()
-                Text(viewModel.nextDose)
+                Text(viewModel.nextDose).foregroundColor(.customTextColor)
             }
         }
         .padding()
-        .background(Color.white)
+        .background(AppColors.secondaryBackgroundColor)
         .cornerRadius(10)
     }
     
@@ -112,6 +158,7 @@ struct HomeTabContent: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Quick Actions")
                 .font(.headline)
+                .foregroundColor(.customTextColor)
             
             Button(action: {
                 showingNewLog = true
@@ -130,13 +177,14 @@ struct HomeTabContent: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Progress")
                 .font(.headline)
+                .foregroundColor(.customTextColor)
             
             WeightProgressChart(data: viewModel.logs)
                 .frame(height: 200)
                 .padding()
                 .background(Color.white)
                 .cornerRadius(10)
-                .foregroundColor(Color(hex: 0x394F56))
+                .foregroundColor(AppColors.accentColor)
         }
     }
     
@@ -279,14 +327,3 @@ struct WeightProgressChart: View {
     }
 }
 
-extension Color {
-    init(hex: UInt, alpha: Double = 1) {
-        self.init(
-            .sRGB,
-            red: Double((hex >> 16) & 0xff) / 255,
-            green: Double((hex >> 08) & 0xff) / 255,
-            blue: Double((hex >> 00) & 0xff) / 255,
-            opacity: alpha
-        )
-    }
-}

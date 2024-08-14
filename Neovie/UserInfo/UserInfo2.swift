@@ -2,7 +2,6 @@ import SwiftUI
 
 struct UserInfo2: View {
     @Binding var userProfile: UserProfile
-    @Binding var progressState: ProgressState
     @State private var heightUnit: HeightUnit = .cm
     @State private var weightUnit: WeightUnit = .kg
     @State private var weightString: String = ""
@@ -262,7 +261,7 @@ struct UserInfo2: View {
     }
     
     private var nextButton: some View {
-        NavigationLink(destination: UserInfo3(userProfile: $userProfile, progressState: $progressState)) {
+        NavigationLink(destination: UserInfo3(userProfile: $userProfile)) {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()

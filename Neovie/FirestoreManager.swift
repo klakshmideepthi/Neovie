@@ -28,7 +28,8 @@ class FirestoreManager {
             "dateOfBirth": Timestamp(date: userProfile.dateOfBirth),
             "medicationName": userProfile.medicationName,
             "dosage": userProfile.dosage,
-            "age": userProfile.age
+            "age": userProfile.age,
+            "hasSeenChatbotWelcome": userProfile.hasSeenChatbotWelcome
         ]
         
         db.collection("users").document(uid).setData(data, merge: true) { error in
@@ -60,8 +61,9 @@ class FirestoreManager {
                    let gender = data["gender"] as? String,
                    let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue(),
                    let medicationName = data["medicationName"] as? String,
-                   let dosage = data["dosage"] as? String {
-                    var userProfile = UserProfile(name: name, heightCm: heightCm, heightFt: heightFt, heightIn: heightIn, weight: weight, targetWeight: targetWeight, gender: gender, dateOfBirth: dateOfBirth, medicationName: medicationName, dosage: dosage)
+                   let dosage = data["dosage"] as? String,
+                   let hasSeenChatbotWelcome = data["hasSeenChatbotWelcome"] as? Bool {
+                    var userProfile = UserProfile(name: name, heightCm: heightCm, heightFt: heightFt, heightIn: heightIn, weight: weight, targetWeight: targetWeight, gender: gender, dateOfBirth: dateOfBirth, medicationName: medicationName, dosage: dosage,hasSeenChatbotWelcome: hasSeenChatbotWelcome)
                     
                     // Update age
                     userProfile.updateAge()

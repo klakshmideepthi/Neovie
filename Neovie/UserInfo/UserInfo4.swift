@@ -3,7 +3,6 @@ import UserNotifications
 
 struct UserInfo4: View {
     @Binding var userProfile: UserProfile
-    @Binding var progressState: ProgressState
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedDosage: String = ""
     @State private var navigateToNextView = false
@@ -20,20 +19,7 @@ struct UserInfo4: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
-                // Progress bar and back button
-                VStack(spacing: 0) {
-                    Spacer().frame(height: 60)
-                    
-                    HStack {
-                        backButton
-                        Spacer()
-                        progressView
-                        Spacer()
-                    }
-                    .padding()
-                }
-                .frame(width: geometry.size.width)
-                .background(Color(hex: 0x394F56).opacity(0.1))
+                progressBar
                 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -42,11 +28,11 @@ struct UserInfo4: View {
                             .fontWeight(.bold)
                             .multilineTextAlignment(.center)
                             .padding()
-                            .foregroundColor(.customTextColor)
+                            .foregroundColor(AppColors.textColor)
 
                         Text("Select Dosage")
                             .font(.headline)
-                            .foregroundColor(.customTextColor)
+                            .foregroundColor(AppColors.textColor)
                         
                         dosageButtons
                     }
@@ -57,7 +43,7 @@ struct UserInfo4: View {
                 
                 doneButton
             }
-            .background(Color.white)
+            .background(AppColors.backgroundColor)
             .edgesIgnoringSafeArea(.all)
         }
         .navigationBarHidden(true)
@@ -66,6 +52,21 @@ struct UserInfo4: View {
                 EmptyView()
             }
         )
+    }
+    
+    private var progressBar: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: UIScreen.main.bounds.height * 0.07)
+            HStack {
+                backButton
+                Spacer()
+                progressView
+                Spacer()
+            }
+            .padding()
+        }
+        .frame(maxWidth: .infinity)
+        .background(AppColors.accentColor.opacity(0.1))
     }
     
     @ViewBuilder
@@ -82,7 +83,7 @@ struct UserInfo4: View {
             presentationMode.wrappedValue.dismiss()
         }) {
             Image(systemName: "chevron.left")
-                .foregroundColor(Color(hex: 0x394F56))
+                .foregroundColor(AppColors.accentColor)
         }
         .padding(.leading)
     }
@@ -92,10 +93,11 @@ struct UserInfo4: View {
             ProgressView(value: 1)
                 .progressViewStyle(LinearProgressViewStyle())
                 .frame(width: UIScreen.main.bounds.width * 0.6, height: 10)
+                .accentColor(AppColors.accentColor)
             Text("4/4")
                 .font(.caption)
                 .padding(.leading, 5)
-                .foregroundColor(.customTextColor)
+                .foregroundColor(AppColors.textColor)
         }
     }
     
@@ -107,8 +109,8 @@ struct UserInfo4: View {
                 Text(dosage)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(selectedDosage == dosage ? Color(hex: 0x394F56) : Color.gray.opacity(0.2))
-                    .foregroundColor(selectedDosage == dosage ? .white : .black)
+                    .background(selectedDosage == dosage ? AppColors.accentColor : AppColors.secondaryBackgroundColor)
+                    .foregroundColor(selectedDosage == dosage ? AppColors.backgroundColor : AppColors.textColor)
                     .cornerRadius(10)
             }
         }

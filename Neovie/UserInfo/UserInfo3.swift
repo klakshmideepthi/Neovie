@@ -2,7 +2,6 @@ import SwiftUI
 
 struct UserInfo3: View {
     @Binding var userProfile: UserProfile
-    @Binding var progressState: ProgressState
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedMedication: String = ""
     
@@ -26,7 +25,7 @@ struct UserInfo3: View {
                 
                 nextButton
             }
-            .background(Color.white)
+            .background(AppColors.backgroundColor)
             .edgesIgnoringSafeArea(.all)
         }
         .navigationBarHidden(true)
@@ -34,7 +33,7 @@ struct UserInfo3: View {
     
     private var progressBar: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: 60)
+            Spacer().frame(height: UIScreen.main.bounds.height * 0.07)
             HStack {
                 backButton
                 Spacer()
@@ -44,7 +43,7 @@ struct UserInfo3: View {
             .padding()
         }
         .frame(maxWidth: .infinity)
-        .background(Color(hex: 0x394F56).opacity(0.1))
+        .background(AppColors.accentColor.opacity(0.1))
     }
     
     private var backButton: some View {
@@ -52,7 +51,7 @@ struct UserInfo3: View {
             presentationMode.wrappedValue.dismiss()
         }) {
             Image(systemName: "chevron.left")
-                .foregroundColor(Color(hex: 0x394F56))
+                .foregroundColor(AppColors.accentColor)
         }
         .padding(.leading)
     }
@@ -62,10 +61,11 @@ struct UserInfo3: View {
             ProgressView(value: 0.75)
                 .progressViewStyle(LinearProgressViewStyle())
                 .frame(width: UIScreen.main.bounds.width * 0.6, height: 10)
+                .accentColor(AppColors.accentColor)
             Text("3/4")
                 .font(.caption)
                 .padding(.leading, 5)
-                .foregroundColor(.customTextColor)
+                .foregroundColor(AppColors.textColor)
         }
     }
     
@@ -75,7 +75,7 @@ struct UserInfo3: View {
             .fontWeight(.bold)
             .multilineTextAlignment(.center)
             .padding()
-            .foregroundColor(.customTextColor)
+            .foregroundColor(AppColors.textColor)
     }
     
     private var medicationGrid: some View {
@@ -94,12 +94,12 @@ struct UserInfo3: View {
     }
     
     private var nextButton: some View {
-        NavigationLink(destination: UserInfo4(userProfile: $userProfile, progressState: $progressState)) {
+        NavigationLink(destination: UserInfo4(userProfile: $userProfile)) {
             Text("Next")
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(!selectedMedication.isEmpty ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
-                .foregroundColor(!selectedMedication.isEmpty ? AppColors.backgroundColor : AppColors.backgroundColor.opacity(0.5))
+                .foregroundColor(!selectedMedication.isEmpty ? .white : .white.opacity(0.5))
                 .cornerRadius(10)
                 .padding(.horizontal)
         }
@@ -141,19 +141,18 @@ struct MedicationButton: View {
                     .frame(height: 150)
                 
                 Text(name)
-                    .foregroundColor(.black)
+                    .foregroundColor(AppColors.textColor)
                     .font(.subheadline)
                     .padding(.bottom, 5)
             }
-            .frame(height: 210)
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
+            .frame(maxWidth: .infinity, maxHeight: 210)
+            .background(AppColors.backgroundColor)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(isSelected ? Color(hex: 0x394F56): Color.gray, lineWidth: 2)
+                    .stroke(isSelected ? AppColors.accentColor : AppColors.textColor.opacity(0.3), lineWidth: 2)
             )
         }
-        .background(isSelected ? Color(hex: 0x394F56).opacity(0.1) : Color.clear)
+        .background(isSelected ? AppColors.accentColor.opacity(0.1) : Color.clear)
         .cornerRadius(10)
         .padding(5)
     }

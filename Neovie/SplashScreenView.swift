@@ -1,24 +1,41 @@
 import SwiftUI
 
 struct SplashScreenView: View {
+    @State private var isAnimating = false
+    
     var body: some View {
-        ZStack {
-            Color(hex: 0xE7ECEE).edgesIgnoringSafeArea(.all)
-            
-            VStack {
-                Image("Icon4")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
+        GeometryReader { geometry in
+            ZStack {
+                AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
                 
-                Text("Neovie")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .padding(.top, 20)
-                
-                ProgressView()
-                    .padding(.top, 50)
+                VStack(spacing: 20) {
+                    Spacer()
+                    
+                    Image("Icon4")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: min(geometry.size.width * 0.5, 200), height: min(geometry.size.width * 0.5, 200))
+                        .scaleEffect(isAnimating ? 1.1 : 1.0)
+                        .animation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true), value: isAnimating)
+                    
+                    Text("Neovie")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppColors.textColor)
+                        .animation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: true), value: isAnimating)
+                        .padding()
+                    
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: AppColors.accentColor))
+                        .scaleEffect(1.5)
+                    
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+        }
+        .onAppear {
+            isAnimating = true
         }
     }
 }

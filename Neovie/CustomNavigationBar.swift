@@ -9,7 +9,7 @@ struct CustomNavigationBar: View {
         ZStack {
             Text(title)
                 .font(.system(size: 24))
-                .foregroundColor(Color(hex: 0x313131))
+                .foregroundColor(AppColors.textColor)
                 .frame(maxWidth: .infinity)
             
             HStack {
@@ -18,13 +18,13 @@ struct CustomNavigationBar: View {
                     Button(action: settingsAction) {
                         Image(systemName: "person")
                             .font(.system(size: 20))
-                            .foregroundStyle(Color(hex: 0x313131))
+                            .foregroundStyle(AppColors.textColor)
                     }
                 }
             }
         }
         .padding()
-        .background(Color(hex: 0xEDEDED))
+        .background(AppColors.backgroundColor)
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 2)
     }
 }
