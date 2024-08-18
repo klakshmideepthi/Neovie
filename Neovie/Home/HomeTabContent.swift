@@ -6,47 +6,38 @@ struct HomeTabContent: View {
     @Binding var showingNewLog: Bool
     @Binding var showingWeightLossAdvice: Bool
     @Binding var showingSideEffects: Bool
+    @State private var selectedTab = 0
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                todaysOverviewSection
-                quickActionsSection
-                weightLossAdviceButton
-                sideEffectsButton
-                progressSection
+        VStack(spacing: 0) {
+            Picker("", selection: $selectedTab) {
+                Text("Overview").tag(0)
+                Text("Water").tag(1)
             }
+            .pickerStyle(SegmentedPickerStyle())
             .padding()
+            
+            if selectedTab == 0 {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
+                        quickActionsSection
+                        weightLossAdviceButton
+                        sideEffectsButton
+                        progressSection
+                    }
+                    .padding()
+                }
+            } else {
+                WaterView()
+            }
         }
         .background(AppColors.backgroundColor)
         .overlay(newLogButton, alignment: .bottomTrailing)
-    }
-    
-    private var todaysOverviewSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Today's Overview")
-                .font(.headline)
-                .foregroundColor(AppColors.textColor)
-            
-            HStack {
-                Text("Current Weight:").foregroundColor(AppColors.textColor)
-                Spacer()
-                Text("\(viewModel.currentWeight, specifier: "%.1f") kg").foregroundColor(AppColors.textColor)
-            }
-            HStack {
-                Text("Medication:").foregroundColor(.customTextColor)
-                Spacer()
-                Text(viewModel.medicationName).foregroundColor(.customTextColor)
-            }
-            HStack {
-                Text("Next Dose:").foregroundColor(.customTextColor)
-                Spacer()
-                Text(viewModel.nextDose).foregroundColor(.customTextColor)
-            }
+        .onAppear {
+            viewModel.fetchUserData()
+            viewModel.fetchBannerContents()
         }
-        .padding()
-        .background(AppColors.secondaryBackgroundColor)
-        .cornerRadius(10)
     }
     
     private var quickActionsSection: some View {
@@ -65,6 +56,19 @@ struct HomeTabContent: View {
             .background(Color.white)
             .cornerRadius(10)
             .foregroundColor(Color(hex: 0xC67C4E))
+        }
+    }
+    
+    private var weightLossAdviceButton: some View {
+        Button(action: {
+            showingWeightLossAdvice = true
+        }) {
+            Text("View Weight Management Advice")
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(hex: 0xC67C4E))
+                .foregroundColor(.white)
+                .cornerRadius(10)
         }
     }
     
@@ -99,19 +103,6 @@ struct HomeTabContent: View {
         }
     }
     
-    private var weightLossAdviceButton: some View {
-            Button(action: {
-                showingWeightLossAdvice = true
-            }) {
-                Text("View Weight Management Advice")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(hex: 0xC67C4E))
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-        }
-    
     private var newLogButton: some View {
         Button(action: {
             showingNewLog = true
@@ -125,5 +116,18 @@ struct HomeTabContent: View {
                 .shadow(radius: 3)
         }
         .padding()
+    }
+    
+    private func handleBannerAction(_ identifier: String) {
+        switch identifier {
+        case "show_side_effects":
+            showingSideEffects = true
+        case "show_weight_loss_advice":
+            showingWeightLossAdvice = true
+        case "show_new_log":
+            showingNewLog = true
+        default:
+            print("Unknown action: \(identifier)")
+        }
     }
 }

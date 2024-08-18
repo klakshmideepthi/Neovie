@@ -1,5 +1,7 @@
 import SwiftUI
 import Charts
+import Firebase
+
 
 struct HomePage: View {
     @StateObject private var viewModel = HomePageViewModel()
@@ -120,9 +122,37 @@ class HomePageViewModel: ObservableObject {
     @Published var medicationName: String = ""
     @Published var nextDose: String = ""
     @Published var logs: [LogData.LogEntry] = []
+    @Published var bannerContents: [BannerContent] = []
     
     let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
     let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
+    
+    func fetchBannerContents() {
+            let db = Firestore.firestore()
+            db.collection("banners").getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error getting documents: \(error)")
+                } else {
+                    let banners = querySnapshot?.documents.compactMap { document -> BannerContent? in
+                        let data = document.data()
+                        let colorHex = data["backgroundColor"] as? String ?? "000000"
+                        return BannerContent(
+                            id: document.documentID,
+                            title: data["title"] as? String ?? "",
+                            subtitle: data["subtitle"] as? String ?? "",
+                            buttonText: data["buttonText"] as? String ?? "",
+                            backgroundColor: Color(hex: colorHex),
+                            imageName: data["imageName"] as? String ?? "default_image",
+                            actionIdentifier: data["actionIdentifier"] as? String ?? ""
+                        )
+                    } ?? []
+                    
+                    DispatchQueue.main.async {
+                        self.bannerContents = banners
+                    }
+                }
+            }
+        }
     
     func fetchUserData() {
         FirestoreManager.shared.getUserProfile { result in
@@ -153,6 +183,8 @@ class HomePageViewModel: ObservableObject {
                 print("Error fetching logs: \(error.localizedDescription)")
             }
         }
+        
+        fetchBannerContents()
     }
     
     func logEntry(weight: Double, sideEffect: String, emotion: String, foodNoise: Int) {
