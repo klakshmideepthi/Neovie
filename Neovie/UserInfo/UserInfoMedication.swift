@@ -29,7 +29,7 @@ struct UserInfoMedication: View {
                 
                 continueButton
                 
-                NavigationLink(destination: UserInfo4(userProfile: $userProfile), isActive: $navigateToNextView) {
+                NavigationLink(destination: UserInfoDosage(userProfile: $userProfile), isActive: $navigateToNextView) {
                     EmptyView()
                 }
             }
@@ -69,7 +69,7 @@ struct UserInfoMedication: View {
         HStack {
             ForEach(0..<9) { index in
                 Rectangle()
-                    .fill(index < 7 ? AppColors.accentColor : Color.gray.opacity(0.3))
+                    .fill(index < 8 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)
             }
         }

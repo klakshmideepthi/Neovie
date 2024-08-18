@@ -23,9 +23,13 @@ struct NotificationRequest: View {
                 }
 
                 Text("Help us keep you updated")
-                    .font(.title)
+                    .font(.title2)
+                    .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
                     .multilineTextAlignment(.center)
-                    .padding()
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal)
                     .foregroundColor(AppColors.textColor)
 
                 Text("Enable notifications to receive reminders for logging your progress and taking your medication.")

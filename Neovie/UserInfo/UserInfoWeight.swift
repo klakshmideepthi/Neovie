@@ -90,7 +90,7 @@ struct UserInfoWeight: View {
     }
     
     private var weightUnitPicker: some View {
-            HStack {
+            HStack(spacing:20) {
                 ForEach(WeightUnit.allCases, id: \.self) { unit in
                     Button(action: {
                         weightUnit = unit

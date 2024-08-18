@@ -64,6 +64,30 @@ struct SettingsHomeView: View {
             .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
             
+            NavigationLink(destination: AboutView()) {
+                HStack {
+                    Label("About", systemImage: "info.circle")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .foregroundColor(AppColors.accentColor)
+            }
+            .padding()
+            .background(AppColors.secondaryBackgroundColor)
+            .cornerRadius(10)
+            
+            NavigationLink(destination: PrivacyPolicyView()) {
+                HStack {
+                    Label("Privacy Policy", systemImage: "lock.shield")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .foregroundColor(AppColors.accentColor)
+            }
+            .padding()
+            .background(AppColors.secondaryBackgroundColor)
+            .cornerRadius(10)
+            
             Button(action: {
                 showingSignOutAlert = true
             }) {
