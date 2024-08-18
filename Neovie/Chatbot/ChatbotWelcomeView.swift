@@ -11,7 +11,7 @@ struct ChatbotWelcomeView: View {
                     AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
                     VStack(spacing: 30) {
                         let dimension = min(geometry.size.width, geometry.size.height) * 0.55
-                        LottieView(name: "ChatAI")
+                        LottieView(name: "ChatAI",play: true)
                             .frame(width: dimension, height: dimension)
                         
                         Text("Trusty helper")

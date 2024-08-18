@@ -16,7 +16,7 @@ struct OnboardingView: View {
                         Spacer()
                         
                         VStack(spacing: geometry.size.height * 0.05) {
-                            LottieView(name: "network-fitness-app-and-healthy-lifestyle")
+                            LottieView(name: "network-fitness-app-and-healthy-lifestyle",play: true)
                                 .frame(width: geometry.size.width * 0.9, height: geometry.size.width * 0.9)
                             
                             Text("Welcome to Neovie")
@@ -63,7 +63,7 @@ struct OnboardingView: View {
         if userStateManager.hasCompletedUserInfo {
             HomePage().navigationBarBackButtonHidden(true)
         } else {
-            UserInfo1(userProfile: $userProfile).navigationBarBackButtonHidden(true)
+            UserInfoName(userProfile: $userProfile).navigationBarBackButtonHidden(true)
         }
     }
 }
@@ -71,6 +71,7 @@ struct OnboardingView: View {
 struct LottieView: UIViewRepresentable {
     var name: String
     var loopMode: LottieLoopMode = .loop
+    var play: Bool
     
     func makeUIView(context: UIViewRepresentableContext<LottieView>) -> UIView {
         let view = UIView(frame: .zero)
@@ -80,7 +81,6 @@ struct LottieView: UIViewRepresentable {
         animationView.animation = animation
         animationView.contentMode = .scaleAspectFit
         animationView.loopMode = loopMode
-        animationView.play()
         
         animationView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationView)
@@ -92,7 +92,15 @@ struct LottieView: UIViewRepresentable {
         return view
     }
     
-    func updateUIView(_ uiView: UIViewType, context: Context) {
+    func updateUIView(_ uiView: UIView, context: Context) {
+        guard let animationView = uiView.subviews.first as? LottieAnimationView else { return }
+        
+        if play {
+            animationView.play()
+        } else {
+            animationView.stop()
+            animationView.currentProgress = 0
+        }
     }
 }
 

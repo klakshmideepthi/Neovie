@@ -4,7 +4,7 @@ import Firebase
 struct SettingsHomeView: View {
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var signInManager = GoogleSignInManager.shared
-    @State private var userProfile = UserProfile()
+    @Binding var userProfile: UserProfile
     @State private var isEditingProfile = false
     @State private var showingSignOutAlert = false
     
@@ -27,8 +27,8 @@ struct SettingsHomeView: View {
             }.foregroundColor(AppColors.accentColor))
         }
         .sheet(isPresented: $isEditingProfile) {
-            ProfileEditView(userProfile: $userProfile)
-        }
+                    ProfileEditView(userProfile: $userProfile)
+                }
         .alert(isPresented: $showingSignOutAlert) {
             Alert(
                 title: Text("Sign Out"),
@@ -123,16 +123,18 @@ struct SettingsHomeView: View {
     }
     
     private func loadUserProfile() {
-        FirestoreManager.shared.getUserProfile { result in
-            switch result {
-            case .success(let profile):
-                self.userProfile = profile
-            case .failure(let error):
-                print("Error loading user profile: \(error.localizedDescription)")
+            FirestoreManager.shared.getUserProfile { result in
+                switch result {
+                case .success(let profile):
+                    DispatchQueue.main.async {
+                        self.userProfile = profile
+                    }
+                case .failure(let error):
+                    print("Error loading user profile: \(error.localizedDescription)")
+                }
             }
         }
     }
-}
 
 struct ProfileEditView: View {
     @Binding var userProfile: UserProfile
@@ -161,22 +163,22 @@ struct ProfileEditView: View {
             }
             .navigationTitle("Edit Profile")
             .navigationBarItems(
-                leading: Button("Cancel") {
-                    presentationMode.wrappedValue.dismiss()
-                }.foregroundColor(AppColors.accentColor),
-                trailing: Button("Save") {
-                    if !isNameEmpty {
-                        saveProfile()
+                            leading: Button("Cancel") {
+                                presentationMode.wrappedValue.dismiss()
+                            }.foregroundColor(AppColors.accentColor),
+                            trailing: Button("Save") {
+                                if !isNameEmpty {
+                                    saveProfile()
+                                }
+                            }.foregroundColor(AppColors.accentColor)
+                             .disabled(isNameEmpty)
+                        )
                     }
-                }.foregroundColor(AppColors.accentColor)
-                 .disabled(isNameEmpty)
-            )
-        }
         .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear {
-            isNameEmpty = tempProfile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }
-    }
+                .onAppear {
+                    isNameEmpty = tempProfile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                }
+                }
     
     private var personalInformationSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -282,14 +284,16 @@ struct ProfileEditView: View {
     }
     
     private func saveProfile() {
-        FirestoreManager.shared.saveUserProfile(tempProfile) { result in
-            switch result {
-            case .success:
-                userProfile = tempProfile
-                presentationMode.wrappedValue.dismiss()
-            case .failure(let error):
-                print("Error saving user profile: \(error.localizedDescription)")
+            FirestoreManager.shared.saveUserProfile(tempProfile) { result in
+                switch result {
+                case .success:
+                    DispatchQueue.main.async {
+                        self.userProfile = self.tempProfile  // Update the binding
+                        self.presentationMode.wrappedValue.dismiss()
+                    }
+                case .failure(let error):
+                    print("Error saving user profile: \(error.localizedDescription)")
+                }
             }
         }
     }
-}

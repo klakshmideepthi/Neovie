@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CustomTabBar: View {
     @Binding var selectedTab: Int
+    @State private var animationStates: [Bool] = [false, false, false]
     
     var body: some View {
         HStack {
@@ -19,12 +20,22 @@ struct CustomTabBar: View {
     
     private func tabButton(image: String, tag: Int) -> some View {
         Button(action: {
-            selectedTab = tag
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                selectedTab = tag
+                animationStates[tag].toggle()
+            }
+            
+            // Reset the animation state after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                animationStates[tag] = false
+            }
         }) {
             Image(image)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 25, height: 25)
+                .scaleEffect(animationStates[tag] ? 1.2 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animationStates[tag])
         }
     }
 }

@@ -7,7 +7,7 @@ struct HomePage: View {
     @State private var selectedTab = 0
     @State private var showingNewLog = false
     @State private var showingWeightLossAdvice = false
-    @State private var userProfile: UserProfile?
+    @State private var showingSideEffects = false
     
     var body: some View {
         ZStack {
@@ -19,13 +19,13 @@ struct HomePage: View {
                 )
                 
                 TabView(selection: $selectedTab) {
-                    HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog, showingWeightLossAdvice: $showingWeightLossAdvice)
+                    HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog, showingWeightLossAdvice: $showingWeightLossAdvice,showingSideEffects: $showingSideEffects)
                         .tag(0)
                     
                     LogsView(viewModel: viewModel)
                         .tag(1)
                     
-                    if let userProfile = userProfile, userProfile.hasSeenChatbotWelcome {
+                    if let userProfile = viewModel.userProfile, userProfile.hasSeenChatbotWelcome {
                         ChatbotHomeView()
                             .tag(2)
                     } else {
@@ -43,19 +43,32 @@ struct HomePage: View {
         }
         .background(AppColors.backgroundColor.ignoresSafeArea())
         .sheet(isPresented: $showingSettingsHome) {
-            SettingsHomeView()
-        }
+                    if let userProfile = viewModel.userProfile {
+                        SettingsHomeView(userProfile: Binding(
+                            get: { userProfile },
+                            set: { newValue in
+                                viewModel.userProfile = newValue
+                            }
+                        ))
+                    }
+                }
         .sheet(isPresented: $showingNewLog) {
             NewLogView(viewModel: viewModel).background(Color(hex: 0xEDEDED))
         }
         .sheet(isPresented: $showingWeightLossAdvice) {
             WeightLossAdviceView()
         }
+        .sheet(isPresented: $showingSideEffects) {
+            if let userProfile = viewModel.userProfile {
+                SideEffectsView(userProfile: .constant(userProfile))
+            }
+        }
         .onAppear {
             viewModel.fetchUserData()
             checkChatbotWelcomeStatus()
         }
     }
+
     
     private func getTitle(for tab: Int) -> String {
         switch tab {
@@ -71,153 +84,38 @@ struct HomePage: View {
     }
     
     private func checkChatbotWelcomeStatus() {
-        FirestoreManager.shared.getUserProfile { result in
-            switch result {
-            case .success(let profile):
-                DispatchQueue.main.async {
-                    self.userProfile = profile
+            FirestoreManager.shared.getUserProfile { result in
+                switch result {
+                case .success(let profile):
+                    DispatchQueue.main.async {
+                        self.viewModel.userProfile = profile
+                    }
+                case .failure(let error):
+                    print("Error fetching user profile: \(error.localizedDescription)")
                 }
-            case .failure(let error):
-                print("Error fetching user profile: \(error.localizedDescription)")
             }
         }
-    }
-    
-    private func updateUserProfileAfterWelcome() {
-        FirestoreManager.shared.getUserProfile { result in
-            switch result {
-            case .success(var profile):
-                profile.hasSeenChatbotWelcome = true
-                FirestoreManager.shared.saveUserProfile(profile) { saveResult in
-                    switch saveResult {
+        
+        private func updateUserProfileAfterWelcome() {
+            if var userProfile = viewModel.userProfile {
+                userProfile.hasSeenChatbotWelcome = true
+                FirestoreManager.shared.saveUserProfile(userProfile) { result in
+                    switch result {
                     case .success:
                         DispatchQueue.main.async {
-                            self.userProfile = profile
+                            self.viewModel.userProfile = userProfile
                         }
                         print("User profile updated after seeing ChatbotWelcomeView")
                     case .failure(let error):
                         print("Error updating user profile: \(error.localizedDescription)")
                     }
                 }
-            case .failure(let error):
-                print("Error fetching user profile: \(error.localizedDescription)")
             }
         }
     }
-}
-
-struct HomeTabContent: View {
-    @ObservedObject var viewModel: HomePageViewModel
-    @Binding var showingSettingsHome: Bool
-    @Binding var showingNewLog: Bool
-    @Binding var showingWeightLossAdvice: Bool
-    
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                todaysOverviewSection
-                quickActionsSection
-                weightLossAdviceButton
-                progressSection
-                
-            }
-            .padding()
-        }
-        .background(AppColors.backgroundColor)
-        .overlay(newLogButton, alignment: .bottomTrailing)
-    }
-    
-    private var todaysOverviewSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Today's Overview")
-                .font(.headline)
-                .foregroundColor(AppColors.textColor)
-            
-            HStack {
-                Text("Current Weight:").foregroundColor(AppColors.textColor)
-                Spacer()
-                Text("\(viewModel.currentWeight, specifier: "%.1f") kg").foregroundColor(AppColors.textColor)
-            }
-            HStack {
-                Text("Medication:").foregroundColor(.customTextColor)
-                Spacer()
-                Text(viewModel.medicationName).foregroundColor(.customTextColor)
-            }
-            HStack {
-                Text("Next Dose:").foregroundColor(.customTextColor)
-                Spacer()
-                Text(viewModel.nextDose).foregroundColor(.customTextColor)
-            }
-        }
-        .padding()
-        .background(AppColors.secondaryBackgroundColor)
-        .cornerRadius(10)
-    }
-    
-    private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Quick Actions")
-                .font(.headline)
-                .foregroundColor(.customTextColor)
-            
-            Button(action: {
-                showingNewLog = true
-            }) {
-                Label("New Log Entry", systemImage: "plus.circle")
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .cornerRadius(10)
-            .foregroundColor(Color(hex: 0xC67C4E))
-        }
-    }
-    
-    private var progressSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Progress")
-                .font(.headline)
-                .foregroundColor(.customTextColor)
-            
-            WeightProgressChart(data: viewModel.logs)
-                .frame(height: 200)
-                .padding()
-                .background(Color.white)
-                .cornerRadius(10)
-                .foregroundColor(AppColors.accentColor)
-        }
-    }
-    
-    private var weightLossAdviceButton: some View {
-            Button(action: {
-                showingWeightLossAdvice = true
-            }) {
-                Text("View Weight Management Advice")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(hex: 0xC67C4E))
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-        }
-    
-    private var newLogButton: some View {
-        Button(action: {
-            showingNewLog = true
-        }) {
-            Image(systemName: "plus")
-                .font(.system(size: 24))
-                .foregroundColor(.white)
-                .frame(width: 60, height: 60)
-                .background(Color(hex: 0xC67C4E))
-                .cornerRadius(15)
-                .shadow(radius: 3)
-        }
-        .padding()
-    }
-}
 
 class HomePageViewModel: ObservableObject {
+    @Published var userProfile: UserProfile?
     @Published var currentWeight: Double = 0.0
     @Published var medicationName: String = ""
     @Published var nextDose: String = ""
@@ -229,10 +127,11 @@ class HomePageViewModel: ObservableObject {
     func fetchUserData() {
         FirestoreManager.shared.getUserProfile { result in
             switch result {
-            case .success(let userProfile):
+            case .success(let fetchedProfile):
                 DispatchQueue.main.async {
-                    self.currentWeight = userProfile.weight
-                    self.medicationName = userProfile.medicationName
+                    self.userProfile = fetchedProfile
+                    self.currentWeight = fetchedProfile.weight
+                    self.medicationName = fetchedProfile.medicationName
                     // TODO: Calculate next dose based on medication schedule
                     self.nextDose = "Calculate based on schedule"
                 }
@@ -326,4 +225,3 @@ struct WeightProgressChart: View {
         data.map { $0.weight }.max() ?? 100
     }
 }
-

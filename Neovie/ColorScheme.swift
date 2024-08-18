@@ -5,6 +5,7 @@ struct AppColors {
     static let textColor = Color("TextColor")
     static let accentColor = Color("AccentColor")
     static let secondaryBackgroundColor = Color("SecondaryBackgroundColor")
+    static let buttonBackground = Color("ButtonBackground")
 }
 
 
