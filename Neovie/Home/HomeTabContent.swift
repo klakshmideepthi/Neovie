@@ -1,4 +1,5 @@
 import SwiftUI
+import Firebase
 
 struct HomeTabContent: View {
     @ObservedObject var viewModel: HomePageViewModel
@@ -6,26 +7,65 @@ struct HomeTabContent: View {
     @Binding var showingNewLog: Bool
     @Binding var showingWeightLossAdvice: Bool
     @Binding var showingSideEffects: Bool
-    @State private var selectedTab = 0
+    @State private var showMedicationReminder = false
     
     var body: some View {
-            ScrollView {
-                VStack(spacing: 20) {
-                    WaterView()
-                    BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
-                    quickActionsSection
-                    weightLossAdviceButton
-                    sideEffectsButton
-                    progressSection
+        ScrollView {
+            VStack(spacing: 20) {
+                
+                if let userProfile = viewModel.userProfile {
+                    if userProfile.showMedicationReminder {
+                        MedicationReminderWidget(
+                            medicationName: userProfile.medicationName,
+                            dosage: userProfile.dosage,
+                            onSkip: {
+                                showMedicationReminder = false
+                                updateShowMedicationReminder(false)
+                            },
+                            onTaken: {
+                                showMedicationReminder = false
+                                updateShowMedicationReminder(false)
+                            }
+                        )
+                    }
                 }
-                .padding()
+                BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
+                WaterView()
+                ProtienView()
+                quickActionsSection
+                weightLossAdviceButton
+                sideEffectsButton
             }
-            .background(AppColors.backgroundColor)
-            .overlay(newLogButton, alignment: .bottomTrailing)
-            .onAppear {
-                viewModel.fetchUserData()
-                viewModel.fetchBannerContents()
-            }
+            .padding()
+        }
+        .background(AppColors.backgroundColor)
+        .overlay(newLogButton, alignment: .bottomTrailing)
+        .onAppear {
+            viewModel.fetchUserData()
+            viewModel.fetchBannerContents()
+            setupMedicationReminderListener()
+        }
+    }
+    
+    private func setupMedicationReminderListener() {
+            guard let userId = Auth.auth().currentUser?.uid else { return }
+            let db = Firestore.firestore()
+            db.collection("users").document(userId)
+                .addSnapshotListener { documentSnapshot, error in
+                    guard let document = documentSnapshot else {
+                        print("Error fetching document: \(error!)")
+                        return
+                    }
+                    if let showReminder = document.data()?["showMedicationReminder"] as? Bool {
+                        self.showMedicationReminder = showReminder
+                    }
+                }
+        }
+        
+        private func updateShowMedicationReminder(_ show: Bool) {
+            guard let userId = Auth.auth().currentUser?.uid else { return }
+            let db = Firestore.firestore()
+            db.collection("users").document(userId).updateData(["showMedicationReminder": show])
         }
     
     private var quickActionsSection: some View {
@@ -118,4 +158,8 @@ struct HomeTabContent: View {
             print("Unknown action: \(identifier)")
         }
     }
+}
+
+extension Notification.Name {
+    static let medicationReminderReceived = Notification.Name("medicationReminderReceived")
 }

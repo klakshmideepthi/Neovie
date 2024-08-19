@@ -6,7 +6,6 @@ struct UserInfoDosage: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedDosage: String = ""
     @State private var navigateToNextView = false
-    @State private var isNotificationPermissionGranted = false
     
     var dosageOptions: [String] {
         if userProfile.medicationName == "Wegovy" || userProfile.medicationName == "Ozempic" {
@@ -34,27 +33,16 @@ struct UserInfoDosage: View {
                 
                 Spacer()
                 
-                doneButton
+                ContinueButton
+                NavigationLink(destination: UserInfoMedicationDay(userProfile: $userProfile), isActive: $navigateToNextView) {
+                    EmptyView()
+                }
             }
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
             .edgesIgnoringSafeArea(.all)
         }
         .navigationBarHidden(true)
-        .background(
-            NavigationLink(destination: destinationView, isActive: $navigateToNextView) {
-                EmptyView()
-            }
-        )
-    }
-    
-    @ViewBuilder
-    private var destinationView: some View {
-        if isNotificationPermissionGranted {
-            HomePage().navigationBarBackButtonHidden(true)
-        } else {
-            NotificationRequest().navigationBarBackButtonHidden(true)
-        }
     }
     
     private var progressBar: some View {
@@ -107,14 +95,13 @@ struct UserInfoDosage: View {
         }
     }
     
-    private var doneButton: some View {
+    private var ContinueButton: some View {
         Button(action: {
             if !selectedDosage.isEmpty {
                 saveDosageInfo()
-                checkNotificationPermission()
             }
         }) {
-            Text("Done!")
+            Text("Continue")
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(!selectedDosage.isEmpty ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
@@ -132,34 +119,13 @@ struct UserInfoDosage: View {
             case .success:
                 print("Dosage info saved successfully")
                 userProfile.dosage = selectedDosage
+                self.navigateToNextView = true
             case .failure(let error):
                 print("Failed to save dosage info: \(error.localizedDescription)")
             }
         }
     }
-    
-    private func checkNotificationPermission() {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                switch settings.authorizationStatus {
-                case .authorized, .provisional, .ephemeral:
-                    self.isNotificationPermissionGranted = true
-                    print("Notification permission is granted")
-                case .denied, .notDetermined:
-                    self.isNotificationPermissionGranted = false
-                    print("Notification permission is not granted")
-                @unknown default:
-                    self.isNotificationPermissionGranted = false
-                    print("Unknown notification permission status")
-                }
-                
-                // Add a small delay before navigating
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.navigateToNextView = true
-                }
-            }
-        }
-    }
+        
 }
 
 struct DosageButton: View {

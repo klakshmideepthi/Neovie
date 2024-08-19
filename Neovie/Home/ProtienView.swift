@@ -1,23 +1,23 @@
 import SwiftUI
 
-struct WaterView: View {
+struct ProtienView: View {
     @State private var waterIntake: Double = 0
-    let dailyGoal: Double = 2000 // 2 liters in ml
-    let incrementValue: Double = 250 // 250ml per button press
+    let dailyGoal: Double = 80
+    let incrementValue: Double = 10
     
     var body: some View {
-                HStack {
+
+        HStack {
                     VStack(alignment: .leading, spacing: 15) {
-                        
-                        Text("Water")
+                        Text("Protein")
                             .font(.headline)
                             .foregroundColor(AppColors.textColor)
                         
-                        Text("\(Int(waterIntake)) mL of \(Int(dailyGoal)) mL")
+                        Text("\(Int(waterIntake)) mg of \(Int(dailyGoal)) mg")
                             .font(.title2)
                             .foregroundColor(AppColors.textColor)
                         
-                        Text("Each button press is 250ml")
+                        Text("Each button press is 10mg")
                             .font(.caption2)
                             .foregroundColor(AppColors.textColor.opacity(0.7))
                     }
@@ -27,16 +27,16 @@ struct WaterView: View {
                 VStack(spacing: 10) {
                     ZStack {
                         Circle()
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 5)
+                            .stroke(Color.brown.opacity(0.2), lineWidth: 5)
                             .frame(width: 65, height: 65)
                         
                         Circle()
                             .trim(from: 0, to: CGFloat(min(waterIntake / dailyGoal, 1.0)))
-                            .stroke(Color.blue, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                            .stroke(Color.brown, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                             .frame(width: 65, height: 65)
                             .rotationEffect(.degrees(-90))
                         
-                        Image("water")
+                        Image("muscle")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 30, height: 30)
@@ -66,6 +66,7 @@ struct WaterView: View {
                 }
                     
                 }
+                
                 
                 
         }

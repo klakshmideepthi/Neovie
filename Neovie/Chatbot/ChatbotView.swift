@@ -5,15 +5,10 @@ import Combine
 
 struct ChatbotView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var messages: [ChatMessage] = []
+    @StateObject private var viewModel = ChatbotViewModel()
     @State private var inputMessage = ""
-    @State private var isLoading = false
-    @State private var scrollToBottom = false
     @State private var keyboardHeight: CGFloat = 0
-    @State private var currentStreamingMessage: ChatMessage?
     let initialPrompt: String?
-    
-    private let anthropicService = AnthropicService()
     
     var body: some View {
         GeometryReader { geometry in
@@ -21,82 +16,9 @@ struct ChatbotView: View {
                 AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 0) {
-                    // Custom navigation bar
-                    HStack {
-                        Text("New Thread")
-                            .font(.headline)
-                            .foregroundColor(AppColors.textColor)
-                        Spacer()
-                        Button(action: {
-                            dismiss()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(AppColors.textColor.opacity(0.6))
-                                .font(.system(size: 22))
-                        }
-                    }
-                    .padding()
-                    .background(AppColors.secondaryBackgroundColor)
-                    
-                    // Chat messages
-                    ScrollViewReader { scrollView in
-                        ScrollView {
-                            LazyVStack(spacing: 10) {
-                                ForEach(messages) { message in
-                                    ChatBubble(message: message)
-                                }
-                                if let streamingMessage = currentStreamingMessage {
-                                    ChatBubble(message: streamingMessage)
-                                }
-                                if isLoading {
-                                    ProgressView()
-                                        .padding()
-                                }
-                                Color.clear.frame(height: 1).id("bottomAnchor")
-                            }
-                            .padding()
-                        }
-                        .onChange(of: scrollToBottom) { _ in
-                            withAnimation {
-                                scrollView.scrollTo("bottomAnchor", anchor: .bottom)
-                            }
-                        }
-                        .background(AppColors.backgroundColor)
-                    }
-                    
-                    // Input field
-                    VStack {
-                        HStack {
-                            TextField("Ask anything...", text: $inputMessage)
-                                .padding(15)
-                                .background(AppColors.secondaryBackgroundColor)
-                                .cornerRadius(25)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .stroke(AppColors.textColor.opacity(0.3), lineWidth: 1)
-                                )
-                                .disabled(isLoading)
-                                .accentColor(AppColors.accentColor)
-                            
-                            Button(action: { sendMessage() }) {
-                                Image(systemName: "paperplane.fill")
-                                    .foregroundColor(inputMessage.isEmpty || isLoading ? AppColors.textColor.opacity(0.3) : .white)
-                                    .padding(15)
-                                    .background(inputMessage.isEmpty || isLoading ? AppColors.secondaryBackgroundColor : AppColors.accentColor)
-                                    .clipShape(Circle())
-                                    .overlay(
-                                        Circle()
-                                            .stroke(AppColors.textColor.opacity(0.3), lineWidth: 1)
-                                    )
-                            }
-                            .disabled(inputMessage.isEmpty || isLoading)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        .padding(.bottom, 30)
-                    }
-                    .background(AppColors.secondaryBackgroundColor)
-                    .padding(.bottom, geometry.safeAreaInsets.bottom)
+                    customNavigationBar
+                    chatMessagesView
+                    inputField(geometry: geometry)
                 }
                 .padding(.bottom, keyboardHeight)
             }
@@ -105,14 +27,118 @@ struct ChatbotView: View {
         .onAppear {
             addKeyboardObservers()
             if let prompt = initialPrompt {
-                sendMessage(prompt)
+                viewModel.sendMessage(prompt)
             }
         }
         .onDisappear(perform: removeKeyboardObservers)
     }
     
-    private func sendMessage(_ message: String = "") {
-        let messageToSend = message.isEmpty ? inputMessage : message
+    private var customNavigationBar: some View {
+        HStack {
+            Text("New Thread")
+                .font(.headline)
+                .foregroundColor(AppColors.textColor)
+            Spacer()
+            Button(action: { dismiss() }) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(AppColors.textColor.opacity(0.6))
+                    .font(.system(size: 22))
+            }
+        }
+        .padding()
+        .background(AppColors.secondaryBackgroundColor)
+    }
+    
+    private var chatMessagesView: some View {
+        ScrollViewReader { scrollView in
+            ScrollView {
+                LazyVStack(spacing: 10) {
+                    ForEach(viewModel.messages) { message in
+                        ChatBubble(message: message)
+                    }
+                    if let streamingMessage = viewModel.currentStreamingMessage {
+                        ChatBubble(message: streamingMessage)
+                    }
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .padding()
+                    }
+                    Color.clear.frame(height: 1).id("bottomAnchor")
+                }
+                .padding()
+            }
+            .onChange(of: viewModel.scrollToBottom) { _ in
+                withAnimation {
+                    scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+                }
+            }
+            .background(AppColors.backgroundColor)
+        }
+    }
+    
+    private func inputField(geometry: GeometryProxy) -> some View {
+        VStack {
+            HStack {
+                TextField("Ask anything...", text: $inputMessage)
+                    .padding(15)
+                    .background(AppColors.secondaryBackgroundColor)
+                    .cornerRadius(25)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(AppColors.textColor.opacity(0.3), lineWidth: 1)
+                    )
+                    .disabled(viewModel.isLoading)
+                    .accentColor(AppColors.accentColor)
+                
+                Button(action: { viewModel.sendMessage(inputMessage); inputMessage = "" }) {
+                    Image(systemName: "paperplane.fill")
+                        .foregroundColor(inputMessage.isEmpty || viewModel.isLoading ? AppColors.textColor.opacity(0.3) : .white)
+                        .padding(15)
+                        .background(inputMessage.isEmpty || viewModel.isLoading ? AppColors.secondaryBackgroundColor : AppColors.accentColor)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(AppColors.textColor.opacity(0.3), lineWidth: 1)
+                        )
+                }
+                .disabled(inputMessage.isEmpty || viewModel.isLoading)
+            }
+            .padding(.horizontal)
+            .padding(.top, 20)
+            .padding(.bottom, 30)
+        }
+        .background(AppColors.secondaryBackgroundColor)
+        .padding(.bottom, geometry.safeAreaInsets.bottom)
+    }
+    
+    private func addKeyboardObservers() {
+        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
+            if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+                let keyboardRectangle = keyboardFrame.cgRectValue
+                keyboardHeight = keyboardRectangle.height
+            }
+        }
+        
+        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+            keyboardHeight = 0
+        }
+    }
+    
+    private func removeKeyboardObservers() {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+}
+
+class ChatbotViewModel: ObservableObject {
+    @Published var messages: [ChatMessage] = []
+    @Published var isLoading = false
+    @Published var scrollToBottom = false
+    @Published var currentStreamingMessage: ChatMessage?
+    
+    private let anthropicService = AnthropicService()
+    
+    func sendMessage(_ messageToSend: String) {
         guard !messageToSend.isEmpty else { return }
         
         let userMessage = ChatMessage(content: messageToSend, isUser: true)
@@ -120,10 +146,8 @@ struct ChatbotView: View {
         print("Added user message: \(userMessage.content)")
         scrollToBottom.toggle()
         
-        inputMessage = "" // Clear the input field
         isLoading = true
         
-        // Get the current user's ID
         guard let userId = Auth.auth().currentUser?.uid else {
             print("User not authenticated")
             isLoading = false
@@ -133,34 +157,34 @@ struct ChatbotView: View {
         
         currentStreamingMessage = ChatMessage(content: "", isUser: false)
         
-        anthropicService.sendMessage(messageToSend, userId: userId, onPartialResponse: { partialResponse in
+        anthropicService.sendMessage(messageToSend, userId: userId, onPartialResponse: { [weak self] partialResponse in
             print("Received partial response: \(partialResponse)")
             DispatchQueue.main.async {
-                self.currentStreamingMessage?.content += partialResponse
-                self.scrollToBottom.toggle()
+                self?.currentStreamingMessage?.content += partialResponse
+                self?.scrollToBottom.toggle()
             }
-        }) { result in
+        }) { [weak self] result in
             DispatchQueue.main.async {
-                self.isLoading = false
+                self?.isLoading = false
                 
                 switch result {
                 case .success:
-                    if let finalMessage = self.currentStreamingMessage {
+                    if let finalMessage = self?.currentStreamingMessage {
                         print("Adding final message to chat: \(finalMessage.content)")
-                        self.messages.append(finalMessage)
-                        self.currentStreamingMessage = nil
+                        self?.messages.append(finalMessage)
+                        self?.currentStreamingMessage = nil
                     } else {
                         print("No final message to display")
                     }
                 case .failure(let error):
-                    self.handleError(error)
+                    self?.handleError(error)
                 }
                 
-                self.scrollToBottom.toggle()
+                self?.scrollToBottom.toggle()
             }
         }
     }
-
+    
     private func handleError(_ error: Error) {
         let errorMessage: String
         
@@ -191,23 +215,5 @@ struct ChatbotView: View {
         let errorMessage = ChatMessage(content: "Error: \(message)", isUser: false)
         messages.append(errorMessage)
         print("Added error message: \(errorMessage.content)")
-    }
-    
-    private func addKeyboardObservers() {
-        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
-            if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
-                let keyboardRectangle = keyboardFrame.cgRectValue
-                keyboardHeight = keyboardRectangle.height
-            }
-        }
-        
-        NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
-            keyboardHeight = 0
-        }
-    }
-    
-    private func removeKeyboardObservers() {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 }

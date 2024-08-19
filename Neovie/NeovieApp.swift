@@ -5,6 +5,7 @@ import FirebaseFirestore
 import FirebaseFunctions
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+    static var orientationLock = UIInterfaceOrientationMask.all
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
         print("Firebase configured")
@@ -13,6 +14,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     
     func applicationWillEnterForeground(_ application: UIApplication) {
         updateCurrentUserAge()
+    }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+            return AppDelegate.orientationLock
     }
 
     private func updateCurrentUserAge() {

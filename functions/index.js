@@ -5,6 +5,84 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+exports.checkDailyDosage = functions.pubsub.schedule("0 0 * * *").timeZone("UTC")
+    .onRun(async (context) => {
+        console.log("checkDailyDosage function started");
+        const db = admin.firestore();
+        const usersRef = db.collection("users");
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        console.log("Current day of week:", dayOfWeek);
+        const dayMap = {
+            "Su": 0, "Mo": 1, "Tu": 2, "We": 3, "Th": 4, "Fr": 5, "Sa": 6,
+        };
+        try {
+            const snapshot = await usersRef.get();
+            const batch = db.batch();
+
+            snapshot.forEach((doc) => {
+                const userData = doc.data();
+                const userDosageDay = userData.dosageDay ? dayMap[userData.dosageDay] : -1;
+                console.log("User:", doc.id, "Dosage Day:", userData.dosageDay,
+                    "Mapped Day:", userDosageDay);
+                if (userDosageDay === dayOfWeek) {
+                    console.log("Matching day for user:", doc.id);
+                    const userRef = usersRef.doc(doc.id);
+                    batch.update(userRef, {showMedicationReminder: true});
+                } else {
+                    const userRef = usersRef.doc(doc.id);
+                    batch.update(userRef, {showMedicationReminder: false});
+                }
+            });
+            await batch.commit();
+            console.log("Daily dosage check completed and user documents updated");
+            return null;
+        } catch (error) {
+            console.error("Error checking daily dosage:", error);
+            return null;
+        }
+    });
+
+exports.updateDosageDay = functions.firestore
+    .document("users/{userId}")
+    .onUpdate((change, context) => {
+        const newValue = change.after.data();
+        const previousValue = change.before.data();
+
+        if (newValue.dosageDay !== previousValue.dosageDay) {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const dayMap = {
+                "Su": 0, "Mo": 1, "Tu": 2, "We": 3, "Th": 4, "Fr": 5, "Sa": 6,
+            };
+
+            const userDosageDay = newValue.dosageDay ? dayMap[newValue.dosageDay] : -1;
+            if (userDosageDay === dayOfWeek) {
+                return change.after.ref.update({showMedicationReminder: true});
+            } else {
+                return change.after.ref.update({showMedicationReminder: false});
+            }
+        }
+
+        return null;
+    });
+
+exports.updateUserAges = functions.pubsub.schedule("every 24 hours").onRun(async (context) => {
+    const usersSnapshot = await admin.firestore().collection("users").get();
+    const updatePromises = usersSnapshot.docs.map(async (doc) => {
+        const userData = doc.data();
+        if (userData.dateOfBirth) {
+            const dateOfBirth = userData.dateOfBirth.toDate();
+            const ageInMilliseconds = Date.now() - dateOfBirth.getTime();
+            const ageInYears = Math.floor(ageInMilliseconds / 31557600000);
+            return doc.ref.update({age: ageInYears});
+        }
+    });
+    await Promise.all(updatePromises);
+    console.log("All user ages updated successfully");
+    return null;
+});
+
 /**
  * Retrieves user data from Firestore.
  * @param {string} userId - The ID of the user.
@@ -236,6 +314,7 @@ exports.callAnthropicAPI = functions
                         },
                     ],
                     max_tokens: 500,
+                    stream: true,
                 },
                 {
                     headers: {
@@ -243,15 +322,33 @@ exports.callAnthropicAPI = functions
                         "x-api-key": apiKey,
                         "anthropic-version": "2023-06-01",
                     },
+                    responseType: "stream",
                 },
             );
 
-            if (response.data && response.data.content && response.data.content[0] &&
-                 response.data.content[0].text) {
-                return response.data.content[0].text;
-            } else {
-                throw new Error("Unexpected response format from Anthropic API");
-            }
+            return new Promise((resolve, reject) => {
+                let responseText = "";
+                response.data.on("data", (chunk) => {
+                    const lines = chunk.toString().split("\n").filter((line) => line.trim() !== "");
+                    for (const line of lines) {
+                        if (line.startsWith("data:")) {
+                            const data = JSON.parse(line.slice(5));
+                            if (data.type === "content_block_delta") {
+                                responseText += data.delta.text;
+                            }
+                        }
+                    }
+                });
+
+                response.data.on("end", () => {
+                    resolve(responseText);
+                });
+
+                response.data.on("error", (error) => {
+                    reject(new functions.https.HttpsError("internal",
+                        "Stream error: " + error.message));
+                });
+            });
         } catch (error) {
             console.error("Error calling Anthropic API:", error);
             throw new functions.https.HttpsError("internal", "Error calling API: " + error.message);

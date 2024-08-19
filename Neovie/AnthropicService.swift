@@ -18,32 +18,12 @@ class AnthropicService {
                     return
                 }
                 
-                print("Raw response data: \(String(describing: result?.data))")
-                
                 if let stringResponse = result?.data as? String {
-                    // Handle string response
-                    print("Received string response: \(stringResponse)")
+                    // Handle full response
                     onPartialResponse(stringResponse)
                     completion(.success(()))
-                } else if let data = result?.data as? [String: Any] {
-                    // Handle dictionary response
-                    print("Received dictionary response: \(data)")
-                    if let errorMessage = data["error"] as? String {
-                        let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMessage])
-                        print("Error from server: \(errorMessage)")
-                        completion(.failure(error))
-                        return
-                    }
-                    
-                    if let responseMessage = data["response"] as? String {
-                        onPartialResponse(responseMessage)
-                        completion(.success(()))
-                    } else {
-                        let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
-                        completion(.failure(error))
-                    }
                 } else {
-                    let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])
+                    let error = NSError(domain: "AnthropicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
                     completion(.failure(error))
                 }
             }

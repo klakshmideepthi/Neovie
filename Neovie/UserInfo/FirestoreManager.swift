@@ -29,6 +29,10 @@ class FirestoreManager {
             "medicationName": userProfile.medicationName,
             "dosage": userProfile.dosage,
             "age": userProfile.age,
+            "activityLevel": userProfile.activityLevel ?? "",
+            "dosageDay": userProfile.dosageDay,
+            "dosageTime": Timestamp(date: userProfile.dosageTime),
+            "showMedicationReminder": userProfile.showMedicationReminder,
             "hasSeenChatbotWelcome": userProfile.hasSeenChatbotWelcome
         ]
         
@@ -62,8 +66,31 @@ class FirestoreManager {
                    let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue(),
                    let medicationName = data["medicationName"] as? String,
                    let dosage = data["dosage"] as? String,
+                   let age = data["age"] as? Int,
+                   let activityLevel = data["activityLevel"] as? String,
+                   let dosageDay = data["dosageDay"] as? String,
+                   let dosageTime = (data["dosageTime"] as? Timestamp)?.dateValue(),
+                   let showMedicationReminder = data["showMedicationReminder"] as? Bool,
                    let hasSeenChatbotWelcome = data["hasSeenChatbotWelcome"] as? Bool {
-                    var userProfile = UserProfile(name: name, heightCm: heightCm, heightFt: heightFt, heightIn: heightIn, weight: weight, targetWeight: targetWeight, gender: gender, dateOfBirth: dateOfBirth, medicationName: medicationName, dosage: dosage,hasSeenChatbotWelcome: hasSeenChatbotWelcome)
+                    
+                    var userProfile = UserProfile(
+                        name: name,
+                        heightCm: heightCm,
+                        heightFt: heightFt,
+                        heightIn: heightIn,
+                        weight: weight,
+                        targetWeight: targetWeight,
+                        gender: gender,
+                        dateOfBirth: dateOfBirth,
+                        medicationName: medicationName,
+                        dosage: dosage,
+                        age: age,
+                        activityLevel: activityLevel,
+                        dosageDay: dosageDay,
+                        dosageTime: dosageTime,
+                        showMedicationReminder: showMedicationReminder,
+                        hasSeenChatbotWelcome: hasSeenChatbotWelcome
+                    )
                     
                     // Update age
                     userProfile.updateAge()

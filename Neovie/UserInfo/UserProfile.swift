@@ -13,9 +13,12 @@ struct UserProfile {
     var dosage: String
     var age: Int
     var activityLevel: String?
+    var dosageDay: String = ""
+    var dosageTime: Date = Date()
+    var showMedicationReminder: Bool
     var hasSeenChatbotWelcome: Bool
     
-    init(name: String = "", heightCm: Int = 170, heightFt: Int = 5, heightIn: Int = 7, weight: Double = 0, targetWeight: Double = 0, gender: String = "", dateOfBirth: Date = Date(), medicationName: String = "", dosage: String = "",age: Int = 0,activityLevel: String = "", hasSeenChatbotWelcome: Bool = false) {
+    init(name: String = "", heightCm: Int = 170, heightFt: Int = 5, heightIn: Int = 7, weight: Double = 0, targetWeight: Double = 0, gender: String = "", dateOfBirth: Date = Date(), medicationName: String = "", dosage: String = "",age: Int = 0,activityLevel: String = "",dosageDay: String = "", dosageTime: Date = Date(), showMedicationReminder: Bool = false, hasSeenChatbotWelcome: Bool = false) {
         self.name = name
         self.heightCm = heightCm
         self.heightFt = heightFt
@@ -28,6 +31,9 @@ struct UserProfile {
         self.dosage = dosage
         self.age = age
         self.activityLevel = activityLevel
+        self.dosageDay = dosageDay
+        self.dosageTime = dosageTime
+        self.showMedicationReminder = showMedicationReminder
         self.hasSeenChatbotWelcome = hasSeenChatbotWelcome
     }
     
