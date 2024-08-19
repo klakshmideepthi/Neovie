@@ -6,62 +6,66 @@ struct WaterView: View {
     let incrementValue: Double = 250 // 250ml per button press
     
     var body: some View {
-        ZStack {
-            AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
-            
-            VStack(spacing: 20) {
+        GeometryReader { geometry in
+            VStack(spacing: 15) {
                 Text("Daily Water Intake")
-                    .font(.title)
+                    .font(.title2)
+                    .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
                     .foregroundColor(AppColors.textColor)
                 
-                ZStack {
-                    Circle()
-                        .stroke(lineWidth: 20)
-                        .opacity(0.3)
-                        .foregroundColor(AppColors.accentColor)
-                    
-                    Circle()
-                        .trim(from: 0.0, to: CGFloat(min(waterIntake / dailyGoal, 1.0)))
-                        .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
-                        .foregroundColor(Color.blue)
-                        .rotationEffect(Angle(degrees: 270.0))
-                        .animation(.linear, value: waterIntake)
-                    
-                    VStack {
-                        Text("\(Int(waterIntake))ml")
-                            .font(.largeTitle)
-                            .bold()
-                        Text("of \(Int(dailyGoal))ml")
-                    }
-                    .foregroundColor(AppColors.textColor)
-                }
-                .frame(width: 200, height: 200)
-                
-                HStack(spacing: 30) {
+                HStack(spacing: 20) {
                     Button(action: {
                         if waterIntake > 0 {
                             waterIntake -= incrementValue
                         }
                     }) {
                         Image(systemName: "minus.circle.fill")
-                            .font(.system(size: 50))
+                            .font(.system(size: 30))
                             .foregroundColor(AppColors.accentColor)
                     }
+                    
+                    ZStack {
+                        Circle()
+                            .stroke(lineWidth: 10)
+                            .opacity(0.3)
+                            .foregroundColor(AppColors.accentColor)
+                        
+                        Circle()
+                            .trim(from: 0.0, to: CGFloat(min(waterIntake / dailyGoal, 1.0)))
+                            .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+                            .foregroundColor(Color.blue)
+                            .rotationEffect(Angle(degrees: 270.0))
+                            .animation(.linear, value: waterIntake)
+                        
+                        VStack(spacing: 5) {
+                            Text("\(Int(waterIntake))ml")
+                                .font(.title2)
+                                .bold()
+                            Text("of \(Int(dailyGoal))ml")
+                                .font(.caption)
+                        }
+                        .foregroundColor(AppColors.textColor)
+                    }
+                    .frame(width: min(geometry.size.width * 0.4, 120), height: min(geometry.size.width * 0.4, 120))
                     
                     Button(action: {
                         waterIntake += incrementValue
                     }) {
                         Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 50))
+                            .font(.system(size: 30))
                             .foregroundColor(AppColors.accentColor)
                     }
                 }
                 
-                Text("Each button press is worth 250ml")
-                    .font(.caption)
+                Text("Each button press is 250ml")
+                    .font(.caption2)
                     .foregroundColor(AppColors.textColor)
             }
+            .frame(maxWidth: .infinity)
             .padding()
+            .background(AppColors.secondaryBackgroundColor)
+            .cornerRadius(15)
         }
+        .frame(height: 200)  // This sets a default height, but allows the view to grow if needed
     }
 }

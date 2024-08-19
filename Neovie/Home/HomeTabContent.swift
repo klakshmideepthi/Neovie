@@ -9,36 +9,24 @@ struct HomeTabContent: View {
     @State private var selectedTab = 0
     
     var body: some View {
-        VStack(spacing: 0) {
-            Picker("", selection: $selectedTab) {
-                Text("Overview").tag(0)
-                Text("Water").tag(1)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
-            
-            if selectedTab == 0 {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
-                        quickActionsSection
-                        weightLossAdviceButton
-                        sideEffectsButton
-                        progressSection
-                    }
-                    .padding()
+            ScrollView {
+                VStack(spacing: 20) {
+                    WaterView()
+                    BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
+                    quickActionsSection
+                    weightLossAdviceButton
+                    sideEffectsButton
+                    progressSection
                 }
-            } else {
-                WaterView()
+                .padding()
+            }
+            .background(AppColors.backgroundColor)
+            .overlay(newLogButton, alignment: .bottomTrailing)
+            .onAppear {
+                viewModel.fetchUserData()
+                viewModel.fetchBannerContents()
             }
         }
-        .background(AppColors.backgroundColor)
-        .overlay(newLogButton, alignment: .bottomTrailing)
-        .onAppear {
-            viewModel.fetchUserData()
-            viewModel.fetchBannerContents()
-        }
-    }
     
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
