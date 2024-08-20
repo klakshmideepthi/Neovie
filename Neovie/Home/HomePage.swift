@@ -1,6 +1,7 @@
 import SwiftUI
 import Charts
 import Firebase
+import Combine
 
 
 struct HomePage: View {
@@ -123,9 +124,65 @@ class HomePageViewModel: ObservableObject {
     @Published var nextDose: String = ""
     @Published var logs: [LogData.LogEntry] = []
     @Published var bannerContents: [BannerContent] = []
+    @Published var showMedicationReminder: Bool = false
+    private var cancellables = Set<AnyCancellable>()
+    private var bmiListener: ListenerRegistration?
+    @Published var bmi: Double = 0.0
     
     let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
     let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
+    
+    init() {
+            setupBMIListener()
+        }
+        
+        deinit {
+            bmiListener?.remove()
+        }
+        
+        private func setupBMIListener() {
+            bmiListener = FirestoreManager.shared.setupBMIListener { [weak self] result in
+                switch result {
+                case .success(let bmi):
+                    DispatchQueue.main.async {
+                        self?.bmi = bmi
+                    }
+                case .failure(let error):
+                    print("Error in BMI listener: \(error.localizedDescription)")
+                }
+            }
+        }
+    
+    func setupMedicationReminderListener() {
+            guard let userId = Auth.auth().currentUser?.uid else { return }
+            let db = Firestore.firestore()
+            db.collection("users").document(userId)
+                .addSnapshotListener { [weak self] documentSnapshot, error in
+                    guard let document = documentSnapshot else {
+                        print("Error fetching document: \(error?.localizedDescription ?? "Unknown error")")
+                        return
+                    }
+                    if let showReminder = document.data()?["showMedicationReminder"] as? Bool {
+                        DispatchQueue.main.async {
+                            self?.showMedicationReminder = showReminder
+                        }
+                    }
+                }
+        }
+
+        func updateShowMedicationReminder(_ show: Bool) {
+            guard let userId = Auth.auth().currentUser?.uid else { return }
+            let db = Firestore.firestore()
+            db.collection("users").document(userId).updateData(["showMedicationReminder": show]) { [weak self] error in
+                if let error = error {
+                    print("Error updating showMedicationReminder: \(error.localizedDescription)")
+                } else {
+                    DispatchQueue.main.async {
+                        self?.showMedicationReminder = show
+                    }
+                }
+            }
+        }
     
     func fetchBannerContents() {
             let db = Firestore.firestore()

@@ -72,7 +72,7 @@ struct UserInfoDosage: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<9) { index in
+            ForEach(0..<10) { index in
                 Rectangle()
                     .fill(index < 9 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)

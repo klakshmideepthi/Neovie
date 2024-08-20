@@ -93,7 +93,7 @@ struct UserInfoActivity: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<9) { index in
+            ForEach(0..<10) { index in
                 Rectangle()
                     .fill(index < 7 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)
@@ -193,15 +193,5 @@ struct ActivityButton: View {
             }
         }
         .aspectRatio(0.9, contentMode: .fit)
-    }
-}
-
-
-// Placeholder for the next view in the onboarding process
-struct NextView: View {
-    @Binding var userProfile: UserProfile
-    
-    var body: some View {
-        Text("Next View")
     }
 }

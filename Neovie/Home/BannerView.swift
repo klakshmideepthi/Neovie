@@ -27,6 +27,7 @@ struct BannerView: View {
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             .frame(height: 200)
+            .frame(maxWidth:.infinity)
             .cornerRadius(20)
             
             // Page indicator
@@ -38,7 +39,7 @@ struct BannerView: View {
                 }
             }
         }
-        .padding()
+        .shadow(radius: 5)
         .onReceive(timer) { _ in
             withAnimation {
                 currentIndex = (currentIndex + 1) % bannerContents.count

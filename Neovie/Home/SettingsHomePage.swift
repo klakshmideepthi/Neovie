@@ -308,16 +308,78 @@ struct ProfileEditView: View {
     }
     
     private func saveProfile() {
-            FirestoreManager.shared.saveUserProfile(tempProfile) { result in
+        let group = DispatchGroup()
+        var overallSuccess = true
+        var overallError: Error?
+
+        // Update fields that require recalculation
+        if tempProfile.weight != userProfile.weight {
+            group.enter()
+            FirestoreManager.shared.updateUserProfileWithRecalculation(field: "weight", value: tempProfile.weight) { result in
                 switch result {
                 case .success:
-                    DispatchQueue.main.async {
-                        self.userProfile = self.tempProfile  // Update the binding
-                        self.presentationMode.wrappedValue.dismiss()
-                    }
+                    print("Weight updated and BMI/protein goal recalculated")
                 case .failure(let error):
-                    print("Error saving user profile: \(error.localizedDescription)")
+                    overallSuccess = false
+                    overallError = error
+                    print("Error updating weight: \(error.localizedDescription)")
                 }
+                group.leave()
             }
         }
+
+        if tempProfile.heightCm != userProfile.heightCm {
+            group.enter()
+            FirestoreManager.shared.updateUserProfileWithRecalculation(field: "heightCm", value: tempProfile.heightCm) { result in
+                switch result {
+                case .success:
+                    print("Height updated and BMI/protein goal recalculated")
+                case .failure(let error):
+                    overallSuccess = false
+                    overallError = error
+                    print("Error updating height: \(error.localizedDescription)")
+                }
+                group.leave()
+            }
+        }
+
+        if tempProfile.activityLevel != userProfile.activityLevel {
+            group.enter()
+            FirestoreManager.shared.updateUserProfileWithRecalculation(field: "activityLevel", value: tempProfile.activityLevel) { result in
+                switch result {
+                case .success:
+                    print("Activity level updated and protein goal recalculated")
+                case .failure(let error):
+                    overallSuccess = false
+                    overallError = error
+                    print("Error updating activity level: \(error.localizedDescription)")
+                }
+                group.leave()
+            }
+        }
+
+        // Update other fields that don't require recalculation
+        group.enter()
+        FirestoreManager.shared.saveUserProfile(tempProfile) { result in
+            switch result {
+            case .success:
+                print("Other profile fields updated successfully")
+            case .failure(let error):
+                overallSuccess = false
+                overallError = error
+                print("Error saving other profile fields: \(error.localizedDescription)")
+            }
+            group.leave()
+        }
+
+        group.notify(queue: .main) {
+            if overallSuccess {
+                self.userProfile = self.tempProfile  // Update the binding
+                self.presentationMode.wrappedValue.dismiss()
+            } else {
+                // Handle the error, maybe show an alert to the user
+                print("Error saving profile: \(overallError?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
     }

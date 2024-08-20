@@ -1,22 +1,21 @@
 import SwiftUI
 
-struct WaterView: View {
-    @StateObject private var waterManager = WaterIntakeManager()
-    let dailyGoal: Double = 2000 // 2 liters in ml
-    let incrementValue: Double = 250 // 250ml per button press
+struct ProteinView: View {
+    @StateObject private var proteinManager = ProteinIntakeManager()
+    let incrementValue: Double = 10 // 10 grams per button press
     
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 15) {
-                Text("Water")
+                Text("Protein")
                     .font(.headline)
                     .foregroundColor(AppColors.textColor)
                 
-                Text("\(Int(waterManager.waterIntake)) mL of \(Int(dailyGoal)) mL")
+                Text("\(Int(proteinManager.proteinIntake)) g of \(Int(proteinManager.proteinGoal)) g")
                     .font(.title2)
                     .foregroundColor(AppColors.textColor)
                 
-                Text("Each button press is 250ml")
+                Text("Each button press is 10g")
                     .font(.caption2)
                     .foregroundColor(AppColors.textColor.opacity(0.7))
             }
@@ -26,16 +25,16 @@ struct WaterView: View {
             VStack(spacing: 10) {
                 ZStack {
                     Circle()
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 5)
+                        .stroke(Color.brown.opacity(0.2), lineWidth: 5)
                         .frame(width: 65, height: 65)
                     
                     Circle()
-                        .trim(from: 0, to: CGFloat(min(waterManager.waterIntake / dailyGoal, 1.0)))
-                        .stroke(Color.blue, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .trim(from: 0, to: CGFloat(min(proteinManager.proteinIntake / max(proteinManager.proteinGoal, 1), 1.0)))
+                        .stroke(Color.brown, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .frame(width: 65, height: 65)
                         .rotationEffect(.degrees(-90))
                     
-                    Image("water")
+                    Image("muscle")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 30, height: 30)
@@ -44,7 +43,7 @@ struct WaterView: View {
                 
                 HStack(spacing: 15) {
                     Button(action: {
-                        waterManager.subtractWater(incrementValue)
+                        proteinManager.subtractProtein(incrementValue)
                     }) {
                         Image(systemName: "minus.circle.fill")
                             .font(.system(size: 20))
@@ -52,7 +51,7 @@ struct WaterView: View {
                     }
                     
                     Button(action: {
-                        waterManager.addWater(incrementValue)
+                        proteinManager.addProtein(incrementValue)
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 20))
@@ -65,7 +64,8 @@ struct WaterView: View {
         .background(AppColors.secondaryBackgroundColor)
         .cornerRadius(15)
         .onAppear {
-            waterManager.loadTodaysWaterIntake()
+            proteinManager.loadTodaysProteinIntake()
+            proteinManager.loadProteinGoal()
         }
     }
 }
