@@ -28,7 +28,7 @@ struct HomeTabContent: View {
                 }
                 BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
                 WaterView()
-                ProteinView()
+                ProteinView(proteinManager: viewModel.proteinManager)
                 BMIView(viewModel: viewModel)
 //                quickActionsSection
 //                weightLossAdviceButton

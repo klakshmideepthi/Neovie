@@ -128,88 +128,90 @@ class HomePageViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var bmiListener: ListenerRegistration?
     @Published var bmi: Double = 0.0
+    @Published var proteinManager: ProteinIntakeManager
     
     let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
     let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
     
     init() {
-            setupBMIListener()
-        }
-        
-        deinit {
-            bmiListener?.remove()
-        }
-        
-        private func setupBMIListener() {
-            bmiListener = FirestoreManager.shared.setupBMIListener { [weak self] result in
-                switch result {
-                case .success(let bmi):
-                    DispatchQueue.main.async {
-                        self?.bmi = bmi
-                    }
-                case .failure(let error):
-                    print("Error in BMI listener: \(error.localizedDescription)")
+        self.proteinManager = ProteinIntakeManager()
+        setupBMIListener()
+    }
+    
+    deinit {
+        bmiListener?.remove()
+    }
+    
+    private func setupBMIListener() {
+        bmiListener = FirestoreManager.shared.setupBMIListener { [weak self] result in
+            switch result {
+            case .success(let bmi):
+                DispatchQueue.main.async {
+                    self?.bmi = bmi
                 }
+            case .failure(let error):
+                print("Error in BMI listener: \(error.localizedDescription)")
             }
         }
+    }
     
     func setupMedicationReminderListener() {
-            guard let userId = Auth.auth().currentUser?.uid else { return }
-            let db = Firestore.firestore()
-            db.collection("users").document(userId)
-                .addSnapshotListener { [weak self] documentSnapshot, error in
-                    guard let document = documentSnapshot else {
-                        print("Error fetching document: \(error?.localizedDescription ?? "Unknown error")")
-                        return
-                    }
-                    if let showReminder = document.data()?["showMedicationReminder"] as? Bool {
-                        DispatchQueue.main.async {
-                            self?.showMedicationReminder = showReminder
-                        }
-                    }
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        db.collection("users").document(userId)
+            .addSnapshotListener { [weak self] documentSnapshot, error in
+                guard let document = documentSnapshot else {
+                    print("Error fetching document: \(error?.localizedDescription ?? "Unknown error")")
+                    return
                 }
-        }
-
-        func updateShowMedicationReminder(_ show: Bool) {
-            guard let userId = Auth.auth().currentUser?.uid else { return }
-            let db = Firestore.firestore()
-            db.collection("users").document(userId).updateData(["showMedicationReminder": show]) { [weak self] error in
-                if let error = error {
-                    print("Error updating showMedicationReminder: \(error.localizedDescription)")
-                } else {
+                if let showReminder = document.data()?["showMedicationReminder"] as? Bool {
                     DispatchQueue.main.async {
-                        self?.showMedicationReminder = show
+                        self?.showMedicationReminder = showReminder
                     }
                 }
             }
+    }
+    
+    func updateShowMedicationReminder(_ show: Bool) {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        db.collection("users").document(userId).updateData(["showMedicationReminder": show]) { [weak self] error in
+            if let error = error {
+                print("Error updating showMedicationReminder: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    self?.showMedicationReminder = show
+                }
+            }
         }
+    }
     
     func fetchBannerContents() {
-            let db = Firestore.firestore()
-            db.collection("banners").getDocuments { (querySnapshot, error) in
-                if let error = error {
-                    print("Error getting documents: \(error)")
-                } else {
-                    let banners = querySnapshot?.documents.compactMap { document -> BannerContent? in
-                        let data = document.data()
-                        let colorHex = data["backgroundColor"] as? String ?? "000000"
-                        return BannerContent(
-                            id: document.documentID,
-                            title: data["title"] as? String ?? "",
-                            subtitle: data["subtitle"] as? String ?? "",
-                            buttonText: data["buttonText"] as? String ?? "",
-                            backgroundColor: Color(hex: colorHex),
-                            imageName: data["imageName"] as? String ?? "default_image",
-                            actionIdentifier: data["actionIdentifier"] as? String ?? ""
-                        )
-                    } ?? []
-                    
-                    DispatchQueue.main.async {
-                        self.bannerContents = banners
-                    }
+        let db = Firestore.firestore()
+        db.collection("banners").getDocuments { (querySnapshot, error) in
+            if let error = error {
+                print("Error getting documents: \(error)")
+            } else {
+                let banners = querySnapshot?.documents.compactMap { document -> BannerContent? in
+                    let data = document.data()
+                    let colorHex = data["backgroundColor"] as? String ?? "000000"
+                    return BannerContent(
+                        id: document.documentID,
+                        title: data["title"] as? String ?? "",
+                        subtitle: data["subtitle"] as? String ?? "",
+                        buttonText: data["buttonText"] as? String ?? "",
+                        backgroundColor: Color(hex: colorHex),
+                        imageName: data["imageName"] as? String ?? "default_image",
+                        actionIdentifier: data["actionIdentifier"] as? String ?? ""
+                    )
+                } ?? []
+                
+                DispatchQueue.main.async {
+                    self.bannerContents = banners
                 }
             }
         }
+    }
     
     func fetchUserData() {
         FirestoreManager.shared.getUserProfile { result in
@@ -243,7 +245,7 @@ class HomePageViewModel: ObservableObject {
         fetchBannerContents()
     }
     
-    func logEntry(weight: Double, sideEffect: String, emotion: String, foodNoise: Int) {
+    func logEntry(weight: Double, sideEffect: String, emotion: String, foodNoise: Int, proteinIntake: Double) {
         let newEntry = LogData.LogEntry(
             date: Date(),
             weight: weight,
@@ -252,17 +254,32 @@ class HomePageViewModel: ObservableObject {
             foodNoise: foodNoise
         )
         
-        FirestoreManager.shared.saveLog(newEntry) { result in
+        FirestoreManager.shared.saveLog(newEntry) { [weak self] result in
             switch result {
             case .success:
                 DispatchQueue.main.async {
-                    self.currentWeight = weight
-                    self.logs.insert(newEntry, at: 0)
+                    self?.currentWeight = weight
+                    self?.logs.insert(newEntry, at: 0)
                     print("Log entry saved successfully")
+//                    self?.proteinManager.addProtein(proteinIntake)
                 }
             case .failure(let error):
                 print("Error saving log entry: \(error.localizedDescription)")
             }
         }
     }
+    
+    func deleteLog(_ log: LogData.LogEntry) {
+            FirestoreManager.shared.deleteLog(log) { [weak self] result in
+                switch result {
+                case .success:
+                    DispatchQueue.main.async {
+                        self?.logs.removeAll { $0.id == log.id }
+                    }
+                case .failure(let error):
+                    print("Error deleting log: \(error.localizedDescription)")
+                    // You might want to show an alert to the user here
+                }
+            }
+        }
 }

@@ -241,6 +241,21 @@ class FirestoreManager {
             }
         }
     
+    func deleteLog(_ log: LogData.LogEntry, completion: @escaping (Result<Void, Error>) -> Void) {
+            guard let userId = Auth.auth().currentUser?.uid else {
+                completion(.failure(NSError(domain: "FirestoreManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not logged in"])))
+                return
+            }
+            
+            db.collection("users").document(userId).collection("logs").document(log.id).delete { error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
+    
     func saveWaterIntake(_ intake: Double, for date: Date, completion: @escaping (Result<Void, Error>) -> Void) {
             guard let uid = Auth.auth().currentUser?.uid else {
                 completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))

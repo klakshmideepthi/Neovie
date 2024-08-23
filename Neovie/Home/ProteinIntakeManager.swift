@@ -51,17 +51,13 @@ class ProteinIntakeManager: ObservableObject {
         saveProteinIntake()
     }
     
-    func subtractProtein(_ amount: Double) {
-        proteinIntake = max(0, proteinIntake - amount)
-        saveProteinIntake()
-    }
-    
     private func saveProteinIntake() {
         FirestoreManager.shared.saveProteinIntake(proteinIntake, for: Date()) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
                     print("Protein intake saved successfully")
+                    self?.objectWillChange.send()
                 case .failure(let error):
                     print("Error saving protein intake: \(error.localizedDescription)")
                     self?.loadTodaysProteinIntake()

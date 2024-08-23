@@ -7,6 +7,12 @@ struct NewLogView: View {
     @State private var selectedSideEffect = ""
     @State private var selectedEmotion = ""
     @State private var foodNoise = 3
+    @State private var proteinIntake: String = ""
+    
+    init(viewModel: HomePageViewModel) {
+        self.viewModel = viewModel
+        _weight = State(initialValue: String(format: "%.1f", viewModel.currentWeight))
+    }
     
     var body: some View {
         NavigationView {
@@ -16,10 +22,11 @@ struct NewLogView: View {
                 VStack(spacing: 20) {
                     ScrollView {
                         VStack(spacing: 20) {
-                            weightSection
+                            proteinSection
                             sideEffectSection
                             foodNoiseSection
                             emotionSection
+                            weightSection
                         }
                         .padding()
                     }
@@ -31,31 +38,58 @@ struct NewLogView: View {
                         .padding(.bottom, 30)
                 }
             }
-            .navigationTitle("New Log Entry")
+            .navigationTitle(getGreeting())
             .navigationBarItems(trailing: Button("Cancel") {
                 presentationMode.wrappedValue.dismiss()
             }.foregroundColor(AppColors.accentColor))
         }
         .accentColor(AppColors.accentColor)
     }
+    private func createWeightFormatter() -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
+        return formatter
+    }
     
     private var weightSection: some View {
-        VStack(alignment: .leading) {
-            Text("Weight")
-                .font(.headline)
-                .foregroundColor(AppColors.textColor)
-            TextField("Weight (kg)", text: $weight)
-                .keyboardType(.decimalPad)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .foregroundColor(AppColors.textColor)
-        }
+        HStack {
+                Text("Current Weight:")
+                    .font(.headline)
+                    .foregroundColor(AppColors.accentColor)
+                Spacer()
+                VStack(spacing: 0) {
+                    TextField("Weight (kg)", text: $weight)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                    Divider()
+                        .background(AppColors.accentColor)
+                }
+                .frame(width: 100) // Adjust the width as needed
+                Text("kg")
+            }
     }
+        
+        private var proteinSection: some View {
+            VStack(alignment: .leading) {
+                Text("Protein Intake")
+                    .font(.headline)
+                    .foregroundColor(AppColors.accentColor)
+                HStack {
+                    TextField("Protein (g)", text: $proteinIntake)
+                        .keyboardType(.numberPad)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .foregroundColor(AppColors.textColor)
+                }
+            }
+        }
     
     private var sideEffectSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Side Effect")
                 .font(.headline)
-                .foregroundColor(AppColors.textColor)
+                .foregroundColor(AppColors.accentColor)
             
             FlexibleView(data: ["None"] + viewModel.sideEffects, spacing: 10, alignment: .leading) { effect in
                 Button(action: {
@@ -76,7 +110,7 @@ struct NewLogView: View {
         VStack(alignment: .leading) {
             Text("Food Noise")
                 .font(.headline)
-                .foregroundColor(AppColors.textColor)
+                .foregroundColor(AppColors.accentColor)
             Stepper(value: $foodNoise, in: 1...5) {
                 Text("Food Noise: \(foodNoise)")
                     .foregroundColor(AppColors.textColor)
@@ -88,7 +122,7 @@ struct NewLogView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Emotion")
                 .font(.headline)
-                .foregroundColor(AppColors.textColor)
+                .foregroundColor(AppColors.accentColor)
             
             FlexibleView(data: ["None"] + viewModel.emotions, spacing: 10, alignment: .leading) { emotion in
                 Button(action: {
@@ -122,13 +156,27 @@ struct NewLogView: View {
 
     private func saveLog() {
         guard let weightValue = Double(weight) else { return }
+        let proteinValue = Double(proteinIntake) ?? 0
         viewModel.logEntry(
             weight: weightValue,
             sideEffect: selectedSideEffect.isEmpty ? "None" : selectedSideEffect,
             emotion: selectedEmotion.isEmpty ? "None" : selectedEmotion,
-            foodNoise: foodNoise
+            foodNoise: foodNoise,
+            proteinIntake: proteinValue
         )
+        viewModel.proteinManager.addProtein(proteinValue)
     }
+    private func getGreeting() -> String {
+            let hour = Calendar.current.component(.hour, from: Date())
+            switch hour {
+            case 0..<12:
+                return "Good Morning"
+            case 12..<17:
+                return "Good Afternoon"
+            default:
+                return "Good Evening"
+            }
+        }
 }
 
 struct FlexibleView<Data: Collection, Content: View>: View where Data.Element: Hashable {
