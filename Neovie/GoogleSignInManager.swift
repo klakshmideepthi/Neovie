@@ -73,9 +73,60 @@ class GoogleSignInManager: ObservableObject {
         }
     }
     
+    func deleteAccount(completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let user = Auth.auth().currentUser else {
+            completion(.failure(NSError(domain: "GoogleSignInManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "No user logged in"])))
+            return
+        }
+        
+        // First, reauthenticate the user
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            completion(.failure(NSError(domain: "GoogleSignInManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "No root view controller found"])))
+            return
+        }
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let signInResult = signInResult else {
+                completion(.failure(NSError(domain: "GoogleSignInManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get sign in result"])))
+                return
+            }
+            
+            guard let idToken = signInResult.user.idToken?.tokenString else {
+                completion(.failure(NSError(domain: "GoogleSignInManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get ID token"])))
+                return
+            }
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: signInResult.user.accessToken.tokenString)
+            
+            user.reauthenticate(with: credential) { _, error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                // Now delete the user
+                user.delete { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        self.isSignedIn = false
+                        self.googleProfile = nil
+                        self.userProfile = nil
+                        completion(.success(()))
+                    }
+                }
+            }
+        }
+    }
+    
     private func resetChatbotWelcomeStatus(completion: @escaping () -> Void) {
-        guard let userId = Auth.auth().currentUser?.uid else {
-            print("No user ID found, unable to reset chatbot welcome status")
+        guard Auth.auth().currentUser != nil else {
+            print("No user logged in, unable to reset chatbot welcome status")
             completion()
             return
         }

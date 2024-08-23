@@ -27,6 +27,7 @@
 		D80D55E92C745E0A0009C7DF /* ProteinIntakeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55E82C745E0A0009C7DF /* ProteinIntakeManager.swift */; };
 		D80D55EB2C7465410009C7DF /* BMIAndProteinCalculationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55EA2C7465410009C7DF /* BMIAndProteinCalculationView.swift */; };
 		D80D55EF2C747AC00009C7DF /* BMIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55EE2C747AC00009C7DF /* BMIView.swift */; };
+		D80D55F12C78144C0009C7DF /* DeleteUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55F02C78144C0009C7DF /* DeleteUserData.swift */; };
 		D85E8F1B2C55213A00CC2ACF /* NewLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */; };
 		D85E8F1D2C557BF200CC2ACF /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1C2C557BF200CC2ACF /* LogsView.swift */; };
 		D85E8F1F2C557F1B00CC2ACF /* LogsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1E2C557F1B00CC2ACF /* LogsData.swift */; };
@@ -115,6 +116,7 @@
 		D80D55E82C745E0A0009C7DF /* ProteinIntakeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinIntakeManager.swift; sourceTree = "<group>"; };
 		D80D55EA2C7465410009C7DF /* BMIAndProteinCalculationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIAndProteinCalculationView.swift; sourceTree = "<group>"; };
 		D80D55EE2C747AC00009C7DF /* BMIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIView.swift; sourceTree = "<group>"; };
+		D80D55F02C78144C0009C7DF /* DeleteUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteUserData.swift; sourceTree = "<group>"; };
 		D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewLogView.swift; sourceTree = "<group>"; };
 		D85E8F1C2C557BF200CC2ACF /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
 		D85E8F1E2C557F1B00CC2ACF /* LogsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsData.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				D86796742C70ACED00C0FF8B /* SideEffects.swift */,
 				D80D55D22C71F0AD0009C7DF /* AboutView.swift */,
 				D80D55DA2C72014E0009C7DF /* BannerView.swift */,
+				D80D55F02C78144C0009C7DF /* DeleteUserData.swift */,
 				D80D55EE2C747AC00009C7DF /* BMIView.swift */,
 				D80D55E82C745E0A0009C7DF /* ProteinIntakeManager.swift */,
 				D80D55E62C745A4C0009C7DF /* WaterIntakeManager.swift */,
@@ -514,6 +517,7 @@
 				D85EA7942C5252AE00A15915 /* ContentView.swift in Sources */,
 				D85EA7CF2C5254B200A15915 /* OnboardingView.swift in Sources */,
 				D8ABA6762C5FC8CD0040F018 /* CustomTabBar.swift in Sources */,
+				D80D55F12C78144C0009C7DF /* DeleteUserData.swift in Sources */,
 				D80D55EB2C7465410009C7DF /* BMIAndProteinCalculationView.swift in Sources */,
 				D80D55E12C73093A0009C7DF /* UserInfoMedicationDay.swift in Sources */,
 				D86796732C70918800C0FF8B /* CustomTextField.swift in Sources */,

@@ -15,7 +15,7 @@ struct HomeTabContent: View {
                 if let userProfile = viewModel.userProfile {
                     if viewModel.showMedicationReminder {
                         MedicationReminderWidget(
-                            medicationName: userProfile.medicationName,
+                            medicationName: userProfile.medicationInfo?.name ?? "Your medication",
                             dosage: userProfile.dosage,
                             onSkip: {
                                 viewModel.updateShowMedicationReminder(false)
@@ -30,9 +30,9 @@ struct HomeTabContent: View {
                 WaterView()
                 ProteinView()
                 BMIView(viewModel: viewModel)
-                quickActionsSection
-                weightLossAdviceButton
-                sideEffectsButton
+//                quickActionsSection
+//                weightLossAdviceButton
+//                sideEffectsButton
             }
             .padding()
         }
@@ -92,21 +92,6 @@ struct HomeTabContent: View {
                 .cornerRadius(10)
         }
         .disabled(viewModel.userProfile == nil)
-    }
-    
-    private var progressSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Progress")
-                .font(.headline)
-                .foregroundColor(.customTextColor)
-            
-            WeightProgressChart(data: viewModel.logs)
-                .frame(height: 200)
-                .padding()
-                .background(Color.white)
-                .cornerRadius(10)
-                .foregroundColor(AppColors.accentColor)
-        }
     }
     
     private var newLogButton: some View {

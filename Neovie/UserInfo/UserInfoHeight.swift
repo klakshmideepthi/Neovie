@@ -4,7 +4,7 @@ import HealthKit
 struct UserInfoHeight: View {
     @Binding var userProfile: UserProfile
     @State private var heightUnit: HeightUnit = .cm
-    @State private var isHealthKitAuthorized = false
+    @State private var isDataLoaded = false
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToNextView = false
     
@@ -13,7 +13,6 @@ struct UserInfoHeight: View {
     enum HeightUnit: String, CaseIterable {
         case cm, ft
     }
-    
 
     var body: some View {
         NavigationView {
@@ -28,7 +27,11 @@ struct UserInfoHeight: View {
                         
                         heightUnitPicker
                         
-                        heightPicker
+                        if isDataLoaded {
+                            heightPicker
+                        } else {
+                            ProgressView()
+                        }
                     }
                 }
                 .padding()
@@ -44,7 +47,7 @@ struct UserInfoHeight: View {
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
             .edgesIgnoringSafeArea(.all)
-            .onAppear(perform: requestHealthKitAuthorization)
+            .onAppear(perform: fetchUserProfile)
         }
         .navigationBarHidden(true)
     }
@@ -86,11 +89,11 @@ struct UserInfoHeight: View {
     }
     
     private var heightUnitPicker: some View {
-        
         HStack(spacing:20) {
             ForEach(HeightUnit.allCases, id: \.self) { unit in
                 Button(action: {
                     heightUnit = unit
+                    convertHeight()
                 }) {
                     Text(unit.rawValue)
                         .frame(maxWidth: .infinity)
@@ -155,48 +158,44 @@ struct UserInfoHeight: View {
                 .cornerRadius(10)
         }
         .padding(.horizontal)
-        .padding(.bottom, UIScreen.main.bounds.height * 0.05) // 5% of screen height for bottom padding
+        .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
     
-    private func requestHealthKitAuthorization() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            print("HealthKit is not available on this device")
-            return
-        }
-        
-        let readTypes: Set<HKObjectType> = [
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            HKObjectType.quantityType(forIdentifier: .height)!
-        ]
-        
-        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
-            DispatchQueue.main.async {
-                self.isHealthKitAuthorized = success
-                if success {
-                    self.fetchHealthKitData()
+    private func fetchUserProfile() {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(let fetchedProfile):
+                DispatchQueue.main.async {
+                    if fetchedProfile.heightCm != 0 {
+                        self.userProfile.heightCm = fetchedProfile.heightCm
+                        self.userProfile.heightFt = fetchedProfile.heightFt
+                        self.userProfile.heightIn = fetchedProfile.heightIn
+                        print("Height loaded from Firestore: \(fetchedProfile.heightCm) cm")
+                    } else {
+                        print("No height found in Firestore")
+                        self.fetchHealthKitData()
+                    }
+                    self.isDataLoaded = true
                 }
+            case .failure(let error):
+                print("Failed to fetch user profile: \(error.localizedDescription)")
+                self.fetchHealthKitData()
+                self.isDataLoaded = true
             }
         }
     }
     
     private func fetchHealthKitData() {
-        fetchHeight()
-    }
-    
-    private func fetchHeight() {
         guard let heightType = HKObjectType.quantityType(forIdentifier: .height) else { return }
         
         let query = HKSampleQuery(sampleType: heightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { (query, results, error) in
             if let sample = results?.first as? HKQuantitySample {
                 let heightInCm = sample.quantity.doubleValue(for: HKUnit.meterUnit(with: .centi))
                 DispatchQueue.main.async {
-                    if self.heightUnit == .cm {
-                        self.userProfile.heightCm = Int(heightInCm)
-                    } else {
-                        let heightInInches = heightInCm / 2.54
-                        self.userProfile.heightFt = Int(heightInInches / 12)
-                        self.userProfile.heightIn = Int(heightInInches.truncatingRemainder(dividingBy: 12))
-                    }
+                    self.userProfile.heightCm = Int(heightInCm)
+                    self.userProfile.heightFt = Int(heightInCm / 30.48)
+                    self.userProfile.heightIn = Int((heightInCm / 2.54).truncatingRemainder(dividingBy: 12))
+                    print("Height loaded from HealthKit: \(heightInCm) cm")
                 }
             }
         }
@@ -204,24 +203,32 @@ struct UserInfoHeight: View {
         healthStore.execute(query)
     }
     
-    
-    private func saveUserProfile() {
-        
+    private func convertHeight() {
         if heightUnit == .cm {
+            userProfile.heightCm = Int((Double(userProfile.heightFt) * 30.48) + (Double(userProfile.heightIn) * 2.54))
+        } else {
             userProfile.heightFt = Int(Double(userProfile.heightCm) / 30.48)
             userProfile.heightIn = Int((Double(userProfile.heightCm) / 2.54).truncatingRemainder(dividingBy: 12))
-        } else {
-            userProfile.heightCm = Int((Double(userProfile.heightFt) * 30.48) + (Double(userProfile.heightIn) * 2.54))
         }
+    }
+    
+    private func saveUserProfile() {
+        let oldHeight = userProfile.heightCm
+        convertHeight() // Ensure all height values are up to date
         
-        FirestoreManager.shared.saveUserProfile(userProfile) { result in
-            switch result {
-            case .success:
-                print("User profile saved successfully")
-                self.navigateToNextView = true
-            case .failure(let error):
-                print("Failed to save user profile: \(error.localizedDescription)")
+        if oldHeight != userProfile.heightCm {
+            FirestoreManager.shared.saveUserProfile(userProfile) { result in
+                switch result {
+                case .success:
+                    print("User profile saved successfully")
+                    self.navigateToNextView = true
+                case .failure(let error):
+                    print("Failed to save user profile: \(error.localizedDescription)")
+                }
             }
+        } else {
+            print("Height unchanged, skipping save")
+            self.navigateToNextView = true
         }
     }
 }

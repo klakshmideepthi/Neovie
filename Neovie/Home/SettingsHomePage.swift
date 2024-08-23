@@ -7,6 +7,7 @@ struct SettingsHomeView: View {
     @Binding var userProfile: UserProfile
     @State private var isEditingProfile = false
     @State private var showingSignOutAlert = false
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         NavigationView {
@@ -39,6 +40,16 @@ struct SettingsHomeView: View {
                 secondaryButton: .cancel()
             )
         }
+        .alert(isPresented: $showingDeleteAlert) {
+                        Alert(
+                            title: Text("Delete My Data"),
+                            message: Text("Are you sure you want to delete all your data? This action cannot be undone."),
+                            primaryButton: .destructive(Text("Delete")) {
+                                deleteUserData()
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
         .onAppear {
             loadUserProfile()
         }
@@ -101,6 +112,20 @@ struct SettingsHomeView: View {
             .padding()
             .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
+            
+            Button(action: {
+                showingDeleteAlert = true
+            }) {
+                HStack {
+                    Label("Delete My Data", systemImage: "trash")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .foregroundColor(AppColors.accentColor)
+            }
+            .padding()
+            .background(AppColors.secondaryBackgroundColor)
+            .cornerRadius(10)
         }
     }
     
@@ -116,10 +141,13 @@ struct SettingsHomeView: View {
                     infoRow(title: "Gender", value: userProfile.gender)
                     infoRow(title: "Age", value: "\(userProfile.age)")
                     infoRow(title: "Height", value: "\(userProfile.heightCm) cm")
-                    infoRow(title: "Current Weight", value: String(format: "%.1f kg", userProfile.weight))
-                    infoRow(title: "Target Weight", value: String(format: "%.1f kg", userProfile.targetWeight))
-                    infoRow(title: "Medication", value: userProfile.medicationName)
-                    infoRow(title: "Dosage", value: userProfile.dosage)
+                    infoRow(title: "Current Weight", value: "\(formatWeight(userProfile.weight)) kg")
+                    infoRow(title: "Target Weight", value: "\(formatWeight(userProfile.targetWeight)) kg")
+                    infoRow(title: "Medication", value: userProfile.medicationInfo?.name ?? "Not set")
+                    if(userProfile.dosage != "") {
+                        infoRow(title: "Dosage", value: userProfile.dosage)
+                    }
+                    
                 }
                 .padding()
                 .background(AppColors.secondaryBackgroundColor)
@@ -127,7 +155,13 @@ struct SettingsHomeView: View {
                 .foregroundColor(AppColors.textColor)
             }
         }
-        
+    }
+    
+    private func formatWeight(_ weight: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
+        return formatter.string(from: NSNumber(value: weight)) ?? String(format: "%.1f", weight)
     }
     
     private func infoRow(title: String, value: String) -> some View {
@@ -137,6 +171,78 @@ struct SettingsHomeView: View {
             Spacer()
             Text(value)
                 .foregroundColor(AppColors.textColor)
+        }
+    }
+    
+    private func deleteUserData() {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("No user logged in")
+            return
+        }
+        
+        let db = Firestore.firestore()
+        
+        // Delete user profile
+        db.collection("users").document(userId).delete { error in
+            if let error = error {
+                print("Error deleting user profile: \(error.localizedDescription)")
+            } else {
+                print("User profile successfully deleted")
+            }
+        }
+        
+        // Delete user's weight logs
+        db.collection("weightLogs").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching weight logs: \(error.localizedDescription)")
+            } else {
+                for document in snapshot!.documents {
+                    document.reference.delete()
+                }
+                print("Weight logs successfully deleted")
+            }
+        }
+        
+        // Delete user's side effects logs
+        db.collection("sideEffects").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching side effects logs: \(error.localizedDescription)")
+            } else {
+                for document in snapshot!.documents {
+                    document.reference.delete()
+                }
+                print("Side effects logs successfully deleted")
+            }
+        }
+        
+        // Delete user's emotions logs
+        db.collection("emotions").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching emotions logs: \(error.localizedDescription)")
+            } else {
+                for document in snapshot!.documents {
+                    document.reference.delete()
+                }
+                print("Emotions logs successfully deleted")
+            }
+        }
+        
+        // Delete user's chat history
+        db.collection("chatHistory").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching chat history: \(error.localizedDescription)")
+            } else {
+                for document in snapshot!.documents {
+                    document.reference.delete()
+                }
+                print("Chat history successfully deleted")
+            }
+        }
+        
+        // After deleting all data, sign out the user
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { // Give some time for deletions to complete
+            self.signInManager.signOut()
+            self.presentationMode.wrappedValue.dismiss()
         }
     }
     
@@ -165,6 +271,8 @@ struct ProfileEditView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var tempProfile: UserProfile
     @State private var isNameEmpty: Bool = false
+    @State private var selectedMedication: MedicationInfo? = nil
+        @State private var selectedDosage: String = ""
     
     init(userProfile: Binding<UserProfile>) {
         self._userProfile = userProfile
@@ -199,9 +307,11 @@ struct ProfileEditView: View {
                         )
                     }
         .navigationViewStyle(StackNavigationViewStyle())
-                .onAppear {
-                    isNameEmpty = tempProfile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                }
+        .onAppear {
+            isNameEmpty = tempProfile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            selectedMedication = tempProfile.medicationInfo
+            selectedDosage = tempProfile.dosage
+        }
                 }
     
     private var personalInformationSection: some View {
@@ -266,7 +376,7 @@ struct ProfileEditView: View {
                 HStack {
                     Text("Current Weight:")
                     Spacer()
-                    TextField("kg", value: $tempProfile.weight, formatter: NumberFormatter())
+                    TextField("kg", value: $tempProfile.weight, formatter: createWeightFormatter())
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
                     Text("kg")
@@ -275,7 +385,7 @@ struct ProfileEditView: View {
                 HStack {
                     Text("Target Weight:")
                     Spacer()
-                    TextField("kg", value: $tempProfile.targetWeight, formatter: NumberFormatter())
+                    TextField("kg", value: $tempProfile.targetWeight, formatter: createWeightFormatter())
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
                     Text("kg")
@@ -287,6 +397,14 @@ struct ProfileEditView: View {
             .foregroundColor(AppColors.textColor)
         }
     }
+
+    private func createWeightFormatter() -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
+        return formatter
+    }
     
     private var medicationSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -294,16 +412,70 @@ struct ProfileEditView: View {
                 .font(.headline)
                 .foregroundColor(AppColors.textColor.opacity(0.6))
             
-            VStack(spacing: 10) {
-                TextField("Medication Name", text: $tempProfile.medicationName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            VStack(spacing: 15) {
+                CustomPicker(
+                    title: "Medication",
+                    selection: $selectedMedication,
+                    options: [nil] + availableMedications,
+                    optionToString: { $0?.name ?? "None" }
+                )
+                .onChange(of: selectedMedication) { newValue in
+                    if newValue == nil {
+                        selectedDosage = ""
+                    } else {
+                        selectedDosage = newValue?.dosages.first ?? ""
+                    }
+                }
                 
-                TextField("Dosage", text: $tempProfile.dosage)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                if let medication = selectedMedication {
+                    CustomPicker(
+                        title: "Dosage",
+                        selection: $selectedDosage,
+                        options: medication.dosages,
+                        optionToString: { $0 }
+                    )
+                }
             }
             .padding()
             .background(AppColors.secondaryBackgroundColor)
             .cornerRadius(10)
+        }
+    }
+
+    struct CustomPicker<T: Hashable>: View {
+        let title: String
+        @Binding var selection: T
+        let options: [T]
+        let optionToString: (T) -> String
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(AppColors.textColor.opacity(0.6))
+                
+                Menu {
+                    ForEach(options, id: \.self) { option in
+                        Button(action: {
+                            selection = option
+                        }) {
+                            Text(optionToString(option))
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(optionToString(selection))
+                            .foregroundColor(AppColors.textColor)
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .foregroundColor(AppColors.accentColor)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.black.opacity(0.5))
+                    .cornerRadius(8)
+                }
+            }
         }
     }
     
@@ -311,6 +483,9 @@ struct ProfileEditView: View {
         let group = DispatchGroup()
         var overallSuccess = true
         var overallError: Error?
+        
+        tempProfile.medicationInfo = selectedMedication
+        tempProfile.dosage = selectedMedication == nil ? "" : selectedDosage
 
         // Update fields that require recalculation
         if tempProfile.weight != userProfile.weight {
@@ -357,6 +532,9 @@ struct ProfileEditView: View {
                 group.leave()
             }
         }
+        
+        tempProfile.medicationInfo = selectedMedication
+        tempProfile.dosage = selectedDosage
 
         // Update other fields that don't require recalculation
         group.enter()

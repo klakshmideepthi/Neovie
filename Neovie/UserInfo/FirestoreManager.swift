@@ -26,7 +26,7 @@ class FirestoreManager {
                 "targetWeight": userProfile.targetWeight,
                 "gender": userProfile.gender,
                 "dateOfBirth": Timestamp(date: userProfile.dateOfBirth),
-                "medicationName": userProfile.medicationName,
+                "medicationName": userProfile.medicationInfo?.name ?? "",
                 "dosage": userProfile.dosage,
                 "age": userProfile.age,
                 "activityLevel": userProfile.activityLevel,
@@ -35,7 +35,9 @@ class FirestoreManager {
                 "showMedicationReminder": userProfile.showMedicationReminder,
                 "hasSeenChatbotWelcome": userProfile.hasSeenChatbotWelcome,
                 "bmi": userProfile.bmi,
-                "proteinGoal": userProfile.proteinGoal
+                "proteinGoal": userProfile.proteinGoal,
+                "preferredHeightUnit": userProfile.preferredHeightUnit.rawValue,
+                "preferredWeightUnit": userProfile.preferredWeightUnit.rawValue
             ]
             
             db.collection("users").document(uid).setData(data, merge: true) { error in
@@ -47,69 +49,72 @@ class FirestoreManager {
             }
         }
         
-        func getUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
-            guard let uid = getCurrentUserID() else {
-                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
-                return
-            }
-            
-            db.collection("users").document(uid).getDocument { (document, error) in
-                if let error = error {
-                    completion(.failure(error))
-                } else if let document = document, document.exists {
-                    if let data = document.data(),
-                       let name = data["name"] as? String,
-                       let heightCm = data["heightCm"] as? Int,
-                       let heightFt = data["heightFt"] as? Int,
-                       let heightIn = data["heightIn"] as? Int,
-                       let weight = data["weight"] as? Double,
-                       let targetWeight = data["targetWeight"] as? Double,
-                       let gender = data["gender"] as? String,
-                       let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue(),
-                       let medicationName = data["medicationName"] as? String,
-                       let dosage = data["dosage"] as? String,
-                       let age = data["age"] as? Int,
-                       let activityLevel = data["activityLevel"] as? String,
-                       let dosageDay = data["dosageDay"] as? String,
-                       let dosageTime = (data["dosageTime"] as? Timestamp)?.dateValue(),
-                       let showMedicationReminder = data["showMedicationReminder"] as? Bool,
-                       let hasSeenChatbotWelcome = data["hasSeenChatbotWelcome"] as? Bool,
-                       let bmi = data["bmi"] as? Double,
-                       let proteinGoal = data["proteinGoal"] as? Double {
-                        
-                        var userProfile = UserProfile(
-                            name: name,
-                            heightCm: heightCm,
-                            heightFt: heightFt,
-                            heightIn: heightIn,
-                            weight: weight,
-                            targetWeight: targetWeight,
-                            gender: gender,
-                            dateOfBirth: dateOfBirth,
-                            medicationName: medicationName,
-                            dosage: dosage,
-                            age: age,
-                            activityLevel: activityLevel,
-                            dosageDay: dosageDay,
-                            dosageTime: dosageTime,
-                            showMedicationReminder: showMedicationReminder,
-                            hasSeenChatbotWelcome: hasSeenChatbotWelcome,
-                            bmi: bmi,
-                            proteinGoal: proteinGoal
-                        )
-                        
-                        userProfile.updateAge()
-                        userProfile.updateBMIAndProteinGoal()
-                        
-                        completion(.success(userProfile))
-                    } else {
-                        completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"])))
-                    }
+    func getUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        guard let uid = getCurrentUserID() else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(uid).getDocument { (document, error) in
+            if let error = error {
+                completion(.failure(error))
+            } else if let document = document, document.exists {
+                if let data = document.data(),
+                   let name = data["name"] as? String,
+                   let heightCm = data["heightCm"] as? Int,
+                   let heightFt = data["heightFt"] as? Int,
+                   let heightIn = data["heightIn"] as? Int,
+                   let weight = data["weight"] as? Double,
+                   let targetWeight = data["targetWeight"] as? Double,
+                   let gender = data["gender"] as? String,
+                   let dateOfBirth = (data["dateOfBirth"] as? Timestamp)?.dateValue(),
+                   let medicationName = data["medicationName"] as? String,
+                   let dosage = data["dosage"] as? String,
+                   let activityLevel = data["activityLevel"] as? String,
+                   let dosageDay = data["dosageDay"] as? String,
+                   let dosageTime = (data["dosageTime"] as? Timestamp)?.dateValue(),
+                   let showMedicationReminder = data["showMedicationReminder"] as? Bool,
+                   let hasSeenChatbotWelcome = data["hasSeenChatbotWelcome"] as? Bool,
+                   let bmi = data["bmi"] as? Double,
+                   let proteinGoal = data["proteinGoal"] as? Double,
+                   let preferredHeightUnitString = data["preferredHeightUnit"] as? String,
+                   let preferredWeightUnitString = data["preferredWeightUnit"] as? String {
+                    let medicationInfo = availableMedications.first { $0.name == medicationName }
+                    
+                    let preferredHeightUnit = UserProfile.HeightUnit(rawValue: preferredHeightUnitString) ?? .cm
+                    let preferredWeightUnit = UserProfile.WeightUnit(rawValue: preferredWeightUnitString) ?? .kg
+                    
+                    let userProfile = UserProfile(
+                        name: name,
+                        heightCm: heightCm,
+                        heightFt: heightFt,
+                        heightIn: heightIn,
+                        weight: weight,
+                        targetWeight: targetWeight,
+                        gender: gender,
+                        dateOfBirth: dateOfBirth,
+                        medicationInfo: medicationInfo,
+                        dosage: dosage,
+                        activityLevel: activityLevel,
+                        dosageDay: dosageDay,
+                        dosageTime: dosageTime,
+                        showMedicationReminder: showMedicationReminder,
+                        hasSeenChatbotWelcome: hasSeenChatbotWelcome,
+                        bmi: bmi,
+                        proteinGoal: proteinGoal,
+                        preferredHeightUnit: preferredHeightUnit,
+                        preferredWeightUnit: preferredWeightUnit
+                    )
+                    
+                    completion(.success(userProfile))
                 } else {
-                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Document does not exist"])))
+                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"])))
                 }
+            } else {
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Document does not exist"])))
             }
         }
+    }
     
     func updateUserAge(for userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
             let userRef = db.collection("users").document(userId)
@@ -135,6 +140,26 @@ class FirestoreManager {
                     } else {
                         completion(.success(()))
                     }
+                }
+            }
+        }
+    
+    func updateUserBMIAndProteinGoal(bmi: Double, proteinGoal: Double, completion: @escaping (Result<Void, Error>) -> Void) {
+            guard let uid = getCurrentUserID() else {
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+                return
+            }
+
+            let data: [String: Any] = [
+                "bmi": bmi,
+                "proteinGoal": proteinGoal
+            ]
+
+            db.collection("users").document(uid).updateData(data) { error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
                 }
             }
         }
@@ -387,24 +412,24 @@ class FirestoreManager {
     
     
     
-    func saveMedicationInfo(medicationName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let uid = getCurrentUserID() else {
-            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
-            return
-        }
-        
-        let data: [String: Any] = [
-            "medicationName": medicationName
-        ]
-        
-        db.collection("users").document(uid).setData(data, merge: true) { error in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                completion(.success(()))
+    func saveMedicationInfo(medicationInfo: MedicationInfo, completion: @escaping (Result<Void, Error>) -> Void) {
+            guard let uid = getCurrentUserID() else {
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+                return
+            }
+            
+            let data: [String: Any] = [
+                "medicationName": medicationInfo.name
+            ]
+            
+            db.collection("users").document(uid).setData(data, merge: true) { error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
+                }
             }
         }
-    }
     
     func saveDosageInfo(dosage: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let uid = getCurrentUserID() else {

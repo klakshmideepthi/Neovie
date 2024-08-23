@@ -1,5 +1,4 @@
 import SwiftUI
-import HealthKit
 import Lottie
 
 struct GenderSelectionView: View {
@@ -18,8 +17,7 @@ struct GenderSelectionView: View {
                     .stroke(isSelected ? AppColors.accentColor : Color.gray.opacity(0.3), lineWidth: 4)
                 
                 LottieView(name: lottieName, play: isSelected)
-                    .padding(20)
-                    .opacity(isSelected ? 1 : 0.5)
+                    .padding(15)
             }
             .aspectRatio(1, contentMode: .fit)
             .onTapGesture {
@@ -37,11 +35,10 @@ struct GenderSelectionView: View {
 struct UserInfoGender: View {
     @Binding var userProfile: UserProfile
     @State private var selectedGender: String = ""
-    @State private var isHealthKitAuthorized = false
     @State private var navigateToNextView = false
+    @State private var isDataLoaded = false
     @Environment(\.presentationMode) var presentationMode
     
-    let healthStore = HKHealthStore()
     let genders = ["Female", "Male", "Other", "Prefer not to tell"]
     let genderLottie = ["Gender2", "Gender3", "Gender1", "Gender4"]
 
@@ -72,23 +69,29 @@ struct UserInfoGender: View {
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
             .edgesIgnoringSafeArea(.all)
-            .onAppear(perform: requestHealthKitAuthorization)
+            .onAppear(perform: fetchUserProfile)
         }
         .navigationBarHidden(true)
     }
     
     private var genderSelectionSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-            ForEach(0..<4) { index in
-                GenderSelectionView(
-                    gender: genders[index],
-                    lottieName: genderLottie[index],
-                    isSelected: selectedGender == genders[index]
-                ) {
-                    selectedGender = genders[index]
+        Group {
+            if isDataLoaded {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                    ForEach(0..<4) { index in
+                        GenderSelectionView(
+                            gender: genders[index],
+                            lottieName: genderLottie[index],
+                            isSelected: selectedGender == genders[index]
+                        ) {
+                            selectedGender = genders[index]
+                        }
+                    }
+                    .padding(20)
                 }
+            } else {
+                ProgressView() // Show a loading indicator while fetching data
             }
-            .padding(5)
         }
     }
     
@@ -128,6 +131,10 @@ struct UserInfoGender: View {
         .padding(.leading)
     }
     
+    private var isGenderSelected: Bool {
+        !selectedGender.isEmpty
+    }
+    
     private var continueButton: some View {
         Button(action: {
             saveUserProfile()
@@ -135,69 +142,56 @@ struct UserInfoGender: View {
             Text("Continue")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(!selectedGender.isEmpty ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
-                .foregroundColor(!selectedGender.isEmpty ? .white : .white.opacity(0.5))
+                .background(isGenderSelected ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
+                .foregroundColor(isGenderSelected ? .white : .white.opacity(0.5))
                 .cornerRadius(10)
         }
         .padding(.horizontal)
-        .disabled(selectedGender.isEmpty)
+        .disabled(!isGenderSelected)
         .simultaneousGesture(TapGesture().onEnded {
-            if !selectedGender.isEmpty {
+            if isGenderSelected {
                 saveUserProfile()
             }
         })
-        .padding(.bottom, UIScreen.main.bounds.height * 0.05) // 5% of screen height for bottom padding
+        .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
-    
-    private func requestHealthKitAuthorization() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            print("HealthKit is not available on this device")
-            return
-        }
-        
-        let readTypes: Set<HKObjectType> = [
-            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
-            HKObjectType.characteristicType(forIdentifier: .biologicalSex)!
-        ]
-        
-        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
-            DispatchQueue.main.async {
-                self.isHealthKitAuthorized = success
-                if success {
-                    self.fetchHealthKitData()
+    private func fetchUserProfile() {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(let fetchedProfile):
+                DispatchQueue.main.async {
+                    if !fetchedProfile.gender.isEmpty && fetchedProfile.gender != "Not Set" {
+                        self.selectedGender = fetchedProfile.gender
+                        print("Gender loaded from Firestore: \(fetchedProfile.gender)")
+                    } else {
+                        self.selectedGender = ""
+                        print("No valid gender found in Firestore")
+                    }
+                    self.isDataLoaded = true
                 }
+            case .failure(let error):
+                print("Failed to fetch user profile: \(error.localizedDescription)")
+                self.isDataLoaded = true
             }
-        }
-    }
-    
-    private func fetchHealthKitData() {
-        do {
-            let biologicalSex = try healthStore.biologicalSex()
-            
-            switch biologicalSex.biologicalSex {
-            case .female:
-                selectedGender = "Female"
-            case .male:
-                selectedGender = "Male"
-            default:
-                selectedGender = "Other"
-            }
-        } catch {
-            print("Error fetching HealthKit data: \(error.localizedDescription)")
         }
     }
     
     private func saveUserProfile() {
-        userProfile.gender = selectedGender
-        
-        FirestoreManager.shared.saveUserProfile(userProfile) { result in
-            switch result {
-            case .success:
-                print("User profile saved successfully")
-                self.navigateToNextView = true
-            case .failure(let error):
-                print("Failed to save user profile: \(error.localizedDescription)")
+        if userProfile.gender != selectedGender {
+            userProfile.gender = selectedGender
+            
+            FirestoreManager.shared.saveUserProfile(userProfile) { result in
+                switch result {
+                case .success:
+                    print("User profile saved successfully")
+                    self.navigateToNextView = true
+                case .failure(let error):
+                    print("Failed to save user profile: \(error.localizedDescription)")
+                }
             }
+        } else {
+            print("Gender unchanged, skipping save")
+            self.navigateToNextView = true
         }
     }
 }

@@ -1,10 +1,16 @@
 import SwiftUI
 import UIKit
+import HealthKit
 
 struct UserInfoName: View {
     @Binding var userProfile: UserProfile
     @State private var name: String = ""
     @State private var navigateToNextView = false
+    @State private var showHealthKitPermissionAlert = false
+    @State private var healthKitAuthorized = false
+    @State private var isHealthKitAuthorized = false
+    
+    let healthStore = HKHealthStore()
 
     var body: some View {
         NavigationView {
@@ -30,6 +36,7 @@ struct UserInfoName: View {
             }
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
+            .onAppear(perform: requestHealthKitAuthorization)
             .edgesIgnoringSafeArea(.all)
             .onTapGesture {
                 hideKeyboard()
@@ -105,23 +112,68 @@ struct UserInfoName: View {
         .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
     
-    private func saveUserProfile() {
-        userProfile.name = name
+    private func requestHealthKitAuthorization() {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            print("HealthKit is not available on this device")
+            return
+        }
         
-        FirestoreManager.shared.saveUserProfile(userProfile) { result in
+        let readTypes: Set<HKObjectType> = [
+            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
+            HKObjectType.characteristicType(forIdentifier: .biologicalSex)!,
+            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
+            HKObjectType.quantityType(forIdentifier: .height)!
+        ]
+        
+        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
             DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    print("User profile saved successfully")
-                    self.navigateToNextView = true
-                case .failure(let error):
-                    print("Failed to save user profile: \(error.localizedDescription)")
-                    // You might want to show an alert to the user here
+                self.isHealthKitAuthorized = success
+                if success {
+                    self.fetchHealthKitData()
+                } else if let error = error {
+                    print("HealthKit authorization failed: \(error.localizedDescription)")
                 }
             }
         }
     }
     
+    private func fetchHealthKitData() {
+               HealthKitManager.shared.fetchUserInfo { dateOfBirth, biologicalSex, weight, height in
+                   DispatchQueue.main.async {
+                       if let dateOfBirth = dateOfBirth {
+                           userProfile.dateOfBirth = dateOfBirth
+                       }
+                       if let biologicalSex = biologicalSex {
+                           userProfile.gender = biologicalSex
+                       }
+                       if let weight = weight {
+                           userProfile.weight = weight
+                       }
+                       if let height = height {
+                           userProfile.heightCm = Int(height)
+                       }
+                   }
+               }
+           }
+        
+        private func saveUserProfile() {
+            userProfile.name = name
+            
+            FirestoreManager.shared.saveUserProfile(userProfile) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        print("User profile saved successfully")
+                        self.navigateToNextView = true
+                    case .failure(let error):
+                        print("Failed to save user profile: \(error.localizedDescription)")
+                        // You might want to show an alert to the user here
+                    }
+                }
+            }
+        }
+        
+
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }

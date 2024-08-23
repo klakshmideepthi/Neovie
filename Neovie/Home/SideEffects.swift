@@ -76,15 +76,21 @@ struct SideEffectsView: View {
     }
 
     private func updateCurrentMedicationName() {
-        currentMedicationName = userProfile.medicationName
+        currentMedicationName = userProfile.medicationInfo?.name ?? "Not Set"
     }
 
     private func loadSideEffects() {
-        let medicationName = userProfile.medicationName
+        let medicationName = userProfile.medicationInfo?.name ?? ""
         
         isLoading = true
         errorMessage = nil
         sideEffects = nil
+
+        if medicationName.isEmpty {
+            isLoading = false
+            errorMessage = "No medication selected"
+            return
+        }
 
         FirestoreManager.shared.getMedicationSideEffects(medicationName: medicationName) { result in
             DispatchQueue.main.async {

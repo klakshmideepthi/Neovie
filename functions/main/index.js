@@ -5,9 +5,7 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-exports.checkDailyDosage = functions.pubsub
-    .schedule("0 0 * * *")
-    .timeZone("UTC")
+exports.checkDailyDosage = functions.pubsub.schedule("0 0 * * *")
     .onRun(async (context) => {
       console.log("checkDailyDosage function started");
       const db = admin.firestore();

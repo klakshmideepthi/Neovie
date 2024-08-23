@@ -82,6 +82,7 @@ struct BannerView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 180)
+                    .padding(.horizontal,5)
             }
         }
         .clipped()

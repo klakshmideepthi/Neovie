@@ -3,15 +3,11 @@ import Firebase
 
 struct UserInfoTargetWeight: View {
     @Binding var userProfile: UserProfile
-    @State private var weightUnit: WeightUnit = .lbs
+    @State private var weightUnit: UserProfile.WeightUnit = .lbs
     @State private var targetWeightWhole: Int = 190
     @State private var targetWeightFraction: Int = 0
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToNextView = false
-
-    enum WeightUnit: String, CaseIterable {
-        case kg, lbs
-    }
 
     var body: some View {
         NavigationView {
@@ -42,7 +38,7 @@ struct UserInfoTargetWeight: View {
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
             .edgesIgnoringSafeArea(.all)
-            .onAppear(perform: fetchWeightFromFirebase)
+            .onAppear(perform: initializeView)
         }
         .navigationBarHidden(true)
     }
@@ -85,7 +81,7 @@ struct UserInfoTargetWeight: View {
     
     private var weightUnitPicker: some View {
         HStack(spacing:20) {
-            ForEach(WeightUnit.allCases, id: \.self) { unit in
+            ForEach(UserProfile.WeightUnit.allCases, id: \.self) { unit in
                 Button(action: {
                     weightUnit = unit
                     convertWeight()
@@ -154,6 +150,11 @@ struct UserInfoTargetWeight: View {
         .padding(.horizontal)
         .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
+
+    private func initializeView() {
+        weightUnit = userProfile.preferredWeightUnit
+        fetchWeightFromFirebase()
+    }
     
     private func fetchWeightFromFirebase() {
         guard let userId = Auth.auth().currentUser?.uid else {
@@ -184,16 +185,22 @@ struct UserInfoTargetWeight: View {
         let oldTargetWeight = Double(targetWeightWhole) + Double(targetWeightFraction) / 10.0
         
         if weightUnit == .kg {
-            setTargetWeight(oldTargetWeight / 2.20462)
+            let newWeight = oldTargetWeight / 2.20462
+            targetWeightWhole = Int(newWeight)
+            targetWeightFraction = Int((newWeight - Double(targetWeightWhole)) * 10)
         } else {
-            setTargetWeight(oldTargetWeight * 2.20462)
+            let newWeight = oldTargetWeight * 2.20462
+            targetWeightWhole = Int(newWeight)
+            targetWeightFraction = Int((newWeight - Double(targetWeightWhole)) * 10)
         }
     }
     
     private func saveUserProfile() {
         let targetWeight = Double(targetWeightWhole) + Double(targetWeightFraction) / 10.0
+        let targetWeightInKg = weightUnit == .kg ? targetWeight : targetWeight / 2.20462
         
-        userProfile.targetWeight = weightUnit == .kg ? targetWeight : targetWeight / 2.20462 // Always save in kg
+        userProfile.targetWeight = targetWeightInKg // Always save in kg
+        userProfile.preferredWeightUnit = weightUnit
         
         FirestoreManager.shared.saveUserProfile(userProfile) { result in
             switch result {

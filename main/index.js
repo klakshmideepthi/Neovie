@@ -5,9 +5,7 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-exports.checkDailyDosage = functions.pubsub
-    .schedule("0 0 * * *")
-    .timeZone("UTC")
+exports.checkDailyDosage = functions.pubsub.schedule("0 0 * * *")
     .onRun(async (context) => {
       console.log("checkDailyDosage function started");
       const db = admin.firestore();
@@ -156,8 +154,8 @@ function createPrompt(userData) {
   const safeUserData = {
     name: userData.name || "Not provided",
     height: userData.heightCm || "Not provided",
-    weightKg: userData.weightKg || "Not provided",
-    targetWeightKg: userData.targetWeightKg || "Not provided",
+    weight: userData.weight || "Not provided",
+    targetWeight: userData.targetWeight || "Not provided",
     gender: userData.gender || "Not provided",
     age: userData.age || "Not provided",
     activityLevel: userData.activityLevel || "Not provided",
@@ -172,8 +170,8 @@ function createPrompt(userData) {
   const userInfo = `
     Name: ${safeUserData.name}
     Height: ${safeUserData.heightCm}
-    Current Weight: ${safeUserData.weightKg}
-    Target Weight: ${safeUserData.targetWeightKg}
+    Current Weight: ${safeUserData.weight}
+    Target Weight: ${safeUserData.targetWeight}
     Gender: ${safeUserData.gender}
     Age: ${safeUserData.age}
     Activity Level: ${safeUserData.activityLevel}
@@ -234,8 +232,8 @@ function createContext(userData) {
     User Profile:
     - Name: ${userData.name || "Not provided"}
     - Height: ${userData.heightCm || "Not provided"} cm
-    - Current Weight: ${userData.weightKg || "Not provided"} kg
-    - Target Weight: ${userData.targetWeightKg || "Not provided"} kg
+    - Current Weight: ${userData.weight || "Not provided"} kg
+    - Target Weight: ${userData.targetWeight || "Not provided"} kg
     - Gender: ${userData.gender || "Not provided"}
     - Age: ${userData.age || "Not provided"}
     - Activity Level: ${userData.activityLevel || "Not provided"}

@@ -53,17 +53,25 @@ struct ChatbotView: View {
         ScrollViewReader { scrollView in
             ScrollView {
                 LazyVStack(spacing: 10) {
-                    ForEach(viewModel.messages) { message in
-                        ChatBubble(message: message)
+                    if viewModel.messages.isEmpty && viewModel.currentStreamingMessage == nil {
+                        Image("mega-creator")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)
+                            .padding(.top, UIScreen.main.bounds.height / 4)
+                    } else {
+                        ForEach(viewModel.messages) { message in
+                            ChatBubble(message: message)
+                        }
+                        if let streamingMessage = viewModel.currentStreamingMessage {
+                            ChatBubble(message: streamingMessage)
+                        }
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .padding()
+                        }
+                        Color.clear.frame(height: 1).id("bottomAnchor")
                     }
-                    if let streamingMessage = viewModel.currentStreamingMessage {
-                        ChatBubble(message: streamingMessage)
-                    }
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .padding()
-                    }
-                    Color.clear.frame(height: 1).id("bottomAnchor")
                 }
                 .padding()
             }

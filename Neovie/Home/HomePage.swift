@@ -120,7 +120,7 @@ struct HomePage: View {
 class HomePageViewModel: ObservableObject {
     @Published var userProfile: UserProfile?
     @Published var currentWeight: Double = 0.0
-    @Published var medicationName: String = ""
+    @Published var medicationInfo: MedicationInfo?
     @Published var nextDose: String = ""
     @Published var logs: [LogData.LogEntry] = []
     @Published var bannerContents: [BannerContent] = []
@@ -218,8 +218,7 @@ class HomePageViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.userProfile = fetchedProfile
                     self.currentWeight = fetchedProfile.weight
-                    self.medicationName = fetchedProfile.medicationName
-                    // TODO: Calculate next dose based on medication schedule
+                    self.medicationInfo = fetchedProfile.medicationInfo// TODO: Calculate next dose based on medication schedule
                     self.nextDose = "Calculate based on schedule"
                 }
             case .failure(let error):
@@ -265,52 +264,5 @@ class HomePageViewModel: ObservableObject {
                 print("Error saving log entry: \(error.localizedDescription)")
             }
         }
-    }
-}
-
-struct WeightProgressChart: View {
-    let data: [LogData.LogEntry]
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Y-axis
-                Path { path in
-                    path.move(to: CGPoint(x: 0, y: 0))
-                    path.addLine(to: CGPoint(x: 0, y: geometry.size.height))
-                }
-                .stroke(Color.gray, lineWidth: 1)
-                
-                // X-axis
-                Path { path in
-                    path.move(to: CGPoint(x: 0, y: geometry.size.height))
-                    path.addLine(to: CGPoint(x: geometry.size.width, y: geometry.size.height))
-                }
-                .stroke(Color.gray, lineWidth: 1)
-                
-                // Data points
-                Path { path in
-                    for (index, entry) in data.enumerated() {
-                        let x = CGFloat(index) / CGFloat(data.count - 1) * geometry.size.width
-                        let y = (1 - CGFloat(entry.weight - minWeight) / CGFloat(maxWeight - minWeight)) * geometry.size.height
-                        
-                        if index == 0 {
-                            path.move(to: CGPoint(x: x, y: y))
-                        } else {
-                            path.addLine(to: CGPoint(x: x, y: y))
-                        }
-                    }
-                }
-                .stroke(Color.blue, lineWidth: 2)
-            }
-        }
-    }
-    
-    private var minWeight: Double {
-        data.map { $0.weight }.min() ?? 0
-    }
-    
-    private var maxWeight: Double {
-        data.map { $0.weight }.max() ?? 100
     }
 }

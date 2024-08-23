@@ -117,9 +117,7 @@ class UserStateManager: ObservableObject {
                                        userProfile.dateOfBirth != Date() &&
                                        userProfile.heightCm > 0 &&
                                        userProfile.weight > 0 &&
-                                       userProfile.targetWeight > 0 &&
-                                       !userProfile.medicationName.isEmpty &&
-                                       !userProfile.dosage.isEmpty
+                                       userProfile.targetWeight > 0
                 
                 DispatchQueue.main.async {
                     self.hasCompletedUserInfo = hasCompletedInfo

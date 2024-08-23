@@ -8,12 +8,8 @@ struct UserInfoDosage: View {
     @State private var navigateToNextView = false
     
     var dosageOptions: [String] {
-        if userProfile.medicationName == "Wegovy" || userProfile.medicationName == "Ozempic" {
-            return ["0.25mg", "0.5mg", "1mg"]
-        } else {
-            return ["2.5mg", "5mg", "7.5mg", "10mg", "12.5mg", "15mg"]
+            userProfile.medicationInfo?.dosages ?? []
         }
-    }
 
     var body: some View {
         NavigationView {

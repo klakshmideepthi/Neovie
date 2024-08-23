@@ -6,10 +6,18 @@ struct UserInfoAge: View {
     @State private var isHealthKitAuthorized = false
     @State private var navigateToNextView = false
     @State private var birthDate = Date()
+    @State private var showingAgeAlert = false
+    @State private var isDataLoaded = false
     @Environment(\.presentationMode) var presentationMode
     
     let healthStore = HKHealthStore()
 
+    private var isUserOverThirteen: Bool {
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: birthDate, to: Date())
+        let age = ageComponents.year ?? 0
+        return age > 13
+    }
 
     var body: some View {
             NavigationView {
@@ -23,14 +31,20 @@ struct UserInfoAge: View {
                     
                     Spacer()
                     
+                if isDataLoaded {
                     DatePicker("Birth Date", selection: $birthDate, in: ...Date(), displayedComponents: .date)
                         .datePickerStyle(WheelDatePickerStyle())
                         .labelsHidden()
                         .accentColor(AppColors.accentColor)
                         .padding()
                         .cornerRadius(10)
-                    
+                } else {
+                    ProgressView()
+                }
+                
                     Spacer()
+                    
+                    DisclaimerView()
                     
                     continueButton
                     
@@ -41,10 +55,17 @@ struct UserInfoAge: View {
                 .background(AppColors.backgroundColor)
                 .foregroundColor(AppColors.textColor)
                 .edgesIgnoringSafeArea(.all)
-                .onAppear(perform: requestHealthKitAuthorization)
+                .onAppear(perform: fetchUserProfile)
+            .alert(isPresented: $showingAgeAlert) {
+                Alert(
+                    title: Text("Age Restriction"),
+                    message: Text("You must be over 13 years old to use this app."),
+                    dismissButton: .default(Text("OK"))
+                )
             }
-            .navigationBarHidden(true)
         }
+        .navigationBarHidden(true)
+    }
     
     private var progressView: some View {
         HStack {
@@ -82,38 +103,61 @@ struct UserInfoAge: View {
         .padding(.leading)
     }
     
+    struct DisclaimerView: View {
+        var body: some View {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(AppColors.accentColor)
+                    .font(.system(size: 12))
+
+                Text("You must be 13 years or older to use this app.")
+                    .font(.system(size: 12))
+                    .foregroundColor(AppColors.textColor.opacity(0.8))
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding()
+        }
+    }
+    
     private var continueButton: some View {
         Button(action: {
-            saveUserProfile()
+            if isUserOverThirteen {
+                saveUserProfile()
+            } else {
+                showingAgeAlert = true
+            }
         }) {
             Text("Continue")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(AppColors.accentColor)
-                .foregroundColor(.white)
+                .background(isUserOverThirteen ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
+                .foregroundColor(isUserOverThirteen ? .white : .white.opacity(0.5))
                 .cornerRadius(10)
         }
+        .disabled(!isUserOverThirteen)
         .padding(.horizontal)
-        .padding(.bottom, UIScreen.main.bounds.height * 0.05) // 5% of screen height for bottom padding
+        .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
     
-    private func requestHealthKitAuthorization() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            print("HealthKit is not available on this device")
-            return
-        }
-        
-        let readTypes: Set<HKObjectType> = [
-            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
-            HKObjectType.characteristicType(forIdentifier: .biologicalSex)!
-        ]
-        
-        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
-            DispatchQueue.main.async {
-                self.isHealthKitAuthorized = success
-                if success {
-                    self.fetchHealthKitData()
+    private func fetchUserProfile() {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(let fetchedProfile):
+                DispatchQueue.main.async {
+                    if fetchedProfile.dateOfBirth != Date() {
+                        self.birthDate = fetchedProfile.dateOfBirth
+                        print("Date of Birth loaded from Firestore: \(fetchedProfile.dateOfBirth)")
+                    } else {
+                        print("No Date of Birth found in Firestore")
+                        self.fetchHealthKitData()
+                    }
+                    self.isDataLoaded = true
                 }
+            case .failure(let error):
+                print("Failed to fetch user profile: \(error.localizedDescription)")
+                self.fetchHealthKitData()
+                self.isDataLoaded = true
             }
         }
     }
@@ -124,6 +168,7 @@ struct UserInfoAge: View {
             
             if let birthday = birthdayComponents.date {
                 birthDate = birthday
+                print("Date of Birth loaded from HealthKit: \(birthday)")
             }
         } catch {
             print("Error fetching HealthKit data: \(error.localizedDescription)")
@@ -131,16 +176,21 @@ struct UserInfoAge: View {
     }
     
     private func saveUserProfile() {
-        userProfile.dateOfBirth = birthDate
-        
-        FirestoreManager.shared.saveUserProfile(userProfile) { result in
-            switch result {
-            case .success:
-                print("User profile saved successfully")
-                self.navigateToNextView = true
-            case .failure(let error):
-                print("Failed to save user profile: \(error.localizedDescription)")
+        if userProfile.dateOfBirth != birthDate {
+            userProfile.dateOfBirth = birthDate
+            
+            FirestoreManager.shared.saveUserProfile(userProfile) { result in
+                switch result {
+                case .success:
+                    print("User profile saved successfully")
+                    self.navigateToNextView = true
+                case .failure(let error):
+                    print("Failed to save user profile: \(error.localizedDescription)")
+                }
             }
+        } else {
+            print("Date of Birth unchanged, skipping save")
+            self.navigateToNextView = true
         }
     }
 }

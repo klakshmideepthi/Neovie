@@ -3,21 +3,14 @@ import HealthKit
 
 struct UserInfoWeight: View {
     @Binding var userProfile: UserProfile
-    @State private var weightUnit: WeightUnit = .lbs
+    @State private var weightUnit: UserProfile.WeightUnit = .lbs
     @State private var weightWhole: Int = 192
     @State private var weightFraction: Int = 8
-    @State private var weight: Double = 0
-    @State private var isHealthKitAuthorized = false
-    @State private var sliderWeight: Double = 192.8
+    @State private var isDataLoaded = false
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToNextView = false
     
     let healthStore = HKHealthStore()
-
-    enum WeightUnit: String, CaseIterable {
-        case kg, lbs
-    }
-
 
     var body: some View {
         NavigationView {
@@ -32,7 +25,11 @@ struct UserInfoWeight: View {
                         
                         weightUnitPicker
                         
-                        weightPicker
+                        if isDataLoaded {
+                            weightPicker
+                        } else {
+                            ProgressView()
+                        }
                     }
                 }
                 .padding()
@@ -48,7 +45,7 @@ struct UserInfoWeight: View {
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
             .edgesIgnoringSafeArea(.all)
-            .onAppear(perform: requestHealthKitAuthorization)
+            .onAppear(perform: fetchUserProfile)
         }
         .navigationBarHidden(true)
     }
@@ -91,7 +88,7 @@ struct UserInfoWeight: View {
     
     private var weightUnitPicker: some View {
             HStack(spacing:20) {
-                ForEach(WeightUnit.allCases, id: \.self) { unit in
+                ForEach(UserProfile.WeightUnit.allCases, id: \.self) { unit in
                     Button(action: {
                         weightUnit = unit
                         convertWeight()
@@ -109,43 +106,42 @@ struct UserInfoWeight: View {
             }
         }
        
-       
     private var weightPicker: some View {
-            VStack(alignment: .leading, spacing: 0) {
-                ZStack {
-                    HStack(spacing: 0) {
-                        Picker("Whole", selection: $weightWhole) {
-                            ForEach(weightWholeRange, id: \.self) { whole in
-                                Text("\(whole)").tag(whole)
-                            }
+        VStack(alignment: .leading, spacing: 0) {
+            ZStack {
+                HStack(spacing: 0) {
+                    Picker("Whole", selection: $weightWhole) {
+                        ForEach(weightWholeRange, id: \.self) { whole in
+                            Text("\(whole)").tag(whole)
                         }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-
-                        Picker("Fraction", selection: $weightFraction) {
-                            ForEach(0...9, id: \.self) { fraction in
-                                Text(".\(fraction)").tag(fraction)
-                            }
-                        }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        
-                        Text(weightUnit.rawValue)
-                            .font(.headline)
-                            .frame(width: 40)
                     }
+                    .pickerStyle(WheelPickerStyle())
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+
+                    Picker("Fraction", selection: $weightFraction) {
+                        ForEach(0...9, id: \.self) { fraction in
+                            Text(".\(fraction)").tag(fraction)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                    
+                    Text(weightUnit.rawValue)
+                        .font(.headline)
+                        .frame(width: 40)
                 }
-                .frame(height: 150)
             }
-            .frame(height: 200)
-            .padding(.vertical, 10)
+            .frame(height: 150)
         }
+        .frame(height: 200)
+        .padding(.vertical, 10)
+    }
         
-        private var weightWholeRange: Range<Int> {
-            weightUnit == .kg ? 20..<201 : 44..<441
-        }
+    private var weightWholeRange: Range<Int> {
+        weightUnit == .kg ? 20..<201 : 44..<441
+    }
     
     private var continueButton: some View {
         Button(action: {
@@ -159,75 +155,86 @@ struct UserInfoWeight: View {
                 .cornerRadius(10)
         }
         .padding(.horizontal)
-        .padding(.bottom, UIScreen.main.bounds.height * 0.05) // 5% of screen height for bottom padding
+        .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
     
-    private func requestHealthKitAuthorization() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            print("HealthKit is not available on this device")
-            return
-        }
-        
-        let readTypes: Set<HKObjectType> = [
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            HKObjectType.quantityType(forIdentifier: .height)!
-        ]
-        
-        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
-            DispatchQueue.main.async {
-                self.isHealthKitAuthorized = success
-                if success {
-                    self.fetchHealthKitData()
+    private func fetchUserProfile() {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(let fetchedProfile):
+                DispatchQueue.main.async {
+                    if fetchedProfile.weight != 0 {
+                        self.setWeight(fetchedProfile.weight)
+                        print("Weight loaded from Firestore: \(fetchedProfile.weight) kg")
+                    } else {
+                        print("No weight found in Firestore")
+                        self.fetchHealthKitData()
+                    }
+                    self.isDataLoaded = true
                 }
+            case .failure(let error):
+                print("Failed to fetch user profile: \(error.localizedDescription)")
+                self.fetchHealthKitData()
+                self.isDataLoaded = true
             }
         }
     }
     
     private func fetchHealthKitData() {
-        fetchWeight()    }
-    
-    private func fetchWeight() {
-            guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else { return }
-            
-            let query = HKSampleQuery(sampleType: weightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { (query, results, error) in
-                if let sample = results?.first as? HKQuantitySample {
-                    let weightInKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
-                    DispatchQueue.main.async {
-                        let weight = self.weightUnit == .kg ? weightInKg : weightInKg * 2.20462
-                        self.weightWhole = Int(weight)
-                        self.weightFraction = Int((weight - Double(self.weightWhole)) * 10)
-                    }
+        guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else { return }
+        
+        let query = HKSampleQuery(sampleType: weightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { (query, results, error) in
+            if let sample = results?.first as? HKQuantitySample {
+                let weightInKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+                DispatchQueue.main.async {
+                    self.setWeight(weightInKg)
+                    print("Weight loaded from HealthKit: \(weightInKg) kg")
                 }
             }
-            
-            healthStore.execute(query)
         }
+        
+        healthStore.execute(query)
+    }
+    
+    private func setWeight(_ weightInKg: Double) {
+        let weight = self.weightUnit == .kg ? weightInKg : weightInKg * 2.20462
+        self.weightWhole = Int(weight)
+        self.weightFraction = Int((weight - Double(self.weightWhole)) * 10)
+    }
     
     private func convertWeight() {
-            let oldWeight = Double(weightWhole) + Double(weightFraction) / 10.0
-            if weightUnit == .kg {
-                let newWeight = oldWeight / 2.20462
-                weightWhole = Int(newWeight)
-                weightFraction = Int((newWeight - Double(weightWhole)) * 10)
-            } else {
-                let newWeight = oldWeight * 2.20462
-                weightWhole = Int(newWeight)
-                weightFraction = Int((newWeight - Double(weightWhole)) * 10)
-            }
+        let oldWeight = Double(weightWhole) + Double(weightFraction) / 10.0
+        if weightUnit == .kg {
+            let newWeight = oldWeight / 2.20462
+            weightWhole = Int(newWeight)
+            weightFraction = Int((newWeight - Double(weightWhole)) * 10)
+        } else {
+            let newWeight = oldWeight * 2.20462
+            weightWhole = Int(newWeight)
+            weightFraction = Int((newWeight - Double(weightWhole)) * 10)
         }
+    }
     
     private func saveUserProfile() {
-        let weight = Double(weightWhole) + Double(weightFraction) / 10.0
-        userProfile.weight = weightUnit == .kg ? weight : weight / 2.20462 // Always save in kg
-        
-        FirestoreManager.shared.saveUserProfile(userProfile) { result in
-            switch result {
-            case .success:
-                print("User profile saved successfully")
-                self.navigateToNextView = true
-            case .failure(let error):
-                print("Failed to save user profile: \(error.localizedDescription)")
+        let newWeight = Double(weightWhole) + Double(weightFraction) / 10.0
+        let newWeightInKg = weightUnit == .kg ? newWeight : newWeight / 2.20462
+            
+        if userProfile.weight != newWeightInKg {
+            userProfile.weight = newWeightInKg // Always save in kg
+            userProfile.preferredWeightUnit = weightUnit == .kg ? .kg : .lbs
+            
+            FirestoreManager.shared.saveUserProfile(userProfile) { result in
+                switch result {
+                case .success:
+                    print("User profile saved successfully")
+                    self.navigateToNextView = true
+                case .failure(let error):
+                    print("Failed to save user profile: \(error.localizedDescription)")
+                }
             }
+        } else {
+            print("Weight unchanged, skipping save")
+            self.navigateToNextView = true
         }
     }
 }

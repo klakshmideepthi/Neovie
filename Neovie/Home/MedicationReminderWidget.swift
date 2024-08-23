@@ -49,7 +49,7 @@ struct MedicationReminderWidget: View {
             }
         }
         .padding(20)
-        .background(AppColors.backgroundColor)
+        .background(AppColors.secondaryBackgroundColor)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
     }
