@@ -2,7 +2,9 @@ import SwiftUI
 
 struct CustomTabBar: View {
     @Binding var selectedTab: Int
-    @State private var animationStates: [Bool] = [false, false, false]
+    @State private var animationStates: [Bool] = [false, false, false, false]
+    @Binding var showingNewLog: Bool
+    @ObservedObject var viewModel: HomePageViewModel
     
     var body: some View {
         HStack {
@@ -10,9 +12,15 @@ struct CustomTabBar: View {
             Spacer()
             tabButton(image: selectedTab == 1 ? "log1" : "log2", tag: 1)
             Spacer()
-            tabButton(image: selectedTab == 2 ? "chat1" : "chat2", tag: 2)
+            if selectedTab == 0 {
+                newLogButton
+                Spacer()
+            }
+            tabButton(image: selectedTab == 2 ? "explore1" : "explore2", tag: 2)
+            Spacer()
+            tabButton(image: selectedTab == 3 ? "chat1" : "chat2", tag: 3)
         }
-        .padding(.horizontal, 60)
+        .padding(.horizontal, 40)
         .padding(.bottom, 30)
         .padding(.top, 20)
         .background(AppColors.secondaryBackgroundColor)
@@ -33,9 +41,23 @@ struct CustomTabBar: View {
             Image(image)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 25, height: 25)
+                .frame(width: 30, height: 30)
                 .scaleEffect(animationStates[tag] ? 1.2 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animationStates[tag])
+        }
+    }
+    
+    private var newLogButton: some View {
+        Button(action: {
+            showingNewLog = true
+        }) {
+            Image(systemName: "plus")
+                .font(.system(size: 16,weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: 25, height: 25)
+                .background(AppColors.accentColor)
+                .cornerRadius(15)
+                .shadow(radius: 3)
         }
     }
 }

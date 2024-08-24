@@ -21,6 +21,10 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>914442871410-a2pfpd5daaec5alr9436iiudjpk2bvia.apps.googleusercontent.com</string>
+    <key>NSHealthShareUsageDescription</key>
+    <string>We need access to your step count data to display it in the app.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>We need access to update your health data.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

@@ -229,7 +229,8 @@ class FirestoreManager {
                 "weight": log.weight,
                 "sideEffectType": log.sideEffectType,
                 "emotionType": log.emotionType,
-                "foodNoise": log.foodNoise
+                "foodNoise": log.foodNoise,
+                "proteinIntake": log.proteinIntake
             ]
             
             db.collection("users").document(uid).collection("logs").addDocument(data: data) { error in
@@ -404,7 +405,8 @@ class FirestoreManager {
                               let weight = doc["weight"] as? Double,
                               let sideEffectType = doc["sideEffectType"] as? String,
                               let emotionType = doc["emotionType"] as? String,
-                              let foodNoise = doc["foodNoise"] as? Int else {
+                              let foodNoise = doc["foodNoise"] as? Int,
+                              let proteinIntake = doc["proteinIntake"] as? Double else {
                             return nil
                         }
                         
@@ -414,7 +416,8 @@ class FirestoreManager {
                             weight: weight,
                             sideEffectType: sideEffectType,
                             emotionType: emotionType,
-                            foodNoise: foodNoise
+                            foodNoise: foodNoise,
+                            proteinIntake: proteinIntake
                         )
                     }
                     completion(.success(logs))

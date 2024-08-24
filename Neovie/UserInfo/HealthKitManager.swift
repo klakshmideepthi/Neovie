@@ -1,12 +1,16 @@
 import Foundation
 import HealthKit
+import Combine
 
-class HealthKitManager {
+class HealthKitManager: ObservableObject {
     static let shared = HealthKitManager()
     
     private let healthStore = HKHealthStore()
     private let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
     private let heightType = HKObjectType.quantityType(forIdentifier: .height)!
+    private let stepCountType = HKObjectType.quantityType(forIdentifier: .stepCount)!
+    
+    @Published var steps: Int = 0
     
     private init() {}
     
@@ -19,6 +23,7 @@ class HealthKitManager {
         let typesToRead: Set<HKObjectType> = [
             weightType,
             heightType,
+            stepCountType,
             HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
             HKObjectType.characteristicType(forIdentifier: .biologicalSex)!
         ]
@@ -112,6 +117,25 @@ class HealthKitManager {
         
         healthStore.execute(query)
     }
+    
+    func fetchTodaySteps() {
+            let now = Date()
+            let startOfDay = Calendar.current.startOfDay(for: now)
+            let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: now, options: .strictStartDate)
+            
+            let query = HKStatisticsQuery(quantityType: stepCountType, quantitySamplePredicate: predicate, options: .cumulativeSum) { [weak self] _, result, error in
+                guard let self = self, let result = result, let sum = result.sumQuantity() else {
+                    print("Failed to fetch steps: \(error?.localizedDescription ?? "Unknown error")")
+                    return
+                }
+                
+                DispatchQueue.main.async {
+                    self.steps = Int(sum.doubleValue(for: HKUnit.count()))
+                }
+            }
+            
+            healthStore.execute(query)
+        }
     
     func saveWeight(_ weight: Double, completion: @escaping (Bool, Error?) -> Void) {
         let quantity = HKQuantity(unit: HKUnit.gramUnit(with: .kilo), doubleValue: weight)

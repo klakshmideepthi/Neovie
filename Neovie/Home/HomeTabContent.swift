@@ -37,31 +37,10 @@ struct HomeTabContent: View {
             .padding()
         }
         .background(AppColors.backgroundColor)
-        .overlay(newLogButton, alignment: .bottomTrailing)
         .onAppear {
             viewModel.fetchUserData()
             viewModel.fetchBannerContents()
             viewModel.setupMedicationReminderListener()
-        }
-    }
-    
-
-    private var quickActionsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Quick Actions")
-                .font(.headline)
-                .foregroundColor(.customTextColor)
-            
-            Button(action: {
-                showingNewLog = true
-            }) {
-                Label("New Log Entry", systemImage: "plus.circle")
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .cornerRadius(10)
-            .foregroundColor(Color(hex: 0xC67C4E))
         }
     }
     
@@ -94,20 +73,6 @@ struct HomeTabContent: View {
         .disabled(viewModel.userProfile == nil)
     }
     
-    private var newLogButton: some View {
-        Button(action: {
-            showingNewLog = true
-        }) {
-            Image(systemName: "plus")
-                .font(.system(size: 24))
-                .foregroundColor(.white)
-                .frame(width: 60, height: 60)
-                .background(Color(hex: 0xC67C4E))
-                .cornerRadius(15)
-                .shadow(radius: 3)
-        }
-        .padding()
-    }
     
     private func handleBannerAction(_ identifier: String) {
         switch identifier {

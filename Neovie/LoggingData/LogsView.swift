@@ -150,6 +150,17 @@ struct LogEntryRow: View {
                         .foregroundColor(AppColors.textColor)
                 }
             }
+            
+            if log.proteinIntake != 0 {
+                HStack {
+                    Image(systemName: "figure.walk")
+                        .foregroundColor(.green)
+                    Text("Protein Intake: \(log.proteinIntake, specifier: "%.1f") g")
+                        .foregroundColor(AppColors.textColor)
+                    }
+            }
+            
+            
         }
         .padding()
         .frame(width: UIScreen.main.bounds.width * 0.9, alignment: .leading)

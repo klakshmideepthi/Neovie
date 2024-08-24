@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct NewLogView: View {
     @ObservedObject var viewModel: HomePageViewModel
@@ -55,33 +56,29 @@ struct NewLogView: View {
     
     private var weightSection: some View {
         HStack {
-                Text("Current Weight:")
+                Text("Current Weight : ")
                     .font(.headline)
                     .foregroundColor(AppColors.accentColor)
                 Spacer()
-                VStack(spacing: 0) {
-                    TextField("Weight (kg)", text: $weight)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                    Divider()
-                        .background(AppColors.accentColor)
-                }
-                .frame(width: 100) // Adjust the width as needed
+            
+                TextField("Current Weight", text: $weight)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .foregroundColor(AppColors.textColor)
                 Text("kg")
             }
     }
         
         private var proteinSection: some View {
-            VStack(alignment: .leading) {
-                Text("Protein Intake")
+            HStack {
+                Text("Protein Intake : ")
                     .font(.headline)
                     .foregroundColor(AppColors.accentColor)
-                HStack {
-                    TextField("Protein (g)", text: $proteinIntake)
+                Spacer()
+                TextField("Protein (g)", text: $proteinIntake)
                         .keyboardType(.numberPad)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .foregroundColor(AppColors.textColor)
-                }
             }
         }
     
@@ -165,6 +162,14 @@ struct NewLogView: View {
             proteinIntake: proteinValue
         )
         viewModel.proteinManager.addProtein(proteinValue)
+        
+        Analytics.logEvent("new_log_entry", parameters: [
+                    "weight": weightValue,
+                    "side_effect": selectedSideEffect.isEmpty ? "None" : selectedSideEffect,
+                    "emotion": selectedEmotion.isEmpty ? "None" : selectedEmotion,
+                    "food_noise": foodNoise,
+                    "protein_intake": proteinValue
+                ])
     }
     private func getGreeting() -> String {
             let hour = Calendar.current.component(.hour, from: Date())

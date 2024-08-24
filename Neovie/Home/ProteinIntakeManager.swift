@@ -51,6 +51,11 @@ class ProteinIntakeManager: ObservableObject {
         saveProteinIntake()
     }
     
+    func subProtein(_ amount: Double) {
+        proteinIntake -= amount
+        saveProteinIntake()
+    }
+    
     private func saveProteinIntake() {
         FirestoreManager.shared.saveProteinIntake(proteinIntake, for: Date()) { [weak self] result in
             DispatchQueue.main.async {

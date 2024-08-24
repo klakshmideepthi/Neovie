@@ -28,20 +28,22 @@ struct HomePage: View {
                     LogsView(viewModel: viewModel)
                         .tag(1)
                     
+                    ExploreView()
+                        .tag(2)
+                    
                     if let userProfile = viewModel.userProfile, userProfile.hasSeenChatbotWelcome {
                         ChatbotHomeView()
-                            .tag(2)
+                            .tag(3)
                     } else {
                         ChatbotWelcomeView(onCompletion: {
                             updateUserProfileAfterWelcome()
                         })
-                        .tag(2)
+                        .tag(3)
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 
-                CustomTabBar(selectedTab: $selectedTab)
-            }
+                CustomTabBar(selectedTab: $selectedTab, showingNewLog: $showingNewLog, viewModel: viewModel)            }
             .edgesIgnoringSafeArea(.bottom)
         }
         .background(AppColors.backgroundColor.ignoresSafeArea())
@@ -80,6 +82,8 @@ struct HomePage: View {
         case 1:
             return "Logs"
         case 2:
+            return "Explore"
+        case 3:
             return "Chatbot"
         default:
             return ""
@@ -251,7 +255,8 @@ class HomePageViewModel: ObservableObject {
             weight: weight,
             sideEffectType: sideEffect,
             emotionType: emotion,
-            foodNoise: foodNoise
+            foodNoise: foodNoise,
+            proteinIntake: proteinIntake 
         )
         
         FirestoreManager.shared.saveLog(newEntry) { [weak self] result in
@@ -274,6 +279,7 @@ class HomePageViewModel: ObservableObject {
                 switch result {
                 case .success:
                     DispatchQueue.main.async {
+                        self?.proteinManager.subProtein(log.proteinIntake)
                         self?.logs.removeAll { $0.id == log.id }
                     }
                 case .failure(let error):

@@ -4,56 +4,102 @@ struct BMIView: View {
     @ObservedObject var viewModel: HomePageViewModel
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 15) {
-                Text("BMI")
-                    .font(.headline)
-                    .foregroundColor(AppColors.textColor)
-                
-                Text(String(format: "%.1f", viewModel.bmi))
-                    .font(.title2)
-                    .foregroundColor(AppColors.textColor)
-                
-                Text(bmiCategory)
-                    .font(.caption)
-                    .foregroundColor(AppColors.textColor.opacity(0.7))
-            }
-            
-            Spacer()
-            
-            ZStack {
-                Circle()
-                    .stroke(Color.green.opacity(0.2), lineWidth: 5)
-                    .frame(width: 65, height: 65)
-                
-                Circle()
-                    .trim(from: 0, to: CGFloat(min(viewModel.bmi / 40, 1.0))) // Assuming max BMI of 40
-                    .stroke(bmiColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                    .frame(width: 65, height: 65)
-                    .rotationEffect(.degrees(-90))
-                
-                Image(systemName: "figure.stand")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 30, height: 30)
-                    .foregroundColor(bmiColor)
-            }
+        VStack(alignment: .leading, spacing: 15) {
+            bmiSection
+            bmiDisplay
         }
         .padding()
         .background(AppColors.secondaryBackgroundColor)
+        .foregroundColor(AppColors.textColor)
         .cornerRadius(15)
+    }
+    
+    private var bmiSection: some View {
+        HStack {
+            Text("Body Mass Index")
+                .font(.headline)
+                .foregroundColor(AppColors.textColor)
+            Spacer()
+            HStack() {
+                Text(String(format: "%.1f", viewModel.bmi))
+                    .font(.subheadline)
+                    .foregroundColor(bmiColor)
+                Text("(\(bmiCategory))")
+                    .font(.caption)
+                    .foregroundColor(bmiColor)
+            }
+            
+        }
+    }
+
+    private var bmiDisplay: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Background gradient
+                    HStack(spacing: 0) {
+                        Rectangle()
+                            .fill(Color.blue)
+                            .frame(width: self.calculateOffset(for: 18.5, in: geometry.size.width))
+                        Rectangle()
+                            .fill(Color.green)
+                            .frame(width: self.calculateOffset(for: 25, in: geometry.size.width) - self.calculateOffset(for: 18.5, in: geometry.size.width))
+                        Rectangle()
+                            .fill(Color.orange)
+                            .frame(width: self.calculateOffset(for: 30, in: geometry.size.width) - self.calculateOffset(for: 25, in: geometry.size.width))
+                        Rectangle()
+                            .fill(Color.red)
+                    }
+                    .frame(height: 5)
+                    
+                    // BMI indicator
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 15, height: 15)
+                        .overlay(Circle().stroke(bmiColor, lineWidth: 3))
+                        .offset(x: self.calculateOffset(for: self.viewModel.bmi, in: geometry.size.width) - 7.5)
+                    
+                    // Markers with labels and line cuts
+                    ForEach([18.5, 25, 30], id: \.self) { marker in
+                            Text(String(format: "%.1f", marker))
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                                .offset(y: 10) 
+                                .offset(x: self.calculateOffset(for: marker, in: geometry.size.width))
+                    }
+                }
+            }
+            .frame(height: 35)
+            
+            // Category labels
+            HStack {
+                Text("Low")
+                Spacer()
+                Text("Standard")
+                Spacer()
+                Text("High")
+                Spacer()
+                Text("Too high")
+            }
+            .foregroundColor(.gray)
+            .font(.caption)
+        }
     }
     
     private var bmiCategory: String {
         switch viewModel.bmi {
-        case ..<18.5:
+        case ..<15:
+            return "Severely Underweight"
+        case 15..<18.5:
             return "Underweight"
-        case 18.5..<24.9:
+        case 18.5..<25:
             return "Normal weight"
-        case 25..<29.9:
+        case 25..<30:
             return "Overweight"
-        default:
+        case 30..<35:
             return "Obese"
+        default:
+            return "Severely Obese"
         }
     }
     
@@ -61,12 +107,19 @@ struct BMIView: View {
         switch viewModel.bmi {
         case ..<18.5:
             return .blue
-        case 18.5..<24.9:
+        case 18.5..<25:
             return .green
-        case 25..<29.9:
+        case 25..<30:
             return .orange
         default:
             return .red
         }
+    }
+    
+    private func calculateOffset(for value: CGFloat, in width: CGFloat) -> CGFloat {
+        let clampedValue = max(15, min(35, value))
+        let bmiRange: CGFloat = 35 - 15
+        let proportion = (clampedValue - 15) / bmiRange
+        return proportion * width
     }
 }

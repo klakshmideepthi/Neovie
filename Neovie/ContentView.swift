@@ -1,6 +1,7 @@
 import SwiftUI
 import Firebase
 import GoogleSignIn
+import FirebaseAnalytics
 
 struct ContentView: View {
     @StateObject private var signInManager = GoogleSignInManager.shared
@@ -32,6 +33,9 @@ struct ContentView: View {
         .onChange(of: signInManager.isSignedIn) { isSignedIn in
             if isSignedIn {
                 checkUserStatus()
+                Analytics.logEvent(AnalyticsEventLogin, parameters: [
+                                    AnalyticsParameterMethod: "Google"
+                                ])
             }
         }
     }

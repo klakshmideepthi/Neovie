@@ -122,10 +122,17 @@ struct UserInfoName: View {
             HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
             HKObjectType.characteristicType(forIdentifier: .biologicalSex)!,
             HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            HKObjectType.quantityType(forIdentifier: .height)!
+            HKObjectType.quantityType(forIdentifier: .height)!,
+            HKObjectType.quantityType(forIdentifier: .stepCount)!  // Add step count
         ]
         
-        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
+        let shareTypes: Set<HKSampleType> = [
+            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
+            HKObjectType.quantityType(forIdentifier: .height)!,
+            HKObjectType.quantityType(forIdentifier: .stepCount)!  // Add step count
+        ]
+        
+        healthStore.requestAuthorization(toShare: shareTypes, read: readTypes) { success, error in
             DispatchQueue.main.async {
                 self.isHealthKitAuthorized = success
                 if success {

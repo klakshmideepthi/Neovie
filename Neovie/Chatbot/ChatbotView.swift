@@ -2,6 +2,7 @@ import SwiftUI
 import Firebase
 import FirebaseFunctions
 import Combine
+import FirebaseAnalytics
 
 struct ChatbotView: View {
     @Environment(\.dismiss) private var dismiss
@@ -26,6 +27,7 @@ struct ChatbotView: View {
         .edgesIgnoringSafeArea(.bottom)
         .onAppear {
             addKeyboardObservers()
+            Analytics.logEvent("chatbot_session_start", parameters: nil)
             if let prompt = initialPrompt {
                 viewModel.sendMessage(prompt)
             }
