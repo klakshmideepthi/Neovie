@@ -413,3 +413,51 @@ exports.callAnthropicAPI = functions
         );
       }
     });
+
+exports.fetchDailyNews = functions.pubsub.schedule("59 14 * * *")
+    .timeZone("America/New_York")
+    .onRun(async (context) => {
+      const apiKey = functions.config().newsdata.api_key;
+      const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=weight%20loss%20glp&language=en`;
+
+      try {
+        const response = await axios.get(url);
+        const articles = response.data.results;
+
+        const batch = admin.firestore().batch();
+        const newsRef = admin.firestore().collection("news");
+
+        // Delete existing articles
+        const existingArticles = await newsRef.get();
+        existingArticles.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+
+        // Add new articles
+        articles.forEach((article) => {
+          const docRef = newsRef.doc();
+          batch.set(docRef, {
+            title: article.title || "",
+            description: article.description || "",
+            url: article.link || "",
+            imageUrl: article.image_url || "",
+            pubDate: article.pubDate || "",
+            author: Array.isArray(article.creator) ?
+            article.creator.join(", ") : (article.creator || "Unknown"),
+            publisher: article.source_id || "",
+            country: Array.isArray(article.country) ?
+            article.country.join(", ") : (article.country || "Unknown"),
+            category: Array.isArray(article.category) ?
+          article.category.join(", ") : (article.category || "Unknown"),
+            language: article.language || "",
+          });
+        });
+
+        await batch.commit();
+        console.log("News articles updated successfully");
+        return null;
+      } catch (error) {
+        console.error("Error fetching news:", error);
+        return null;
+      }
+    });

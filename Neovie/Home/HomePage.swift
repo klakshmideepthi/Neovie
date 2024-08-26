@@ -80,7 +80,7 @@ struct HomePage: View {
         case 0:
             return "Home"
         case 1:
-            return "Logs"
+            return "Stats"
         case 2:
             return "Explore"
         case 3:

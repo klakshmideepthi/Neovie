@@ -8,6 +8,7 @@ struct SettingsHomeView: View {
     @State private var isEditingProfile = false
     @State private var showingSignOutAlert = false
     @State private var showingDeleteAlert = false
+    @State private var isDeleting = false
     
     var body: some View {
         NavigationView {
@@ -21,6 +22,14 @@ struct SettingsHomeView: View {
                     }
                     .padding()
                 }
+                
+                if isDeleting {
+                    ProgressView("Deleting data...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: AppColors.accentColor))
+                        .scaleEffect(1.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.4))
+                }
             }
             .navigationTitle("Settings")
             .navigationBarItems(trailing: Button("Done") {
@@ -28,8 +37,8 @@ struct SettingsHomeView: View {
             }.foregroundColor(AppColors.accentColor))
         }
         .sheet(isPresented: $isEditingProfile) {
-                    ProfileEditView(userProfile: $userProfile)
-                }
+                ProfileEditView(userProfile: $userProfile)
+            }
         .alert(isPresented: $showingSignOutAlert) {
             Alert(
                 title: Text("Sign Out"),
@@ -40,16 +49,14 @@ struct SettingsHomeView: View {
                 secondaryButton: .cancel()
             )
         }
-        .alert(isPresented: $showingDeleteAlert) {
-                        Alert(
-                            title: Text("Delete My Data"),
-                            message: Text("Are you sure you want to delete all your data? This action cannot be undone."),
-                            primaryButton: .destructive(Text("Delete")) {
-                                deleteUserData()
-                            },
-                            secondaryButton: .cancel()
-                        )
-                    }
+        .alert("Delete My Data", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                deleteUserData()
+            }
+        } message: {
+            Text("Are you sure you want to delete all your data? This action cannot be undone.")
+        }
         .onAppear {
             loadUserProfile()
         }
@@ -100,6 +107,8 @@ struct SettingsHomeView: View {
             .cornerRadius(10)
             
             Button(action: {
+                print("Sign out button tapped") // Add this line for debugging
+
                 showingSignOutAlert = true
             }) {
                 HStack {
@@ -179,8 +188,17 @@ struct SettingsHomeView: View {
             print("No user logged in")
             return
         }
-        
+        isDeleting = true
         let db = Firestore.firestore()
+        
+        // Delete user's weight logs
+        deleteCollection(db: db, path: "users/\(userId)/logs")
+            
+            // Delete user's water intake
+        deleteCollection(db: db, path: "users/\(userId)/waterIntake")
+            
+            // Delete user's protein intake
+        deleteCollection(db: db, path: "users/\(userId)/proteinIntake")
         
         // Delete user profile
         db.collection("users").document(userId).delete { error in
@@ -188,42 +206,6 @@ struct SettingsHomeView: View {
                 print("Error deleting user profile: \(error.localizedDescription)")
             } else {
                 print("User profile successfully deleted")
-            }
-        }
-        
-        // Delete user's weight logs
-        db.collection("weightLogs").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Error fetching weight logs: \(error.localizedDescription)")
-            } else {
-                for document in snapshot!.documents {
-                    document.reference.delete()
-                }
-                print("Weight logs successfully deleted")
-            }
-        }
-        
-        // Delete user's side effects logs
-        db.collection("sideEffects").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Error fetching side effects logs: \(error.localizedDescription)")
-            } else {
-                for document in snapshot!.documents {
-                    document.reference.delete()
-                }
-                print("Side effects logs successfully deleted")
-            }
-        }
-        
-        // Delete user's emotions logs
-        db.collection("emotions").whereField("userId", isEqualTo: userId).getDocuments { (snapshot, error) in
-            if let error = error {
-                print("Error fetching emotions logs: \(error.localizedDescription)")
-            } else {
-                for document in snapshot!.documents {
-                    document.reference.delete()
-                }
-                print("Emotions logs successfully deleted")
             }
         }
         
@@ -243,6 +225,42 @@ struct SettingsHomeView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { // Give some time for deletions to complete
             self.signInManager.signOut()
             self.presentationMode.wrappedValue.dismiss()
+        }
+    }
+    
+    private func deleteCollection(db: Firestore, path: String, batchSize: Int = 100) {
+        let collectionRef = db.collection(path)
+        
+        // Get the first batch of documents in the collection
+        collectionRef.limit(to: batchSize).getDocuments { (snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching documents: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            guard !snapshot.isEmpty else {
+                print("No documents to delete in \(path)")
+                return
+            }
+            
+            let batch = db.batch()
+            
+            // Add each document to the batch
+            for document in snapshot.documents {
+                batch.deleteDocument(document.reference)
+            }
+            
+            // Commit the batch
+            batch.commit { (batchError) in
+                if let batchError = batchError {
+                    print("Error deleting documents in \(path): \(batchError.localizedDescription)")
+                } else {
+                    print("Batch of documents in \(path) successfully deleted")
+                    
+                    // If there are more documents, recursively delete them
+                    self.deleteCollection(db: db, path: path, batchSize: batchSize)
+                }
+            }
         }
     }
     

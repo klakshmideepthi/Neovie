@@ -28,6 +28,8 @@
 		D80D55EB2C7465410009C7DF /* BMIAndProteinCalculationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55EA2C7465410009C7DF /* BMIAndProteinCalculationView.swift */; };
 		D80D55EF2C747AC00009C7DF /* BMIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55EE2C747AC00009C7DF /* BMIView.swift */; };
 		D80D55F12C78144C0009C7DF /* DeleteUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55F02C78144C0009C7DF /* DeleteUserData.swift */; };
+		D81DF04B2C7CFDB500FDF5F5 /* NewsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81DF04A2C7CFDB500FDF5F5 /* NewsService.swift */; };
+		D81DF04D2C7CFDEC00FDF5F5 /* NewsArticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81DF04C2C7CFDEC00FDF5F5 /* NewsArticle.swift */; };
 		D85E8F1B2C55213A00CC2ACF /* NewLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */; };
 		D85E8F1D2C557BF200CC2ACF /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1C2C557BF200CC2ACF /* LogsView.swift */; };
 		D85E8F1F2C557F1B00CC2ACF /* LogsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85E8F1E2C557F1B00CC2ACF /* LogsData.swift */; };
@@ -122,6 +124,8 @@
 		D80D55EA2C7465410009C7DF /* BMIAndProteinCalculationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIAndProteinCalculationView.swift; sourceTree = "<group>"; };
 		D80D55EE2C747AC00009C7DF /* BMIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIView.swift; sourceTree = "<group>"; };
 		D80D55F02C78144C0009C7DF /* DeleteUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteUserData.swift; sourceTree = "<group>"; };
+		D81DF04A2C7CFDB500FDF5F5 /* NewsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsService.swift; sourceTree = "<group>"; };
+		D81DF04C2C7CFDEC00FDF5F5 /* NewsArticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsArticle.swift; sourceTree = "<group>"; };
 		D85E8F1A2C55213A00CC2ACF /* NewLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewLogView.swift; sourceTree = "<group>"; };
 		D85E8F1C2C557BF200CC2ACF /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
 		D85E8F1E2C557F1B00CC2ACF /* LogsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsData.swift; sourceTree = "<group>"; };
@@ -216,12 +220,15 @@
 				D86796762C71A9E600C0FF8B /* HomeTabContent.swift */,
 				D86796742C70ACED00C0FF8B /* SideEffects.swift */,
 				D80D55D22C71F0AD0009C7DF /* AboutView.swift */,
+				D81DF04A2C7CFDB500FDF5F5 /* NewsService.swift */,
 				D80D55DA2C72014E0009C7DF /* BannerView.swift */,
+				D81DF04C2C7CFDEC00FDF5F5 /* NewsArticle.swift */,
 				D80D55F02C78144C0009C7DF /* DeleteUserData.swift */,
 				D80D55EE2C747AC00009C7DF /* BMIView.swift */,
 				D80D55E82C745E0A0009C7DF /* ProteinIntakeManager.swift */,
 				D80D55E62C745A4C0009C7DF /* WaterIntakeManager.swift */,
 				D80D55D62C71FB6B0009C7DF /* WaterView.swift */,
+				D8DAB57E2C797E2700CD1E3A /* ExploreView.swift */,
 				D80D55DE2C7300F10009C7DF /* ProteinView.swift */,
 				D80D55E22C7314DE0009C7DF /* MedicationReminderWidget.swift */,
 				D80D55D42C71F28C0009C7DF /* PrivacyPolicyView.swift */,
@@ -322,7 +329,6 @@
 				D86796722C70918800C0FF8B /* CustomTextField.swift */,
 				D86796412C6F52FE00C0FF8B /* HealthKitManager.swift */,
 				D85EA7DC2C52555800A15915 /* FirestoreManager.swift */,
-				D8DAB57E2C797E2700CD1E3A /* ExploreView.swift */,
 			);
 			path = UserInfo;
 			sourceTree = "<group>";
@@ -545,6 +551,7 @@
 				D801F7A02C5E4D1000F7F521 /* WeightLossAdviceService.swift in Sources */,
 				D85EA7D32C5254E100A15915 /* UserProfile.swift in Sources */,
 				D80D55DB2C72014E0009C7DF /* BannerView.swift in Sources */,
+				D81DF04B2C7CFDB500FDF5F5 /* NewsService.swift in Sources */,
 				D801F7A42C5E4E7100F7F521 /* WeightLossAdviceView.swift in Sources */,
 				D80D55D02C71E13A0009C7DF /* UserInfoDosage.swift in Sources */,
 				D867964B2C6F63E700C0FF8B /* UserInfoName.swift in Sources */,
@@ -567,6 +574,7 @@
 				D80D55E72C745A4C0009C7DF /* WaterIntakeManager.swift in Sources */,
 				D86796572C6F7EE700C0FF8B /* UserInfoGender.swift in Sources */,
 				D80770A52C5BD3EA00381B45 /* ChatbotHomeView.swift in Sources */,
+				D81DF04D2C7CFDEC00FDF5F5 /* NewsArticle.swift in Sources */,
 				D801F79C2C5D3B9200F7F521 /* SplashScreenView.swift in Sources */,
 				D86796772C71A9E600C0FF8B /* HomeTabContent.swift in Sources */,
 				D8ABA6782C5FC9480040F018 /* CustomNavigationBar.swift in Sources */,
@@ -759,7 +767,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -800,7 +808,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.9;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
