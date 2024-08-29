@@ -2,16 +2,13 @@ import SwiftUI
 
 struct LogsView: View {
     @ObservedObject var viewModel: HomePageViewModel
-    @StateObject private var healthKitManager = HealthKitManager.shared
-    
+    @Environment(\.presentationMode) var presentationMode
+
     var body: some View {
+        NavigationView {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 20) {
-                        stepsSection
-                            .frame(width: geometry.size.width) // Ensure full width
-                        Text("Logs ")
-                            .font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
                         if viewModel.logs.isEmpty {
                             noLogsView
                         } else {
@@ -20,65 +17,48 @@ struct LogsView: View {
                     }
                 }
             }
-            .onAppear {
-                fetchData()
-            }
+            .navigationTitle("Logs")
+            .navigationBarItems(trailing: dismissButton)
             .background(AppColors.backgroundColor.edgesIgnoringSafeArea(.all))
         }
-    
-    private func fetchData() {
-        healthKitManager.requestAuthorization { success, error in
-            if success {
-                healthKitManager.fetchTodaySteps()
-            } else if let error = error {
-                print("HealthKit authorization failed: \(error.localizedDescription)")
-            }
+    }
+
+    private var dismissButton: some View {
+        Button(action: {
+            presentationMode.wrappedValue.dismiss()
+        }) {
+            Image(systemName: "xmark")
+                .foregroundColor(AppColors.accentColor)
+                .font(.system(size: 16, weight: .bold))
         }
     }
-    
+
     private var noLogsView: some View {
-            Text("No logs available")
-                .font(.headline)
-                .foregroundColor(AppColors.textColor.opacity(0.6))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        
-        private var logsListView: some View {
-            ForEach(groupedLogs.keys.sorted(by: >), id: \.self) { date in
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(formatDate(date))
-                        .font(.headline)
-                        .padding(.leading)
-                        .foregroundColor(AppColors.textColor.opacity(0.6))
-                    
-                    ForEach(groupedLogs[date]!, id: \.id) { log in
-                        LogEntryRow(log: log, onDelete: {
-                            viewModel.deleteLog(log)
-                        })
-                        .background(AppColors.secondaryBackgroundColor)
-                        .cornerRadius(10)
-                        .shadow(color: AppColors.textColor.opacity(0.05), radius: 5, x: 0, y: 2)
-                        .frame(maxWidth: .infinity)
-                    }
+        Text("No logs available")
+            .font(.headline)
+            .foregroundColor(AppColors.textColor.opacity(0.6))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var logsListView: some View {
+        ForEach(groupedLogs.keys.sorted(by: >), id: \.self) { date in
+            VStack(alignment: .leading, spacing: 10) {
+                Text(formatDate(date))
+                    .font(.headline)
+                    .padding(.leading)
+                    .foregroundColor(AppColors.textColor.opacity(0.6))
+
+                ForEach(groupedLogs[date]!, id: \.id) { log in
+                    LogEntryRow(log: log, onDelete: {
+                        viewModel.deleteLog(log)
+                    })
+                    .background(AppColors.secondaryBackgroundColor)
+                    .cornerRadius(10)
+                    .shadow(color: AppColors.textColor.opacity(0.05), radius: 5, x: 0, y: 2)
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             }
-        }
-    
-    private var stepsSection: some View {
-        VStack(alignment: .center) {
-            Text("Today's Steps")
-                .font(.title)
-                .padding()
-            
-            Text("\(healthKitManager.steps)")
-                .font(.system(size: 48, weight: .bold))
-                .padding()
-            
-            Button("Refresh Steps") {
-                healthKitManager.fetchTodaySteps()
-            }
-            .padding()
+            .frame(maxWidth: .infinity)
         }
     }
 
@@ -87,7 +67,7 @@ struct LogsView: View {
             Calendar.current.startOfDay(for: log.date)
         }
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"

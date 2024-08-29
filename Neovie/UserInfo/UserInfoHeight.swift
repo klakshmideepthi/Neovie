@@ -112,14 +112,34 @@ struct UserInfoHeight: View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack {
                 if heightUnit == .cm {
-                    Picker("Height (cm)", selection: $userProfile.heightCm) {
-                        ForEach(50...250, id: \.self) { cm in
-                            Text("\(cm) cm").tag(cm)
+                    HStack(spacing: 0) {
+                        Picker("Height (cm)", selection: Binding(
+                            get: { Int(self.userProfile.heightCm) },
+                            set: { self.userProfile.heightCm = Double($0) }
+                        )) {
+                            ForEach(50...250, id: \.self) { cm in
+                                Text("\(cm)").tag(cm)
+                            }
                         }
-                    }
-                    .pickerStyle(WheelPickerStyle())
-                    .onChange(of: userProfile.heightCm) { newValue in
-                        print("Selected height in cm: \(newValue)")
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                        
+                        Picker("Decimal", selection: Binding(
+                            get: { Int((self.userProfile.heightCm.truncatingRemainder(dividingBy: 1)) * 10) },
+                            set: { self.userProfile.heightCm = Double(Int(self.userProfile.heightCm)) + Double($0) / 10.0 }
+                        )) {
+                            ForEach(0...9, id: \.self) { decimal in
+                                Text(".\(decimal)").tag(decimal)
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(width: 60)
+                        .clipped()
+
+                        Text("cm")
+                            .font(.headline)
+                            .frame(width: 40)
                     }
                 } else {
                     HStack(spacing: 0) {
@@ -131,10 +151,7 @@ struct UserInfoHeight: View {
                         .pickerStyle(WheelPickerStyle())
                         .frame(maxWidth: .infinity)
                         .clipped()
-                        .onChange(of: userProfile.heightFt) { newValue in
-                            print("Selected height in feet: \(newValue)")
-                        }
-                        
+
                         Picker("Inches", selection: $userProfile.heightIn) {
                             ForEach(0...11, id: \.self) { inch in
                                 Text("\(inch) in").tag(inch)
@@ -143,13 +160,13 @@ struct UserInfoHeight: View {
                         .pickerStyle(WheelPickerStyle())
                         .frame(maxWidth: .infinity)
                         .clipped()
-                        .onChange(of: userProfile.heightIn) { newValue in
-                            print("Selected height in inches: \(newValue)")
-                        }
                     }
                 }
             }
             .frame(height: 150)
+            .onChange(of: userProfile.heightCm) { _ in convertHeight() }
+            .onChange(of: userProfile.heightFt) { _ in convertHeight() }
+            .onChange(of: userProfile.heightIn) { _ in convertHeight() }
         }
         .frame(height: 200)
         .padding(.vertical, 10)
@@ -179,48 +196,64 @@ struct UserInfoHeight: View {
                         self.userProfile.heightCm = fetchedProfile.heightCm
                         self.userProfile.heightFt = fetchedProfile.heightFt
                         self.userProfile.heightIn = fetchedProfile.heightIn
+                        self.convertHeight() // Ensure all units are in sync
                         print("Height loaded from Firestore: \(fetchedProfile.heightCm) cm")
+                        self.isDataLoaded = true
                     } else {
-                        print("No height found in Firestore")
+                        print("No height found in Firestore, fetching from HealthKit")
                         self.fetchHealthKitData()
                     }
-                    self.isDataLoaded = true
                 }
             case .failure(let error):
                 print("Failed to fetch user profile: \(error.localizedDescription)")
+                print("Attempting to fetch from HealthKit")
                 self.fetchHealthKitData()
-                self.isDataLoaded = true
             }
         }
     }
     
     private func fetchHealthKitData() {
-        guard let heightType = HKObjectType.quantityType(forIdentifier: .height) else { return }
-        
-        let query = HKSampleQuery(sampleType: heightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { (query, results, error) in
-            if let sample = results?.first as? HKQuantitySample {
-                let heightInCm = sample.quantity.doubleValue(for: HKUnit.meterUnit(with: .centi))
-                DispatchQueue.main.async {
-                    self.userProfile.heightCm = Int(heightInCm)
-                    self.userProfile.heightFt = Int(heightInCm / 30.48)
-                    self.userProfile.heightIn = Int((heightInCm / 2.54).truncatingRemainder(dividingBy: 12))
-                    print("Height loaded from HealthKit: \(heightInCm) cm")
+            guard let heightType = HKObjectType.quantityType(forIdentifier: .height) else { return }
+
+            healthStore.requestAuthorization(toShare: [], read: [heightType]) { (success, error) in
+                if success {
+                    let query = HKSampleQuery(sampleType: heightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { (query, results, error) in
+                        if let sample = results?.first as? HKQuantitySample {
+                            let heightInCm = sample.quantity.doubleValue(for: HKUnit.meterUnit(with: .centi))
+                            DispatchQueue.main.async {
+                                self.userProfile.heightCm = heightInCm
+                                self.convertHeight()
+                                self.heightUnit = .cm // Set default unit to cm when data is loaded from HealthKit
+                                print("Height loaded from HealthKit: \(heightInCm) cm")
+                                self.isDataLoaded = true
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                self.isDataLoaded = true
+                            }
+                        }
+                    }
+
+                    self.healthStore.execute(query)
+                } else {
+                    DispatchQueue.main.async {
+                        self.isDataLoaded = true
+                    }
+                    print("HealthKit authorization failed")
                 }
             }
         }
-        
-        healthStore.execute(query)
-    }
+
     
     private func convertHeight() {
         if heightUnit == .cm {
-            let totalInches = Int(Double(userProfile.heightCm) / 2.54)
+            let totalInches = Int(userProfile.heightCm / 2.54)
             userProfile.heightFt = totalInches / 12
             userProfile.heightIn = totalInches % 12
         } else {
             // Convert feet and inches to cm
             let totalInches = (userProfile.heightFt * 12) + userProfile.heightIn
-            userProfile.heightCm = Int(Double(totalInches) * 2.54)
+            userProfile.heightCm = Double(totalInches) * 2.54
         }
     }
     

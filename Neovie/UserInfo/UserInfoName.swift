@@ -157,7 +157,10 @@ struct UserInfoName: View {
                            userProfile.weight = weight
                        }
                        if let height = height {
-                           userProfile.heightCm = Int(height)
+                           userProfile.heightCm = Double(height)
+                           let totalInches = Int(height / 2.54)
+                           userProfile.heightFt = totalInches / 12
+                           userProfile.heightIn = totalInches % 12
                        }
                    }
                }

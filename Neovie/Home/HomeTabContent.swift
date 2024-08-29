@@ -10,6 +10,9 @@ struct HomeTabContent: View {
     
     var body: some View {
         ScrollView {
+            RefreshControl(coordinateSpace: .named("RefreshControl")) {
+                            viewModel.refreshData()
+                        }
             VStack(spacing: 20) {
                 
                 if let userProfile = viewModel.userProfile {
@@ -26,7 +29,7 @@ struct HomeTabContent: View {
                         )
                     }
                 }
-                BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction)
+                BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction, viewModel: viewModel)
                 WaterView()
                 ProteinView(proteinManager: viewModel.proteinManager)
                 BMIView(viewModel: viewModel)
@@ -36,6 +39,7 @@ struct HomeTabContent: View {
             }
             .padding()
         }
+        .coordinateSpace(name: "RefreshControl")
         .background(AppColors.backgroundColor)
         .onAppear {
             viewModel.fetchUserData()
@@ -85,6 +89,37 @@ struct HomeTabContent: View {
         default:
             print("Unknown action: \(identifier)")
         }
+    }
+}
+
+struct RefreshControl: View {
+    var coordinateSpace: CoordinateSpace
+    var onRefresh: () -> Void
+    
+    @State var refresh: Bool = false
+    
+    var body: some View {
+        GeometryReader { geo in
+            if (geo.frame(in: coordinateSpace).midY > 50) {
+                Spacer()
+                    .onAppear {
+                        if refresh == false {
+                            onRefresh()
+                        }
+                        refresh = true
+                    }
+            } else if (geo.frame(in: coordinateSpace).maxY < 1) {
+                Spacer()
+                    .onAppear {
+                        refresh = false
+                    }
+            }
+            ZStack(alignment: .center) {
+                if refresh {
+                    ProgressView()
+                }
+            }.frame(width: geo.size.width)
+        }.padding(.top, -50)
     }
 }
 

@@ -414,7 +414,7 @@ exports.callAnthropicAPI = functions
       }
     });
 
-exports.fetchDailyNews = functions.pubsub.schedule("59 14 * * *")
+exports.fetchDailyNews = functions.pubsub.schedule("0 0 * * *")
     .timeZone("America/New_York")
     .onRun(async (context) => {
       const apiKey = functions.config().newsdata.api_key;

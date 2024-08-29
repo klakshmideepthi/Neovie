@@ -71,7 +71,7 @@ class FirestoreManager {
             } else if let document = document, document.exists {
                 if let data = document.data(),
                    let name = data["name"] as? String,
-                   let heightCm = data["heightCm"] as? Int,
+                   let heightCm = data["heightCm"] as? Double,
                    let heightFt = data["heightFt"] as? Int,
                    let heightIn = data["heightIn"] as? Int,
                    let weight = data["weight"] as? Double,
@@ -191,7 +191,7 @@ class FirestoreManager {
                         userProfile.weight = weight
                     }
                 case "heightCm":
-                    if let height = value as? Int {
+                    if let height = value as? Double {
                         userProfile.heightCm = height
                     }
                 case "activityLevel":

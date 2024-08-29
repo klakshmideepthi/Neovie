@@ -14,8 +14,51 @@ struct BannerView: View {
     let bannerContents: [BannerContent]
     @State private var currentIndex = 0
     let actionHandler: (String) -> Void
+    @ObservedObject var viewModel: HomePageViewModel
     
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+    
+    var body: some View {
+        Group {
+            if viewModel.isFetchingBanners {
+                ProgressView("Loading banners...")
+            } else if let error = viewModel.bannerFetchError {
+                Text("Error: \(error.localizedDescription)")
+                    .foregroundColor(.red)
+            } else if bannerContents.isEmpty {
+                EmptyBannerView()
+            } else {
+                BannerContentView(
+                    bannerContents: bannerContents,
+                    currentIndex: $currentIndex,
+                    actionHandler: actionHandler
+                )
+            }
+        }
+        .frame(height: 200)
+        .onReceive(timer) { _ in
+            guard !bannerContents.isEmpty else { return }
+            withAnimation {
+                currentIndex = (currentIndex + 1) % bannerContents.count
+            }
+        }
+    }
+}
+
+struct EmptyBannerView: View {
+    var body: some View {
+        Text("No banners available")
+            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(20)
+    }
+}
+
+struct BannerContentView: View {
+    let bannerContents: [BannerContent]
+    @Binding var currentIndex: Int
+    let actionHandler: (String) -> Void
     
     var body: some View {
         VStack(spacing: 10) {
@@ -40,11 +83,6 @@ struct BannerView: View {
             }
         }
         .shadow(radius: 5)
-        .onReceive(timer) { _ in
-            withAnimation {
-                currentIndex = (currentIndex + 1) % bannerContents.count
-            }
-        }
     }
     
     private func bannerCard(_ content: BannerContent) -> some View {
@@ -78,13 +116,24 @@ struct BannerView: View {
                 
                 Spacer()
                 
-                Image(content.imageName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 180)
-                    .padding(.horizontal,5)
+                if let image = UIImage(named: content.imageName) {
+                    Image(uiImage: image)
+                       .resizable()
+                       .aspectRatio(contentMode: .fit)
+                       .frame(height: 180)
+                       .padding(.horizontal, 5)
+                } else {
+                    Image(systemName: "photo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 180)
+                        .padding(.horizontal, 5)
+                        .foregroundColor(.gray)
+                }
             }
         }
         .clipped()
     }
 }
+    
+    

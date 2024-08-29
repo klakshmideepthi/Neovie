@@ -9,7 +9,7 @@ class HealthKitManager: ObservableObject {
     private let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
     private let heightType = HKObjectType.quantityType(forIdentifier: .height)!
     private let stepCountType = HKObjectType.quantityType(forIdentifier: .stepCount)!
-    
+    @Published var isStepsAuthorized = false
     @Published var steps: Int = 0
     
     private init() {}
@@ -34,11 +34,15 @@ class HealthKitManager: ObservableObject {
         ]
         
         healthStore.requestAuthorization(toShare: typesToShare, read: typesToRead) { (success, error) in
-            DispatchQueue.main.async {
-                completion(success, error)
+                DispatchQueue.main.async {
+                    if success {
+                        // Check authorization status directly
+                        self.isStepsAuthorized = self.healthStore.authorizationStatus(for: self.stepCountType) == .sharingAuthorized
+                    }
+                    completion(success, error)
+                }
             }
         }
-    }
     
     func fetchUserInfo(completion: @escaping (Date?, String?, Double?, Double?) -> Void) {
         var dateOfBirth: Date?

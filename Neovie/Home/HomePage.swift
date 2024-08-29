@@ -25,7 +25,7 @@ struct HomePage: View {
                     HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog, showingWeightLossAdvice: $showingWeightLossAdvice,showingSideEffects: $showingSideEffects)
                         .tag(0)
                     
-                    LogsView(viewModel: viewModel)
+                    StatsView(viewModel: viewModel)
                         .tag(1)
                     
                     ExploreView()
@@ -128,11 +128,14 @@ class HomePageViewModel: ObservableObject {
     @Published var nextDose: String = ""
     @Published var logs: [LogData.LogEntry] = []
     @Published var bannerContents: [BannerContent] = []
+    @Published var isFetchingBanners = false
+    @Published var bannerFetchError: Error?
     @Published var showMedicationReminder: Bool = false
     private var cancellables = Set<AnyCancellable>()
     private var bmiListener: ListenerRegistration?
     @Published var bmi: Double = 0.0
     @Published var proteinManager: ProteinIntakeManager
+    @Published var lastRefreshDate: Date?
     
     let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
     let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
@@ -191,11 +194,22 @@ class HomePageViewModel: ObservableObject {
     }
     
     func fetchBannerContents() {
-        let db = Firestore.firestore()
-        db.collection("banners").getDocuments { (querySnapshot, error) in
-            if let error = error {
-                print("Error getting documents: \(error)")
-            } else {
+        if bannerContents.isEmpty || lastRefreshDate == nil {
+            isFetchingBanners = true
+            bannerFetchError = nil
+            
+            let db = Firestore.firestore()
+            db.collection("banners").getDocuments { [weak self] (querySnapshot, error) in
+                guard let self = self else { return }
+                
+                self.isFetchingBanners = false
+                
+                if let error = error {
+                    self.bannerFetchError = error
+                    print("Error getting documents: \(error)")
+                    return
+                }
+                
                 let banners = querySnapshot?.documents.compactMap { document -> BannerContent? in
                     let data = document.data()
                     let colorHex = data["backgroundColor"] as? String ?? "000000"
@@ -216,6 +230,12 @@ class HomePageViewModel: ObservableObject {
             }
         }
     }
+    
+    func refreshData() {
+            fetchUserData()
+            fetchBannerContents()
+            lastRefreshDate = Date()
+        }
     
     func fetchUserData() {
         FirestoreManager.shared.getUserProfile { result in
@@ -275,17 +295,59 @@ class HomePageViewModel: ObservableObject {
     }
     
     func deleteLog(_ log: LogData.LogEntry) {
-            FirestoreManager.shared.deleteLog(log) { [weak self] result in
-                switch result {
-                case .success:
-                    DispatchQueue.main.async {
+        FirestoreManager.shared.deleteLog(log) { [weak self] result in
+            switch result {
+            case .success:
+                DispatchQueue.main.async {
+                    // Get the date of the log being deleted
+                    let logDate = Calendar.current.startOfDay(for: log.date)
+                    let today = Calendar.current.startOfDay(for: Date())
+
+                    // Only subtract protein if the log is from today
+                    if logDate == today {
                         self?.proteinManager.subProtein(log.proteinIntake)
-                        self?.logs.removeAll { $0.id == log.id }
+                    } else {
+                        // For past logs, we need to update the stored protein intake for that day
+                        self?.updateStoredProteinIntakeForPastLog(log)
                     }
-                case .failure(let error):
-                    print("Error deleting log: \(error.localizedDescription)")
-                    // You might want to show an alert to the user here
+
+                    // Remove the log from the local array
+                    self?.logs.removeAll { $0.id == log.id }
+                }
+            case .failure(let error):
+                print("Error deleting log: \(error.localizedDescription)")
+                // Show an alert to the user
+                DispatchQueue.main.async {
+                    self?.showErrorAlert(message: "Failed to delete log. Please try again.")
                 }
             }
         }
+    }
+
+    private func updateStoredProteinIntakeForPastLog(_ log: LogData.LogEntry) {
+        FirestoreManager.shared.getProteinIntake(for: log.date) { [weak self] result in
+            switch result {
+            case .success(let storedIntake):
+                let updatedIntake = max(0, storedIntake - log.proteinIntake)
+                FirestoreManager.shared.saveProteinIntake(updatedIntake, for: log.date) { result in
+                    switch result {
+                    case .success:
+                        print("Updated protein intake for \(log.date)")
+                    case .failure(let error):
+                        print("Failed to update protein intake: \(error.localizedDescription)")
+                        self?.showErrorAlert(message: "Failed to update protein intake. Please try again.")
+                    }
+                }
+            case .failure(let error):
+                print("Failed to fetch protein intake: \(error.localizedDescription)")
+                self?.showErrorAlert(message: "Failed to fetch protein intake. Please try again.")
+            }
+        }
+    }
+
+    private func showErrorAlert(message: String) {
+        // In a real app, you would show a user-facing alert here.
+        // For now, we'll just print the message.
+        print("Error Alert: \(message)")
+    }
 }

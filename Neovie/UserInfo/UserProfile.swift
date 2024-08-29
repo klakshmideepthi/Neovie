@@ -2,7 +2,7 @@ import Foundation
 
 struct UserProfile {
     var name: String
-    var heightCm: Int
+    var heightCm: Double
     var heightFt: Int
     var heightIn: Int
     var weight: Double
@@ -35,7 +35,7 @@ struct UserProfile {
         return ageComponents.year ?? 0
     }
     
-    init(name: String = "", heightCm: Int = 170, heightFt: Int = 5, heightIn: Int = 7, weight: Double = 0,targetWeight: Double = 0, gender: String = "", dateOfBirth: Date = Date(), medicationInfo: MedicationInfo? = nil, dosage: String = "", activityLevel: String = "Sedentary", dosageDay: String = "", dosageTime: Date = Date(), showMedicationReminder: Bool = false, hasSeenChatbotWelcome: Bool = false, bmi: Double = 0, proteinGoal: Double = 0, preferredHeightUnit: HeightUnit = .cm, preferredWeightUnit: WeightUnit = .kg) {
+    init(name: String = "", heightCm: Double = 0, heightFt: Int = 0, heightIn: Int = 0, weight: Double = 0,targetWeight: Double = 0, gender: String = "", dateOfBirth: Date = Date(), medicationInfo: MedicationInfo? = nil, dosage: String = "", activityLevel: String = "Sedentary", dosageDay: String = "", dosageTime: Date = Date(), showMedicationReminder: Bool = false, hasSeenChatbotWelcome: Bool = false, bmi: Double = 0, proteinGoal: Double = 0, preferredHeightUnit: HeightUnit = .cm, preferredWeightUnit: WeightUnit = .kg) {
             self.name = name
             self.heightCm = heightCm
             self.heightFt = heightFt

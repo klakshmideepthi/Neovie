@@ -21,8 +21,7 @@ struct CustomTabBar: View {
             tabButton(image: selectedTab == 3 ? "chat1" : "chat2", tag: 3)
         }
         .padding(.horizontal, 40)
-        .padding(.bottom, 30)
-        .padding(.top, 20)
+        
         .background(AppColors.secondaryBackgroundColor)
     }
     
@@ -45,6 +44,8 @@ struct CustomTabBar: View {
                 .scaleEffect(animationStates[tag] ? 1.2 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: animationStates[tag])
         }
+        .padding(.bottom, 30)
+        .padding(.top, 20)
     }
     
     private var newLogButton: some View {
@@ -59,5 +60,7 @@ struct CustomTabBar: View {
                 .cornerRadius(15)
                 .shadow(radius: 3)
         }
+        .padding(.bottom, 25)
+        .padding(.top, 15)
     }
 }

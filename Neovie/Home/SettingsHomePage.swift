@@ -149,7 +149,7 @@ struct SettingsHomeView: View {
                     infoRow(title: "Name", value: userProfile.name)
                     infoRow(title: "Gender", value: userProfile.gender)
                     infoRow(title: "Age", value: "\(userProfile.age)")
-                    infoRow(title: "Height", value: "\(userProfile.heightCm) cm")
+                    infoRow(title: "Height", value: "\(formatWeight(userProfile.heightCm)) cm")
                     infoRow(title: "Current Weight", value: "\(formatWeight(userProfile.weight)) kg")
                     infoRow(title: "Target Weight", value: "\(formatWeight(userProfile.targetWeight)) kg")
                     infoRow(title: "Medication", value: userProfile.medicationInfo?.name ?? "Not set")
@@ -385,7 +385,7 @@ struct ProfileEditView: View {
                 HStack {
                     Text("Height:")
                     Spacer()
-                    TextField("cm", value: $tempProfile.heightCm, formatter: NumberFormatter())
+                    TextField("cm", value: $tempProfile.heightCm, formatter: createWeightFormatter())
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                     Text("cm")
