@@ -303,6 +303,46 @@ class FirestoreManager {
                 }
             }
         }
+    
+    func getWaterIntakeForPastWeek(completion: @escaping (Result<[Date: Double], Error>) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+
+        let calendar = Calendar.current
+        let today = Date()
+        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today))!
+
+        var waterIntakes: [Date: Double] = [:]
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+
+        let dispatchGroup = DispatchGroup()
+
+        // Iterate through 7 days (a week)
+        for i in 0..<7 {
+            dispatchGroup.enter()
+            
+            // Calculate the date for each iteration *inside* the loop
+            let currentDate = calendar.date(byAdding: .day, value: i, to: weekStart)!
+            let dateString = dateFormatter.string(from: currentDate)
+
+            db.collection("users").document(uid).collection("waterIntake").document(dateString).getDocument { (document, error) in
+                defer { dispatchGroup.leave() }
+                if let document = document, document.exists, let waterIntake = document.data()?["waterIntake"] as? Double {
+                    waterIntakes[currentDate] = waterIntake
+                } else {
+                    waterIntakes[currentDate] = 0
+                }
+            }
+        }
+
+        dispatchGroup.notify(queue: .main) {
+            completion(.success(waterIntakes))
+        }
+    }
+    
     func saveProteinIntake(_ intake: Double, for date: Date, completion: @escaping (Result<Void, Error>) -> Void) {
             guard let uid = Auth.auth().currentUser?.uid else {
                 completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))

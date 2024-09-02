@@ -10,9 +10,13 @@ struct HomeTabContent: View {
     
     var body: some View {
         ScrollView {
-            RefreshControl(coordinateSpace: .named("RefreshControl")) {
-                            viewModel.refreshData()
-                        }
+            RefreshControl(
+                coordinateSpace: .named("RefreshControl"),
+                isRefreshing: $viewModel.isRefreshing,
+                onRefresh: {
+                    viewModel.refreshData()
+                }
+            )
             VStack(spacing: 20) {
                 
                 if let userProfile = viewModel.userProfile {
@@ -29,7 +33,9 @@ struct HomeTabContent: View {
                         )
                     }
                 }
-                BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction, viewModel: viewModel)
+                if viewModel.isBannersLoaded {
+                    BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction, viewModel: viewModel)
+                }
                 WaterView()
                 ProteinView(proteinManager: viewModel.proteinManager)
                 BMIView(viewModel: viewModel)
@@ -94,16 +100,17 @@ struct HomeTabContent: View {
 
 struct RefreshControl: View {
     var coordinateSpace: CoordinateSpace
+    @Binding var isRefreshing: Bool
     var onRefresh: () -> Void
-    
-    @State var refresh: Bool = false
-    
+
+    @State private var refresh: Bool = false
+
     var body: some View {
         GeometryReader { geo in
             if (geo.frame(in: coordinateSpace).midY > 50) {
                 Spacer()
                     .onAppear {
-                        if refresh == false {
+                        if !refresh {
                             onRefresh()
                         }
                         refresh = true
@@ -115,7 +122,7 @@ struct RefreshControl: View {
                     }
             }
             ZStack(alignment: .center) {
-                if refresh {
+                if isRefreshing {
                     ProgressView()
                 }
             }.frame(width: geo.size.width)

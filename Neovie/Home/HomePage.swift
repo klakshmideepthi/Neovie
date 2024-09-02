@@ -69,7 +69,7 @@ struct HomePage: View {
             }
         }
         .onAppear {
-            viewModel.fetchUserData()
+            viewModel.loadInitialData()
             checkChatbotWelcomeStatus()
         }
     }
@@ -136,6 +136,16 @@ class HomePageViewModel: ObservableObject {
     @Published var bmi: Double = 0.0
     @Published var proteinManager: ProteinIntakeManager
     @Published var lastRefreshDate: Date?
+    @Published var isBannersLoaded = false
+    @Published var isRefreshing = false
+    @Published var isInitialDataLoaded = false
+    @Published var weeklyWaterIntake: [Date: Double] = [:]
+    
+    struct WaterIntakeData: Identifiable {
+        let id = UUID()
+        let date: Date
+        let intake: Double
+    }
     
     let sideEffects = ["Nausea", "Headache", "Fatigue", "Dizziness", "Other"]
     let emotions = ["Happy", "Sad", "Anxious", "Excited", "Frustrated", "Other"]
@@ -194,6 +204,8 @@ class HomePageViewModel: ObservableObject {
     }
     
     func fetchBannerContents() {
+        guard !isBannersLoaded else { return }
+        
         if bannerContents.isEmpty || lastRefreshDate == nil {
             isFetchingBanners = true
             bannerFetchError = nil
@@ -226,15 +238,28 @@ class HomePageViewModel: ObservableObject {
                 
                 DispatchQueue.main.async {
                     self.bannerContents = banners
+                    self.isBannersLoaded = true
                 }
             }
         }
     }
     
-    func refreshData() {
+    func loadInitialData() {
+            guard !isInitialDataLoaded else { return }
             fetchUserData()
             fetchBannerContents()
-            lastRefreshDate = Date()
+            isInitialDataLoaded = true
+        }
+    
+    func refreshData() {
+            isRefreshing = true
+            fetchUserData()
+            fetchBannerContents()
+            
+            // Simulate network delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.isRefreshing = false
+            }
         }
     
     func fetchUserData() {
@@ -320,6 +345,19 @@ class HomePageViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self?.showErrorAlert(message: "Failed to delete log. Please try again.")
                 }
+            }
+        }
+    }
+    
+    func fetchWeeklyWaterIntake() {
+        FirestoreManager.shared.getWaterIntakeForPastWeek { result in
+            switch result {
+            case .success(let waterIntakes):
+                DispatchQueue.main.async {
+                    self.weeklyWaterIntake = waterIntakes
+                }
+            case .failure(let error):
+                print("Error fetching weekly water intake: \(error.localizedDescription)")
             }
         }
     }
