@@ -39,6 +39,9 @@ struct HomeTabContent: View {
                 WaterView()
                 ProteinView(proteinManager: viewModel.proteinManager)
                 BMIView(viewModel: viewModel)
+                WeightLossPlannerWidget(onKnowMoreTapped: {
+                    showingWeightLossAdvice = true
+                })
 //                quickActionsSection
 //                weightLossAdviceButton
 //                sideEffectsButton

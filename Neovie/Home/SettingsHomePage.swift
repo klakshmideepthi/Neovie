@@ -291,6 +291,12 @@ struct ProfileEditView: View {
     @State private var isNameEmpty: Bool = false
     @State private var selectedMedication: MedicationInfo? = nil
         @State private var selectedDosage: String = ""
+    @State private var showCurrentWeightPicker = false
+    @State private var showTargetWeightPicker = false
+    @State private var currentWeightWhole: Int = 0
+    @State private var currentWeightFraction: Int = 0
+    @State private var targetWeightWhole: Int = 0
+    @State private var targetWeightFraction: Int = 0
     
     init(userProfile: Binding<UserProfile>) {
         self._userProfile = userProfile
@@ -309,6 +315,56 @@ struct ProfileEditView: View {
                         medicationSection
                     }
                     .padding()
+                }
+                
+                if showCurrentWeightPicker {
+                    Color.black.opacity(0.4)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            showCurrentWeightPicker = false
+                        }
+                    
+                    WeightPickerView(
+                        weight: $tempProfile.weight,
+                        weightWhole: $currentWeightWhole,
+                        weightFraction: $currentWeightFraction,
+                        onSave: {
+                            showCurrentWeightPicker = false
+                        },
+                        onCancel: {
+                            // Reset to original values
+                            currentWeightWhole = Int(tempProfile.weight)
+                            currentWeightFraction = Int((tempProfile.weight - Double(currentWeightWhole)) * 10)
+                            showCurrentWeightPicker = false
+                        }
+                    )
+                    .transition(.move(edge: .bottom))
+                    .animation(.default, value: showCurrentWeightPicker)
+                }
+                
+                if showTargetWeightPicker {
+                    Color.black.opacity(0.4)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            showTargetWeightPicker = false
+                        }
+                    
+                    WeightPickerView(
+                        weight: $tempProfile.targetWeight,
+                        weightWhole: $targetWeightWhole,
+                        weightFraction: $targetWeightFraction,
+                        onSave: {
+                            showTargetWeightPicker = false
+                        },
+                        onCancel: {
+                            // Reset to original values
+                            targetWeightWhole = Int(tempProfile.targetWeight)
+                            targetWeightFraction = Int((tempProfile.targetWeight - Double(targetWeightWhole)) * 10)
+                            showTargetWeightPicker = false
+                        }
+                    )
+                    .transition(.move(edge: .bottom))
+                    .animation(.default, value: showTargetWeightPicker)
                 }
             }
             .navigationTitle("Edit Profile")
@@ -329,6 +385,10 @@ struct ProfileEditView: View {
             isNameEmpty = tempProfile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             selectedMedication = tempProfile.medicationInfo
             selectedDosage = tempProfile.dosage
+            currentWeightWhole = Int(tempProfile.weight)
+            currentWeightFraction = Int((tempProfile.weight - Double(currentWeightWhole)) * 10)
+            targetWeightWhole = Int(tempProfile.targetWeight)
+            targetWeightFraction = Int((tempProfile.targetWeight - Double(targetWeightWhole)) * 10)
         }
                 }
     
@@ -394,18 +454,34 @@ struct ProfileEditView: View {
                 HStack {
                     Text("Current Weight:")
                     Spacer()
-                    TextField("kg", value: $tempProfile.weight, formatter: createWeightFormatter())
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
+                    Button(action: {
+                        currentWeightWhole = Int(tempProfile.weight)
+                        currentWeightFraction = Int((tempProfile.weight - Double(currentWeightWhole)) * 10)
+                        showCurrentWeightPicker = true
+                    }) {
+                        Text("\(formatWeight(tempProfile.weight))")
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(AppColors.backgroundColor)
+                            .cornerRadius(8)
+                    }
                     Text("kg")
                 }
                 
                 HStack {
                     Text("Target Weight:")
                     Spacer()
-                    TextField("kg", value: $tempProfile.targetWeight, formatter: createWeightFormatter())
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
+                    Button(action: {
+                        targetWeightWhole = Int(tempProfile.targetWeight)
+                        targetWeightFraction = Int((tempProfile.targetWeight - Double(targetWeightWhole)) * 10)
+                        showTargetWeightPicker = true
+                    }) {
+                        Text("\(formatWeight(tempProfile.targetWeight))")
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(AppColors.backgroundColor)
+                            .cornerRadius(8)
+                    }
                     Text("kg")
                 }
             }
@@ -578,4 +654,80 @@ struct ProfileEditView: View {
             }
         }
     }
+
+    // Add this function to format the weight
+    private func formatWeight(_ weight: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 1
+        formatter.maximumFractionDigits = 1
+        return formatter.string(from: NSNumber(value: weight)) ?? String(format: "%.1f", weight)
     }
+}
+
+struct WeightPickerView: View {
+    @Binding var weight: Double
+    @Binding var weightWhole: Int
+    @Binding var weightFraction: Int
+    let onSave: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            
+            VStack {
+                HStack(spacing: 0) {
+                    Picker("Whole", selection: $weightWhole) {
+                        ForEach(20...200, id: \.self) { whole in
+                            Text("\(whole)").tag(whole)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                    .frame(width: 100)
+                    .clipped()
+
+                    Text(".")
+                        .font(.title)
+                        .padding(.horizontal, 5)
+
+                    Picker("Fraction", selection: $weightFraction) {
+                        ForEach(0...9, id: \.self) { fraction in
+                            Text("\(fraction)").tag(fraction)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                    .frame(width: 60)
+                    .clipped()
+
+                    Text("kg")
+                        .font(.headline)
+                        .padding(.leading, 10)
+                }
+                .padding(.bottom)
+                
+                HStack {
+                    Button("Cancel") {
+                        onCancel()
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .foregroundColor(AppColors.accentColor)
+                    
+                    Button("Save") {
+                        weight = Double(weightWhole) + Double(weightFraction) / 10.0
+                        onSave()
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .foregroundColor(AppColors.accentColor)
+                }
+                .background(Color.gray.opacity(0.2))
+            }
+            .background(AppColors.secondaryBackgroundColor)
+            .cornerRadius(10)
+            .shadow(radius: 5)
+        }
+        .edgesIgnoringSafeArea(.bottom)
+    }
+}

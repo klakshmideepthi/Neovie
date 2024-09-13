@@ -10,9 +10,14 @@ struct ContentView: View {
     @State private var isShowingOnboarding = false
     @State private var isShowingHomePage = false
     @State private var isLoading = true
+    @StateObject private var waterReminderManager = WaterReminderManager()
+    @StateObject private var notificationManager = NotificationManager()
     
     var body: some View {
         Group {
+            if waterReminderManager.shouldShowWaterReminder {
+                            WaterReminderView()
+                        }
             if signInManager.isSignedIn {
                 if isShowingHomePage {
                     HomePage()
@@ -110,4 +115,17 @@ struct ContentView: View {
                 }
             }
         }
+}
+
+
+struct WaterReminderView: View {
+    var body: some View {
+        VStack {
+            Text("Time to drink some water!")
+            // Add more UI elements as needed
+        }
+        .padding()
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(10)
+    }
 }

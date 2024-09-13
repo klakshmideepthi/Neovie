@@ -9,7 +9,6 @@ struct ChatbotHomeView: View {
             get: { _isShowingChatbot },
             set: { newValue in
                 if !newValue {
-                    // Reset selectedPrompt when closing the sheet
                     selectedPrompt = nil
                 }
                 _isShowingChatbot = newValue
@@ -18,53 +17,59 @@ struct ChatbotHomeView: View {
     }
     
     let prompts: [(String, String)] = [
-        ("The founding story of McDonalds", "building.2"),
-        ("The tallest Ferris wheel", "circle"),
-        ("Did dinosaurs go extinct?", "fossil.shell"),
-        ("Are all mushrooms edible?", "leaf.fill")
+        ("Benefits of cardio exercise", "heart.circle"),
+        ("Best foods for muscle growth", "fork.knife"),
+        ("How to start strength training", "figure.walk"),
+        ("Tips for better sleep", "bed.double.fill")
     ]
     
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
+            VStack(spacing: 20) {
+                Spacer()
+                
                 Text("Your personalized AI")
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(AppColors.textColor)
-                    .padding()
                 
-                ScrollView {
-                    VStack(spacing: 15) {
-                        ForEach(prompts, id: \.0) { prompt in
-                            TopicButton(title: prompt.0, icon: prompt.1)
-                                .onTapGesture {
-                                    presentChatbot(with: prompt.0)
-                                }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
+                promptsView
+                
                 Spacer()
                 
-                Button(action: {
-                    presentChatbot(with: nil)
-                }) {
-                    Text("Ask me anything!")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(AppColors.accentColor)
-                        .cornerRadius(15)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
+                askMeAnythingButton
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding()
             .background(AppColors.backgroundColor.edgesIgnoringSafeArea(.all))
         }
         .sheet(isPresented: isShowingChatbot) {
             ChatbotView(initialPrompt: selectedPrompt)
+        }
+    }
+    
+    private var promptsView: some View {
+        VStack(spacing: 15) {
+            ForEach(prompts, id: \.0) { prompt in
+                TopicButton(title: prompt.0, icon: prompt.1)
+                    .onTapGesture {
+                        presentChatbot(with: prompt.0)
+                    }
+            }
+        }
+    }
+    
+    private var askMeAnythingButton: some View {
+        Button(action: {
+            presentChatbot(with: nil)
+        }) {
+            Text("Ask me anything!")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(AppColors.accentColor)
+                .cornerRadius(15)
         }
     }
     
@@ -83,19 +88,20 @@ struct TopicButton: View {
             Image(systemName: icon)
                 .foregroundColor(AppColors.accentColor)
                 .font(.system(size: 24))
-                .frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
-                .aspectRatio(1, contentMode: .fit)
+                .frame(width: 40, height: 40)
             
             Text(title)
                 .foregroundColor(AppColors.textColor)
                 .font(.body)
                 .lineLimit(1)
-                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+            
+            Spacer()
             
             Image(systemName: "chevron.right")
                 .foregroundColor(AppColors.textColor.opacity(0.6))
         }
         .padding()
+        .frame(height: 60)
         .background(AppColors.secondaryBackgroundColor)
         .cornerRadius(15)
         .shadow(color: AppColors.textColor.opacity(0.05), radius: 5, x: 0, y: 2)

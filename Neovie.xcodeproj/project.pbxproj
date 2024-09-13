@@ -86,6 +86,11 @@
 		D8DAB57B2C79617C00CD1E3A /* FirebaseAnalyticsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D8DAB57A2C79617C00CD1E3A /* FirebaseAnalyticsSwift */; };
 		D8DAB57D2C79617C00CD1E3A /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = D8DAB57C2C79617C00CD1E3A /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		D8DAB57F2C797E2700CD1E3A /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DAB57E2C797E2700CD1E3A /* ExploreView.swift */; };
+		D8E26CEA2C92467300E52683 /* WeightLossPlannerWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E26CE92C92467300E52683 /* WeightLossPlannerWidget.swift */; };
+		D8E26CEC2C94022900E52683 /* loading.json in Resources */ = {isa = PBXBuildFile; fileRef = D8E26CEB2C94022900E52683 /* loading.json */; };
+		D8E26CEE2C9404FF00E52683 /* loading1.json in Resources */ = {isa = PBXBuildFile; fileRef = D8E26CED2C9404FF00E52683 /* loading1.json */; };
+		D8F2E4C22C85B2BE001F5FE2 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F2E4C12C85B2BE001F5FE2 /* NotificationManager.swift */; };
+		D8F2E4C42C85B55B001F5FE2 /* WaterReminderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8F2E4C32C85B55B001F5FE2 /* WaterReminderManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -177,6 +182,11 @@
 		D8ABA67C2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "network-fitness-app-and-healthy-lifestyle.json"; sourceTree = "<group>"; };
 		D8ABA67E2C5FF3CF0040F018 /* ChatAI.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ChatAI.json; sourceTree = "<group>"; };
 		D8DAB57E2C797E2700CD1E3A /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		D8E26CE92C92467300E52683 /* WeightLossPlannerWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightLossPlannerWidget.swift; sourceTree = "<group>"; };
+		D8E26CEB2C94022900E52683 /* loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = loading.json; sourceTree = "<group>"; };
+		D8E26CED2C9404FF00E52683 /* loading1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = loading1.json; sourceTree = "<group>"; };
+		D8F2E4C12C85B2BE001F5FE2 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		D8F2E4C32C85B55B001F5FE2 /* WaterReminderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterReminderManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -230,6 +240,7 @@
 				D80D55F02C78144C0009C7DF /* DeleteUserData.swift */,
 				D80D55EE2C747AC00009C7DF /* BMIView.swift */,
 				D85A1E1E2C806B4700032C84 /* WaterIntakeGraphView.swift */,
+				D8E26CE92C92467300E52683 /* WeightLossPlannerWidget.swift */,
 				D80D55E82C745E0A0009C7DF /* ProteinIntakeManager.swift */,
 				D80D55E62C745A4C0009C7DF /* WaterIntakeManager.swift */,
 				D80D55D62C71FB6B0009C7DF /* WaterView.swift */,
@@ -250,6 +261,7 @@
 				D85EA7A12C5252B000A15915 /* NeovieTests */,
 				D85EA7AB2C5252B000A15915 /* NeovieUITests */,
 				D85EA78F2C5252AE00A15915 /* Products */,
+				D8F2E4C52C85E499001F5FE2 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -272,6 +284,8 @@
 				D85EA7912C5252AE00A15915 /* NeovieApp.swift */,
 				D801F79D2C5D3BD200F7F521 /* MainView.swift */,
 				D801F79B2C5D3B9200F7F521 /* SplashScreenView.swift */,
+				D8F2E4C32C85B55B001F5FE2 /* WaterReminderManager.swift */,
+				D8F2E4C12C85B2BE001F5FE2 /* NotificationManager.swift */,
 				D85EA7932C5252AE00A15915 /* ContentView.swift */,
 				D85EA7CE2C5254B200A15915 /* OnboardingView.swift */,
 				D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */,
@@ -372,6 +386,8 @@
 		D86796402C6C7E5400C0FF8B /* Lottie */ = {
 			isa = PBXGroup;
 			children = (
+				D8E26CEB2C94022900E52683 /* loading.json */,
+				D8E26CED2C9404FF00E52683 /* loading1.json */,
 				D8ABA67C2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json */,
 				D867965F2C6F834000C0FF8B /* Gender1.json */,
 				D867965E2C6F834000C0FF8B /* Gender2.json */,
@@ -380,6 +396,13 @@
 				D8ABA67E2C5FF3CF0040F018 /* ChatAI.json */,
 			);
 			path = Lottie;
+			sourceTree = "<group>";
+		};
+		D8F2E4C52C85E499001F5FE2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -510,7 +533,9 @@
 				D85EA7992C5252B000A15915 /* Preview Assets.xcassets in Resources */,
 				D86796612C6F834000C0FF8B /* Gender2.json in Resources */,
 				D8ABA67D2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json in Resources */,
+				D8E26CEC2C94022900E52683 /* loading.json in Resources */,
 				D86796632C6F834000C0FF8B /* Gender3.json in Resources */,
+				D8E26CEE2C9404FF00E52683 /* loading1.json in Resources */,
 				D8ABA67F2C5FF3D00040F018 /* ChatAI.json in Resources */,
 				D85EA7962C5252B000A15915 /* Assets.xcassets in Resources */,
 				D867966F2C7070FB00C0FF8B /* Gender4.json in Resources */,
@@ -540,6 +565,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D85EA7E52C53A74300A15915 /* SettingsHomePage.swift in Sources */,
+				D8F2E4C42C85B55B001F5FE2 /* WaterReminderManager.swift in Sources */,
 				D86796652C70124500C0FF8B /* UserInfoHeight.swift in Sources */,
 				D85EA7942C5252AE00A15915 /* ContentView.swift in Sources */,
 				D85EA7CF2C5254B200A15915 /* OnboardingView.swift in Sources */,
@@ -557,6 +583,7 @@
 				D8DAB57F2C797E2700CD1E3A /* ExploreView.swift in Sources */,
 				D801F7A02C5E4D1000F7F521 /* WeightLossAdviceService.swift in Sources */,
 				D85EA7D32C5254E100A15915 /* UserProfile.swift in Sources */,
+				D8E26CEA2C92467300E52683 /* WeightLossPlannerWidget.swift in Sources */,
 				D80D55DB2C72014E0009C7DF /* BannerView.swift in Sources */,
 				D81DF04B2C7CFDB500FDF5F5 /* NewsService.swift in Sources */,
 				D801F7A42C5E4E7100F7F521 /* WeightLossAdviceView.swift in Sources */,
@@ -580,6 +607,7 @@
 				D86796672C7019FE00C0FF8B /* UserInfoWeight.swift in Sources */,
 				D867964D2C6F65C300C0FF8B /* UserInfoAge.swift in Sources */,
 				D80D55E72C745A4C0009C7DF /* WaterIntakeManager.swift in Sources */,
+				D8F2E4C22C85B2BE001F5FE2 /* NotificationManager.swift in Sources */,
 				D86796572C6F7EE700C0FF8B /* UserInfoGender.swift in Sources */,
 				D80770A52C5BD3EA00381B45 /* ChatbotHomeView.swift in Sources */,
 				D81DF04D2C7CFDEC00FDF5F5 /* NewsArticle.swift in Sources */,
@@ -776,7 +804,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.11;
+				MARKETING_VERSION = 1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -818,7 +846,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.11;
+				MARKETING_VERSION = 1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

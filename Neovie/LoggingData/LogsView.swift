@@ -81,8 +81,9 @@ struct LogEntryRow: View {
     
     @State private var offset: CGFloat = 0
     @State private var deleteButtonWidth: CGFloat = 80
-    private let closeThreshold: CGFloat = 20 // Threshold to automatically close the delete button
-    private let dragThreshold: CGFloat = 50  // Threshold to determine a significant swipe
+    @State private var showingDeleteAlert = false
+    private let closeThreshold: CGFloat = 20
+    private let dragThreshold: CGFloat = 50
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -118,15 +119,26 @@ struct LogEntryRow: View {
                         }
                 )
         }
+        .alert(isPresented: $showingDeleteAlert) {
+            Alert(
+                title: Text("Delete Log"),
+                message: Text("Are you sure you want to delete this log?"),
+                primaryButton: .destructive(Text("Delete")) {
+                    onDelete()
+                },
+                secondaryButton: .cancel {
+                    withAnimation {
+                        self.offset = 0
+                    }
+                }
+            )
+        }
     }
     
     private var deleteButton: some View {
         GeometryReader { geometry in
             Button(action: {
-                withAnimation {
-                    self.offset = 0
-                }
-                onDelete()
+                self.showingDeleteAlert = true
             }) {
                 Image(systemName: "trash")
                     .foregroundColor(.white)

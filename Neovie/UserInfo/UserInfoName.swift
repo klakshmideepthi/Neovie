@@ -36,7 +36,10 @@ struct UserInfoName: View {
             }
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
-            .onAppear(perform: requestHealthKitAuthorization)
+            .onAppear(perform: {
+                loadSavedName()
+                requestHealthKitAuthorization()
+            })
             .edgesIgnoringSafeArea(.all)
             .onTapGesture {
                 hideKeyboard()
@@ -166,24 +169,41 @@ struct UserInfoName: View {
                }
            }
         
-        private func saveUserProfile() {
-            userProfile.name = name
-            
-            FirestoreManager.shared.saveUserProfile(userProfile) { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        print("User profile saved successfully")
-                        self.navigateToNextView = true
-                    case .failure(let error):
-                        print("Failed to save user profile: \(error.localizedDescription)")
-                        // You might want to show an alert to the user here
-                    }
+    private func loadSavedName() {
+        if !userProfile.name.isEmpty {
+            // Use the saved name if it exists
+            self.name = userProfile.name
+        } else {
+            // If no saved name, try to fetch from Google profile
+            fetchGoogleProfileName()
+        }
+    }
+
+    private func fetchGoogleProfileName() {
+        if let googleProfile = GoogleSignInManager.shared.googleProfile {
+            let fullName = googleProfile.name
+            let firstName = fullName.components(separatedBy: " ").first ?? ""
+            self.name = firstName
+        }
+    }
+    
+    private func saveUserProfile() {
+        userProfile.name = name
+        
+        FirestoreManager.shared.saveUserProfile(userProfile) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    print("User profile saved successfully")
+                    self.navigateToNextView = true
+                case .failure(let error):
+                    print("Failed to save user profile: \(error.localizedDescription)")
+                    // You might want to show an alert to the user here
                 }
             }
         }
-        
-
+    }
+    
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }

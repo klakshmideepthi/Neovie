@@ -1,4 +1,5 @@
 import SwiftUI
+import Lottie
 
 
 struct BMIAndProteinCalculationView: View {
@@ -6,20 +7,25 @@ struct BMIAndProteinCalculationView: View {
     @State private var navigateToNextView = false
     @State private var isNotificationPermissionGranted = false
     @State private var hasAcceptedDisclaimer = false
+    @State private var isLoading = true
     
     var body: some View {
         NavigationView {
             VStack(spacing: 10) {
-                
                 ScrollView {
                     VStack(spacing: 30) {
                         Text("Your Health Metrics")
                             .font(.system(size: 28, weight: .bold))
                             .padding(.top, 50)
                         
-                        MetricCard(title: "BMI", value: String(format: "%.1f", userProfile.bmi), description: getBMIDescription())
-                        
-                        MetricCard(title: "Daily Protein Goal", value: String(format: "%.1f g", userProfile.proteinGoal), description: "Based on your weight and activity level")
+                        if isLoading {
+                            BMILottieView(name: "loading", loopMode: .loop)
+                                .frame(width: 200, height: 200)
+                        } else {
+                            MetricCard(title: "BMI", value: String(format: "%.1f", userProfile.bmi), description: getBMIDescription())
+                            
+                            MetricCard(title: "Daily Protein Goal", value: String(format: "%.1f g", userProfile.proteinGoal), description: "Based on your weight and activity level")
+                        }
                     }
                 }
                 .padding()
@@ -40,7 +46,12 @@ struct BMIAndProteinCalculationView: View {
                 }
             )
         
-        .onAppear(perform: updateMetrics)
+        .onAppear(perform: {
+            updateMetrics()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                isLoading = false
+            }
+        })
         .navigationBarHidden(true)
     }
     @ViewBuilder
@@ -152,4 +163,30 @@ struct CheckboxToggleStyle: ToggleStyle {
             configuration.label
         }
     }
+}
+
+// Rename LottieView to BMILottieView to avoid conflicts
+struct BMILottieView: UIViewRepresentable {
+    var name: String
+    var loopMode: LottieLoopMode = .playOnce
+
+    func makeUIView(context: UIViewRepresentableContext<BMILottieView>) -> UIView {
+        let view = UIView(frame: .zero)
+        let animationView = LottieAnimationView()
+        animationView.animation = LottieAnimation.named(name)
+        animationView.contentMode = .scaleAspectFit
+        animationView.loopMode = loopMode
+        animationView.play()
+        
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(animationView)
+        NSLayoutConstraint.activate([
+            animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
+            animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
+        ])
+        
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<BMILottieView>) {}
 }

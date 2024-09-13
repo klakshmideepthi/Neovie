@@ -31,15 +31,17 @@ struct HomePage: View {
                     ExploreView()
                         .tag(2)
                     
-                    if let userProfile = viewModel.userProfile, userProfile.hasSeenChatbotWelcome {
-                        ChatbotHomeView()
-                            .tag(3)
-                    } else {
-                        ChatbotWelcomeView(onCompletion: {
-                            updateUserProfileAfterWelcome()
-                        })
+//                    if let userProfile = viewModel.userProfile, userProfile.hasSeenChatbotWelcome {
+//                        ChatbotHomeView()
+//                            .tag(3)
+//                    } else {
+//                        ChatbotWelcomeView(onCompletion: {
+//                            updateUserProfileAfterWelcome()
+//                        })
+//                        .tag(3)
+//                    }
+                    ChatbotHomeView()
                         .tag(3)
-                    }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 
