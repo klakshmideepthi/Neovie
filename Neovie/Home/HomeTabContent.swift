@@ -8,6 +8,9 @@ struct HomeTabContent: View {
     @Binding var showingWeightLossAdvice: Bool
     @Binding var showingSideEffects: Bool
     
+    // Add this new state variable
+    @State private var currentAffirmation: String = ""
+    
     var body: some View {
         ScrollView {
             RefreshControl(
@@ -32,16 +35,18 @@ struct HomeTabContent: View {
                             }
                         )
                     }
-                }
+                }       
                 if viewModel.isBannersLoaded {
                     BannerView(bannerContents: viewModel.bannerContents, actionHandler: handleBannerAction, viewModel: viewModel)
                 }
-                WaterView()
-                ProteinView(proteinManager: viewModel.proteinManager)
-                BMIView(viewModel: viewModel)
+                PositiveAffirmationWidget(affirmation: currentAffirmation)
                 WeightLossPlannerWidget(onKnowMoreTapped: {
                     showingWeightLossAdvice = true
                 })
+                
+                WaterView()
+                ProteinView(proteinManager: viewModel.proteinManager)
+                BMIView(viewModel: viewModel)
 //                quickActionsSection
 //                weightLossAdviceButton
 //                sideEffectsButton
@@ -54,6 +59,7 @@ struct HomeTabContent: View {
             viewModel.fetchUserData()
             viewModel.fetchBannerContents()
             viewModel.setupMedicationReminderListener()
+            currentAffirmation = getRandomAffirmation() // Add this line
         }
     }
     
@@ -99,6 +105,23 @@ struct HomeTabContent: View {
             print("Unknown action: \(identifier)")
         }
     }
+    
+    // Add this new function to get a random affirmation
+    private func getRandomAffirmation() -> String {
+        let affirmations = [
+            "You are capable of amazing things.",
+            "Every day, you're getting stronger and healthier.",
+            "Your journey is inspiring and unique.",
+            "You have the power to create positive change.",
+            "Your efforts are paying off - keep going!",
+            "You're making progress, even when you can't see it.",
+            "Your health journey matters, and so do you.",
+            "Small steps lead to big changes - you've got this!",
+            "You're resilient and can overcome any challenge.",
+            "Your body is strong, and your mind is stronger."
+        ]
+        return affirmations.randomElement() ?? "You are doing great!"
+    }
 }
 
 struct RefreshControl: View {
@@ -135,4 +158,27 @@ struct RefreshControl: View {
 
 extension Notification.Name {
     static let medicationReminderReceived = Notification.Name("medicationReminderReceived")
+}
+
+// Add this new widget struct
+struct PositiveAffirmationWidget: View {
+    let affirmation: String
+    
+    var body: some View {
+        VStack(spacing:20) {
+            Spacer()
+            Text("Today's Affirmation")
+                .font(.headline)
+                .fontWeight(.heavy)
+            Text(affirmation)
+                .font(.body)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .background(AppColors.accentColor)
+        .foregroundColor(AppColors.textColor)
+        .cornerRadius(10)
+    }
 }

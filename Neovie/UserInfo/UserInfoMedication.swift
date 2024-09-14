@@ -25,6 +25,8 @@ struct UserInfoMedication: View {
                 
                 Spacer()
                 
+                MedicationDisclaimerView()
+                
                 noMedicationButton
                 continueButton
                 
@@ -196,5 +198,22 @@ struct MedicationButton: View {
             .cornerRadius(12)
         }
         .aspectRatio(0.9, contentMode: .fit)
+    }
+}
+
+struct MedicationDisclaimerView: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle")
+                .foregroundColor(AppColors.accentColor)
+                .font(.system(size: 12))
+
+            Text("All medication names are trademarks of their owners.")
+                .font(.system(size: 12))
+                .foregroundColor(AppColors.textColor.opacity(0.8))
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding()
     }
 }

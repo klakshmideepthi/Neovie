@@ -28,6 +28,8 @@
 		D80D55EB2C7465410009C7DF /* BMIAndProteinCalculationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55EA2C7465410009C7DF /* BMIAndProteinCalculationView.swift */; };
 		D80D55EF2C747AC00009C7DF /* BMIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55EE2C747AC00009C7DF /* BMIView.swift */; };
 		D80D55F12C78144C0009C7DF /* DeleteUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D55F02C78144C0009C7DF /* DeleteUserData.swift */; };
+		D81DD23A2C95F2E400B42E0E /* loading2.json in Resources */ = {isa = PBXBuildFile; fileRef = D81DD2392C95F2E300B42E0E /* loading2.json */; };
+		D81DD23C2C95FC0000B42E0E /* loading3.json in Resources */ = {isa = PBXBuildFile; fileRef = D81DD23B2C95FC0000B42E0E /* loading3.json */; };
 		D81DF04B2C7CFDB500FDF5F5 /* NewsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81DF04A2C7CFDB500FDF5F5 /* NewsService.swift */; };
 		D81DF04D2C7CFDEC00FDF5F5 /* NewsArticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81DF04C2C7CFDEC00FDF5F5 /* NewsArticle.swift */; };
 		D85A1E1D2C80225200032C84 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D85A1E1C2C80225200032C84 /* StatsView.swift */; };
@@ -131,6 +133,8 @@
 		D80D55EA2C7465410009C7DF /* BMIAndProteinCalculationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIAndProteinCalculationView.swift; sourceTree = "<group>"; };
 		D80D55EE2C747AC00009C7DF /* BMIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIView.swift; sourceTree = "<group>"; };
 		D80D55F02C78144C0009C7DF /* DeleteUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteUserData.swift; sourceTree = "<group>"; };
+		D81DD2392C95F2E300B42E0E /* loading2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = loading2.json; sourceTree = "<group>"; };
+		D81DD23B2C95FC0000B42E0E /* loading3.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = loading3.json; sourceTree = "<group>"; };
 		D81DF04A2C7CFDB500FDF5F5 /* NewsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsService.swift; sourceTree = "<group>"; };
 		D81DF04C2C7CFDEC00FDF5F5 /* NewsArticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsArticle.swift; sourceTree = "<group>"; };
 		D85A1E1C2C80225200032C84 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
@@ -388,6 +392,8 @@
 			children = (
 				D8E26CEB2C94022900E52683 /* loading.json */,
 				D8E26CED2C9404FF00E52683 /* loading1.json */,
+				D81DD2392C95F2E300B42E0E /* loading2.json */,
+				D81DD23B2C95FC0000B42E0E /* loading3.json */,
 				D8ABA67C2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json */,
 				D867965F2C6F834000C0FF8B /* Gender1.json */,
 				D867965E2C6F834000C0FF8B /* Gender2.json */,
@@ -534,7 +540,9 @@
 				D86796612C6F834000C0FF8B /* Gender2.json in Resources */,
 				D8ABA67D2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json in Resources */,
 				D8E26CEC2C94022900E52683 /* loading.json in Resources */,
+				D81DD23A2C95F2E400B42E0E /* loading2.json in Resources */,
 				D86796632C6F834000C0FF8B /* Gender3.json in Resources */,
+				D81DD23C2C95FC0000B42E0E /* loading3.json in Resources */,
 				D8E26CEE2C9404FF00E52683 /* loading1.json in Resources */,
 				D8ABA67F2C5FF3D00040F018 /* ChatAI.json in Resources */,
 				D85EA7962C5252B000A15915 /* Assets.xcassets in Resources */,
@@ -804,7 +812,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -846,7 +854,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.deepthi.NeovieApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

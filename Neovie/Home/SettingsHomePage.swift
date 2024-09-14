@@ -297,6 +297,7 @@ struct ProfileEditView: View {
     @State private var currentWeightFraction: Int = 0
     @State private var targetWeightWhole: Int = 0
     @State private var targetWeightFraction: Int = 0
+    @State private var showAgeAlert = false
     
     init(userProfile: Binding<UserProfile>) {
         self._userProfile = userProfile
@@ -373,8 +374,10 @@ struct ProfileEditView: View {
                                 presentationMode.wrappedValue.dismiss()
                             }.foregroundColor(AppColors.accentColor),
                             trailing: Button("Save") {
-                                if !isNameEmpty {
+                                if !isNameEmpty && isAgeValid() {
                                     saveProfile()
+                                } else if !isAgeValid() {
+                                    showAgeAlert = true
                                 }
                             }.foregroundColor(AppColors.accentColor)
                              .disabled(isNameEmpty)
@@ -389,6 +392,13 @@ struct ProfileEditView: View {
             currentWeightFraction = Int((tempProfile.weight - Double(currentWeightWhole)) * 10)
             targetWeightWhole = Int(tempProfile.targetWeight)
             targetWeightFraction = Int((tempProfile.targetWeight - Double(targetWeightWhole)) * 10)
+        }
+        .alert(isPresented: $showAgeAlert) {
+            Alert(
+                title: Text("Age Restriction"),
+                message: Text("You must be at least 13 years old to use this app."),
+                dismissButton: .default(Text("OK"))
+            )
         }
                 }
     
@@ -426,7 +436,7 @@ struct ProfileEditView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 
-                DatePicker("Date of Birth", selection: $tempProfile.dateOfBirth, displayedComponents: .date)
+                DatePicker("Date of Birth", selection: $tempProfile.dateOfBirth, in: ...Date(), displayedComponents: .date)
                     .accentColor(AppColors.accentColor)
             }
             .padding()
@@ -662,6 +672,16 @@ struct ProfileEditView: View {
         formatter.minimumFractionDigits = 1
         formatter.maximumFractionDigits = 1
         return formatter.string(from: NSNumber(value: weight)) ?? String(format: "%.1f", weight)
+    }
+
+    private func isAgeValid() -> Bool {
+        return calculateAge(from: tempProfile.dateOfBirth) >= 13
+    }
+
+    private func calculateAge(from date: Date) -> Int {
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: date, to: Date())
+        return ageComponents.year ?? 0
     }
 }
 

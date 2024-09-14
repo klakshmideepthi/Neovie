@@ -25,7 +25,7 @@ struct ChatbotHomeView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 20) {
+            VStack(spacing: 40) {
                 Spacer()
                 
                 Text("Your personalized AI")

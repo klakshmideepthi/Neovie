@@ -9,7 +9,8 @@ struct NewLogView: View {
     @State private var selectedEmotion = ""
     @State private var foodNoise = 3
     @State private var proteinIntake: String = ""
-    
+    @State private var showSideEffectTooltip = false
+    @State private var showFoodNoiseTooltip = false
     init(viewModel: HomePageViewModel) {
         self.viewModel = viewModel
         _weight = State(initialValue: String(format: "%.1f", viewModel.currentWeight))
@@ -47,9 +48,12 @@ struct NewLogView: View {
                     .foregroundColor(AppColors.accentColor)
                     .font(.system(size: 16, weight: .medium))
             })
+            .onTapGesture {
+                hideAllTooltips()
+            }
         }
         .accentColor(AppColors.accentColor)
-    }
+    }  
     private func createWeightFormatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -87,10 +91,13 @@ struct NewLogView: View {
         }
     
     private var sideEffectSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Side Effect")
-                .font(.headline)
-                .foregroundColor(AppColors.accentColor)
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing:4) {
+                Text("Side Effect")
+                    .font(.headline)
+                    .foregroundColor(AppColors.accentColor)
+                InfoButton(text: "Physical reactions to your medication", showTooltip: $showSideEffectTooltip)
+            }
             
             FlexibleView(data: ["None"] + viewModel.sideEffects, spacing: 10, alignment: .leading) { effect in
                 Button(action: {
@@ -101,17 +108,20 @@ struct NewLogView: View {
                         .padding(.vertical, 8)
                         .background(selectedSideEffect == effect ? AppColors.accentColor : Color.gray.opacity(0.2))
                         .foregroundColor(selectedSideEffect == effect ? .white : AppColors.textColor)
-                        .cornerRadius(20)
+                        .cornerRadius(10)
                 }
             }
         }
     }
     
     private var foodNoiseSection: some View {
-        VStack(alignment: .leading) {
-            Text("Food Noise")
-                .font(.headline)
-                .foregroundColor(AppColors.accentColor)
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing:4) {
+                Text("Food Noise")
+                    .font(.headline)
+                    .foregroundColor(AppColors.accentColor)
+                InfoButton(text: "Intensity of food-related thoughts (1-5)", showTooltip: $showFoodNoiseTooltip)
+            }
             Stepper(value: $foodNoise, in: 1...5) {
                 Text("Food Noise: \(foodNoise)")
                     .foregroundColor(AppColors.textColor)
@@ -134,7 +144,7 @@ struct NewLogView: View {
                         .padding(.vertical, 8)
                         .background(selectedEmotion == emotion ? AppColors.accentColor : Color.gray.opacity(0.2))
                         .foregroundColor(selectedEmotion == emotion ? .white : AppColors.textColor)
-                        .cornerRadius(20)
+                        .cornerRadius(10)
                 }
             }
         }
@@ -186,6 +196,11 @@ struct NewLogView: View {
                 return "Good Evening"
             }
         }
+    
+    private func hideAllTooltips() {
+        showSideEffectTooltip = false
+        showFoodNoiseTooltip = false
+    }
 }
 
 struct FlexibleView<Data: Collection, Content: View>: View where Data.Element: Hashable {
@@ -276,4 +291,31 @@ extension View {
 private struct SizePreferenceKey: PreferenceKey {
     static var defaultValue: CGSize = .zero
     static func reduce(value: inout CGSize, nextValue: () -> CGSize) {}
+}
+
+struct InfoButton: View {
+    let text: String
+    @Binding var showTooltip: Bool
+    
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Image(systemName: "info.circle")
+                .foregroundColor(AppColors.accentColor)
+                .font(.system(size: 12))
+                .onTapGesture {
+                    showTooltip.toggle()
+                }
+            
+            if showTooltip {
+                Text(text)
+                    .font(.caption2)
+                    .padding(5)
+                    .background(AppColors.secondaryBackgroundColor)
+                    .foregroundColor(AppColors.textColor)
+                    .cornerRadius(8)
+                    .offset(x: 25)
+                    .transition(.opacity)
+            }
+        }
+    }
 }

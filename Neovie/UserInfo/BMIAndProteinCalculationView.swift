@@ -13,18 +13,25 @@ struct BMIAndProteinCalculationView: View {
         NavigationView {
             VStack(spacing: 10) {
                 ScrollView {
-                    VStack(spacing: 30) {
-                        Text("Your Health Metrics")
-                            .font(.system(size: 28, weight: .bold))
-                            .padding(.top, 50)
-                        
+                    VStack(alignment:.center,spacing: 30) {
+                        Spacer()
                         if isLoading {
+                            Text("Analyzing data to tailor your ideal health objectives")
+                                .font(.system(size: 28, weight: .bold))
+                                .padding(.top, 50)
+                                .multilineTextAlignment(.center)
+                            Spacer(minLength: 50)
                             BMILottieView(name: "loading", loopMode: .loop)
                                 .frame(width: 200, height: 200)
                         } else {
+                            Text("Your Health Metrics")
+                                .font(.system(size: 28, weight: .bold))
+                                .padding(.top, 50)
                             MetricCard(title: "BMI", value: String(format: "%.1f", userProfile.bmi), description: getBMIDescription())
                             
                             MetricCard(title: "Daily Protein Goal", value: String(format: "%.1f g", userProfile.proteinGoal), description: "Based on your weight and activity level")
+                            
+                            MetricCard(title: "Daily Water Intake", value: String(format: "%d ml", 2000), description: "Recommended average human consumption")
                         }
                     }
                 }
@@ -32,10 +39,7 @@ struct BMIAndProteinCalculationView: View {
                 
                 Spacer()
                 
-//                DisclaimerView(isAccepted: $hasAcceptedDisclaimer)
-                
                 ContinueButton
-                }
             }
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
@@ -45,7 +49,7 @@ struct BMIAndProteinCalculationView: View {
                     EmptyView()
                 }
             )
-        
+        }
         .onAppear(perform: {
             updateMetrics()
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -54,6 +58,7 @@ struct BMIAndProteinCalculationView: View {
         })
         .navigationBarHidden(true)
     }
+    
     @ViewBuilder
     private var destinationView: some View {
         if isNotificationPermissionGranted {
@@ -64,20 +69,20 @@ struct BMIAndProteinCalculationView: View {
     }
     
     private var ContinueButton: some View {
-            Button(action: {
-                checkNotificationPermission()
-            }) {
-                Text("Let's go!")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(AppColors.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, UIScreen.main.bounds.height * 0.05)
+        Button(action: {
+            checkNotificationPermission()
+        }) {
+            Text("Let's go!")
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(isLoading ? AppColors.accentColor.opacity(0.5) : AppColors.accentColor)
+                .foregroundColor(.white)
+                .cornerRadius(10)
         }
-    
+        .disabled(isLoading)
+        .padding(.horizontal)
+        .padding(.bottom, UIScreen.main.bounds.height * 0.05)
+    }
     
     private func checkNotificationPermission() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
@@ -89,8 +94,8 @@ struct BMIAndProteinCalculationView: View {
     }
 
     private func updateMetrics() {
-            userProfile.updateBMIAndProteinGoal()
-        }
+        userProfile.updateBMIAndProteinGoal()
+    }
     
     private func getBMIDescription() -> String {
         switch userProfile.bmi {

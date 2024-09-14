@@ -13,10 +13,22 @@ struct WeightLossPlannerWidget: View {
     ]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Weight Loss Planner")
-                .font(.headline)
-                .foregroundColor(AppColors.accentColor)
+        VStack(alignment:.leading,spacing: 10) {
+            HStack{
+                Text("Weight Loss Planner")
+                    .font(.headline)
+                    .foregroundColor(AppColors.accentColor)
+                Spacer()
+                Text("AI powered")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(AppColors.highlighter)
+                    .cornerRadius(5)
+                
+            }
             
             Text(snippets.randomElement() ?? "")
                 .font(.subheadline)
@@ -32,7 +44,7 @@ struct WeightLossPlannerWidget: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(AppColors.accentColor)
-                    .cornerRadius(15)
+                    .cornerRadius(8)
             }
         }
         .padding()
