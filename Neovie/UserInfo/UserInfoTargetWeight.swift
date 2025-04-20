@@ -19,6 +19,7 @@ struct UserInfoTargetWeight: View {
                         Text("What is your target weight?")
                             .font(.title2)
                             .fontWeight(.bold)
+                            .padding(.top, 20)
                         
                         weightUnitPicker
                         
@@ -45,7 +46,7 @@ struct UserInfoTargetWeight: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<10) { index in
+            ForEach(0..<9) { index in
                 Rectangle()
                     .fill(index < 6 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)

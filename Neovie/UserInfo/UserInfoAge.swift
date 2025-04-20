@@ -21,13 +21,13 @@ struct UserInfoAge: View {
 
     var body: some View {
             NavigationView {
-                VStack(spacing: 0) {
+                VStack(spacing: 20) {
                     progressBar
                     
                     Text("Date Of Birth")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .padding()
+                        .padding(.top, 20)
                     
                     Spacer()
                     
@@ -44,9 +44,11 @@ struct UserInfoAge: View {
                 
                     Spacer()
                     
-                    DisclaimerView()
-                    
-                    continueButton
+                    VStack {
+                        DisclaimerView()
+                        
+                        continueButton
+                    }
                     
                     NavigationLink(destination: UserInfoGender(userProfile: $userProfile), isActive: $navigateToNextView) {
                         EmptyView()
@@ -69,7 +71,7 @@ struct UserInfoAge: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<10) { index in
+            ForEach(0..<9) { index in
                 Rectangle()
                     .fill(index < 2 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)

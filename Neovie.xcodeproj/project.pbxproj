@@ -83,6 +83,8 @@
 		D8ABA67B2C5FCEC90040F018 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = D8ABA67A2C5FCEC90040F018 /* Lottie */; };
 		D8ABA67D2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json in Resources */ = {isa = PBXBuildFile; fileRef = D8ABA67C2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json */; };
 		D8ABA67F2C5FF3D00040F018 /* ChatAI.json in Resources */ = {isa = PBXBuildFile; fileRef = D8ABA67E2C5FF3CF0040F018 /* ChatAI.json */; };
+		D8BC75242C9F98C80043E527 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8BC75232C9F98C80043E527 /* LottieView.swift */; };
+		D8BC75262C9FB1340043E527 /* SIgnedOutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8BC75252C9FB1340043E527 /* SIgnedOutView.swift */; };
 		D8DAB5772C79617C00CD1E3A /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D8DAB5762C79617C00CD1E3A /* FirebaseAnalytics */; };
 		D8DAB5792C79617C00CD1E3A /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = D8DAB5782C79617C00CD1E3A /* FirebaseAnalyticsOnDeviceConversion */; };
 		D8DAB57B2C79617C00CD1E3A /* FirebaseAnalyticsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D8DAB57A2C79617C00CD1E3A /* FirebaseAnalyticsSwift */; };
@@ -185,6 +187,8 @@
 		D8ABA6772C5FC9480040F018 /* CustomNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNavigationBar.swift; sourceTree = "<group>"; };
 		D8ABA67C2C5FCF070040F018 /* network-fitness-app-and-healthy-lifestyle.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "network-fitness-app-and-healthy-lifestyle.json"; sourceTree = "<group>"; };
 		D8ABA67E2C5FF3CF0040F018 /* ChatAI.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ChatAI.json; sourceTree = "<group>"; };
+		D8BC75232C9F98C80043E527 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
+		D8BC75252C9FB1340043E527 /* SIgnedOutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SIgnedOutView.swift; sourceTree = "<group>"; };
 		D8DAB57E2C797E2700CD1E3A /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		D8E26CE92C92467300E52683 /* WeightLossPlannerWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightLossPlannerWidget.swift; sourceTree = "<group>"; };
 		D8E26CEB2C94022900E52683 /* loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = loading.json; sourceTree = "<group>"; };
@@ -291,7 +295,9 @@
 				D8F2E4C32C85B55B001F5FE2 /* WaterReminderManager.swift */,
 				D8F2E4C12C85B2BE001F5FE2 /* NotificationManager.swift */,
 				D85EA7932C5252AE00A15915 /* ContentView.swift */,
+				D8BC75252C9FB1340043E527 /* SIgnedOutView.swift */,
 				D85EA7CE2C5254B200A15915 /* OnboardingView.swift */,
+				D8BC75232C9F98C80043E527 /* LottieView.swift */,
 				D85EA7CC2C52549800A15915 /* GoogleSignInManager.swift */,
 				D867963C2C6C7BD000C0FF8B /* UserInfo */,
 				D80D55D12C71EE050009C7DF /* Home */,
@@ -601,6 +607,7 @@
 				D80D55DF2C7300F10009C7DF /* ProteinView.swift in Sources */,
 				D80D55D32C71F0AD0009C7DF /* AboutView.swift in Sources */,
 				D85E8F292C57720E00CC2ACF /* ChatbotWelcomeView.swift in Sources */,
+				D8BC75242C9F98C80043E527 /* LottieView.swift in Sources */,
 				D85E8F1B2C55213A00CC2ACF /* NewLogView.swift in Sources */,
 				D85EA7E12C53810B00A15915 /* HomePage.swift in Sources */,
 				D867963B2C6C023B00C0FF8B /* ColorScheme.swift in Sources */,
@@ -620,6 +627,7 @@
 				D80770A52C5BD3EA00381B45 /* ChatbotHomeView.swift in Sources */,
 				D81DF04D2C7CFDEC00FDF5F5 /* NewsArticle.swift in Sources */,
 				D801F79C2C5D3B9200F7F521 /* SplashScreenView.swift in Sources */,
+				D8BC75262C9FB1340043E527 /* SIgnedOutView.swift in Sources */,
 				D86796772C71A9E600C0FF8B /* HomeTabContent.swift in Sources */,
 				D8ABA6782C5FC9480040F018 /* CustomNavigationBar.swift in Sources */,
 				D80D55E92C745E0A0009C7DF /* ProteinIntakeManager.swift in Sources */,

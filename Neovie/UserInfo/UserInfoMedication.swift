@@ -27,10 +27,9 @@ struct UserInfoMedication: View {
                 
                 MedicationDisclaimerView()
                 
-                noMedicationButton
                 continueButton
                 
-                NavigationLink(destination: UserInfoDosage(userProfile: $userProfile), isActive: $navigateToNextView) {
+                NavigationLink(destination: UserInfoMedicationDay(userProfile: $userProfile), isActive: $navigateToNextView) {
                     EmptyView()
                 }
                 NavigationLink(destination: BMIAndProteinCalculationView(userProfile: $userProfile), isActive: $navigateToBMIAndProtein) {
@@ -71,7 +70,7 @@ struct UserInfoMedication: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<10) { index in
+            ForEach(0..<9) { index in
                 Rectangle()
                     .fill(index < 8 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)
@@ -81,35 +80,18 @@ struct UserInfoMedication: View {
     }
     
     private var medicationGrid: some View {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                ForEach(availableMedications, id: \.name) { medication in
-                    MedicationButton(
-                        name: medication.name,
-                        imageName: "Med\(availableMedications.firstIndex(where: { $0.name == medication.name })! + 1)",
-                        isSelected: selectedMedication?.name == medication.name
-                    ) {
-                        selectedMedication = medication
-                    }
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+            ForEach(availableMedications, id: \.name) { medication in
+                MedicationButton(
+                    name: medication.name,
+                    imageName: "Med\(availableMedications.firstIndex(where: { $0.name == medication.name })! + 1)",
+                    isSelected: selectedMedication?.name == medication.name
+                ) {
+                    selectedMedication = medication
                 }
-                .padding(5)
             }
+        .padding(5)
         }
-    
-    private var noMedicationButton: some View {
-        Button(action: {
-            userProfile.medicationInfo = nil
-            userProfile.dosage = ""
-            navigateToBMIAndProtein = true
-        }) {
-            Text("I do not take any medication")
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(AppColors.secondaryBackgroundColor)
-                .foregroundColor(AppColors.accentColor)
-                .cornerRadius(10)
-        }
-        .padding(.horizontal)
-        .padding(.bottom, 10)
     }
     
     private var continueButton: some View {
@@ -134,19 +116,31 @@ struct UserInfoMedication: View {
     }
     
     private func saveMedicationInfo() {
-            guard let medication = selectedMedication else { return }
-            FirestoreManager.shared.saveMedicationInfo(medicationInfo: medication) { result in
-                switch result {
-                case .success:
-                    print("Medication info saved successfully")
-                    userProfile.medicationInfo = medication
-                    self.navigateToNextView = true
-                case .failure(let error):
-                    print("Failed to save medication info: \(error.localizedDescription)")
+        if let medication = selectedMedication {
+            if medication.name == "No medication" {
+                // No medication selected, navigate to BMI and Protein view
+                userProfile.medicationInfo = nil
+                userProfile.dosage = ""
+                self.navigateToBMIAndProtein = true
+            } else {
+                // Medication selected, save and navigate to dosage view
+                FirestoreManager.shared.saveMedicationInfo(medicationInfo: medication) { result in
+                    switch result {
+                    case .success:
+                        print("Medication info saved successfully")
+                        userProfile.medicationInfo = medication
+                        self.navigateToNextView = true
+                    case .failure(let error):
+                        print("Failed to save medication info: \(error.localizedDescription)")
+                    }
                 }
             }
+        } else {
+            // This case should not occur as the button is disabled when no medication is selected
+            print("No medication selected")
         }
     }
+}
 
 struct MedicationButton: View {
     let name: String
@@ -174,7 +168,7 @@ struct MedicationButton: View {
                         .resizable()
                         .scaledToFit()
                         .padding(10)
-                        .frame(height: geometry.size.height * 0.7)
+                        .frame(height: geometry.size.height * 0.6)
                         .scaleEffect(isImagePressed ? 1.1 : 1.0)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isImagePressed)
                     

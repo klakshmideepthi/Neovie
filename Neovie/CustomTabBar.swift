@@ -21,8 +21,11 @@ struct CustomTabBar: View {
             tabButton(image: selectedTab == 3 ? "chat1" : "chat2", tag: 3)
         }
         .padding(.horizontal, 40)
-        
-        .background(AppColors.secondaryBackgroundColor)
+        .background(
+            Color.clear
+                .background(.ultraThinMaterial)
+        )
+        .edgesIgnoringSafeArea(.bottom)
     }
     
     private func tabButton(image: String, tag: Int) -> some View {

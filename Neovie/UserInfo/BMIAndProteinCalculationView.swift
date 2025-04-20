@@ -12,21 +12,17 @@ struct BMIAndProteinCalculationView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 10) {
-                ScrollView {
-                    VStack(alignment:.center,spacing: 30) {
-                        Spacer()
-                        if isLoading {
-                            Text("Analyzing data to tailor your ideal health objectives")
-                                .font(.system(size: 28, weight: .bold))
-                                .padding(.top, 50)
-                                .multilineTextAlignment(.center)
-                            Spacer(minLength: 50)
-                            BMILottieView(name: "loading", loopMode: .loop)
-                                .frame(width: 200, height: 200)
-                        } else {
-                            Text("Your Health Metrics")
-                                .font(.system(size: 28, weight: .bold))
-                                .padding(.top, 50)
+                if isLoading {
+                    LoadingView()
+                } else {
+                    Spacer()
+                    
+                    Text("Your Health Metrics")
+                        .font(.system(size: 28, weight: .bold))
+                        .padding(.top, 60)
+                    Spacer()
+                    ScrollView {
+                        VStack(alignment:.center,spacing: 30) {
                             MetricCard(title: "BMI", value: String(format: "%.1f", userProfile.bmi), description: getBMIDescription())
                             
                             MetricCard(title: "Daily Protein Goal", value: String(format: "%.1f g", userProfile.proteinGoal), description: "Based on your weight and activity level")
@@ -34,12 +30,12 @@ struct BMIAndProteinCalculationView: View {
                             MetricCard(title: "Daily Water Intake", value: String(format: "%d ml", 2000), description: "Recommended average human consumption")
                         }
                     }
+                    .padding()
+                    
+                    Spacer()
+                    
+                    ContinueButton
                 }
-                .padding()
-                
-                Spacer()
-                
-                ContinueButton
             }
             .background(AppColors.backgroundColor)
             .foregroundColor(AppColors.textColor)
@@ -194,4 +190,82 @@ struct BMILottieView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UIView, context: UIViewRepresentableContext<BMILottieView>) {}
+}
+
+struct LoadingView: View {
+    @State private var currentStep = 0
+    let steps = ["Calculating BMI", "Calculating daily protein intake", "Calculating daily water intake"]
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            Spacer()
+            
+            Text("Analyzing data to tailor your ideal health objectives")
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.top, 50)
+                .multilineTextAlignment(.center)
+            
+            VStack(spacing: 20) {
+                ForEach(0..<3) { index in
+                    HStack {
+                        Text(steps[index])
+                            .foregroundColor(AppColors.textColor)
+                        Spacer()
+                        if index == currentStep && currentStep < steps.count {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: AppColors.accentColor))
+                        } else if index < currentStep || currentStep == steps.count {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(AppColors.accentColor)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 15).fill(AppColors.secondaryBackgroundColor))
+                    .shadow(color: Color.black.opacity(0.1), radius: 5)
+                }
+            }
+            
+            Spacer()
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            animateSteps()
+        }
+    }
+    
+    private func animateSteps() {
+        let stepDuration = 2.0 // Duration each step is displayed
+        let pauseDuration = 2.0 // Pause between steps
+        
+        func animateStep(_ index: Int) {
+            guard index < steps.count else {
+                // All steps completed, set currentStep to steps.count after a pause
+                DispatchQueue.main.asyncAfter(deadline: .now() + pauseDuration) {
+                    withAnimation {
+                        currentStep = steps.count
+                    }
+                }
+                return
+            }
+            
+            // Update currentStep to the current index
+            withAnimation {
+                currentStep = index
+            }
+            
+            // Wait for stepDuration before initiating the pause
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepDuration) {
+                // Wait for pauseDuration before moving to the next step
+                DispatchQueue.main.asyncAfter(deadline: .now() + pauseDuration) {
+                    animateStep(index + 1)
+                }
+            }
+        }
+        
+        // Start the animation sequence with the first step
+        animateStep(0)
+    }
 }

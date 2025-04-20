@@ -19,6 +19,7 @@ struct UserInfoMedicationDay: View {
                         Text("When do you take your medication?")
                             .font(.title2)
                             .fontWeight(.bold)
+                            .padding(.top, 20)
                         
                         daySelectionView
                         
@@ -42,11 +43,21 @@ struct UserInfoMedicationDay: View {
         .navigationBarHidden(true)
     }
     
+    private var backButton: some View {
+        Button(action: {
+            presentationMode.wrappedValue.dismiss()
+        }) {
+            Image(systemName: "chevron.left")
+                .foregroundColor(AppColors.accentColor)
+        }
+        .padding(.leading)
+    }
+    
     private var progressView: some View {
         HStack {
-            ForEach(0..<10) { index in
+            ForEach(0..<9) { index in
                 Rectangle()
-                    .fill(index < 10 ? AppColors.accentColor : Color.gray.opacity(0.3))
+                    .fill(index < 9 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)
             }
         }
@@ -57,6 +68,7 @@ struct UserInfoMedicationDay: View {
         VStack(spacing: 0) {
             Spacer().frame(height: UIScreen.main.bounds.height * 0.07)
             HStack {
+                backButton
                 Spacer()
                 progressView
                 Spacer()

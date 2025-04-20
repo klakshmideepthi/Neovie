@@ -1,36 +1,4 @@
 import SwiftUI
-import Lottie
-
-struct GenderSelectionView: View {
-    let gender: String
-    let lottieName: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        VStack {
-            ZStack {
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(isSelected ? AppColors.accentColor.opacity(0.7) : Color("GenderButton"))
-                
-                RoundedRectangle(cornerRadius: 15)
-                    .stroke(isSelected ? AppColors.accentColor : Color.gray.opacity(0.3), lineWidth: 4)
-                
-                LottieView(name: lottieName, play: isSelected)
-                    .padding(15)
-            }
-            .aspectRatio(1, contentMode: .fit)
-            .onTapGesture {
-                action()
-            }
-            
-            Text(gender)
-                .foregroundColor(isSelected ? AppColors.accentColor : AppColors.textColor)
-                .font(.headline)
-                .multilineTextAlignment(.center)
-        }
-    }
-}
 
 struct UserInfoGender: View {
     @Binding var userProfile: UserProfile
@@ -39,26 +7,25 @@ struct UserInfoGender: View {
     @State private var isDataLoaded = false
     @Environment(\.presentationMode) var presentationMode
     
-    let genders = ["Female", "Male", "Other", "Prefer not to tell"]
-    let genderLottie = ["Gender2", "Gender3", "Gender1", "Gender4"]
+    let genders = ["Male", "Female", "Other"]
+    let genderIcons = ["figure.stand", "figure.stand.dress", "person"]
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
+            VStack(spacing: 20) {
                 progressBar
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        Text("How do you identify yourself?")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        genderSelectionSection
-                        
-                        Spacer(minLength: 20)
-                    }
+                Text("How do you identify yourself?")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top, 20)
+                
+                Spacer()
+                
+                genderSelectionSection
                     .padding()
-                }
+                
+                Spacer()
                 
                 continueButton
                 
@@ -75,35 +42,17 @@ struct UserInfoGender: View {
     }
     
     private var genderSelectionSection: some View {
-        Group {
-            if isDataLoaded {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                    ForEach(0..<4) { index in
-                        GenderSelectionView(
-                            gender: genders[index],
-                            lottieName: genderLottie[index],
-                            isSelected: selectedGender == genders[index]
-                        ) {
-                            selectedGender = genders[index]
-                        }
-                    }
-                    .padding(20)
+        VStack(spacing: 16) {
+            ForEach(genders, id: \.self) { gender in
+                GenderButton(
+                    gender: gender,
+                    icon: genderIcons[genders.firstIndex(of: gender) ?? 0],
+                    isSelected: selectedGender == gender
+                ) {
+                    selectedGender = gender
                 }
-            } else {
-                ProgressView() // Show a loading indicator while fetching data
             }
         }
-    }
-    
-    private var progressView: some View {
-        HStack {
-            ForEach(0..<10) { index in
-                Rectangle()
-                    .fill(index < 3 ? AppColors.accentColor : Color.gray.opacity(0.3))
-                    .frame(height: 4)
-            }
-        }
-        .frame(width: UIScreen.main.bounds.width * 0.6, height: 10)
     }
     
     private var progressBar: some View {
@@ -131,8 +80,15 @@ struct UserInfoGender: View {
         .padding(.leading)
     }
     
-    private var isGenderSelected: Bool {
-        !selectedGender.isEmpty
+    private var progressView: some View {
+        HStack {
+            ForEach(0..<9) { index in
+                Rectangle()
+                    .fill(index < 3 ? AppColors.accentColor : Color.gray.opacity(0.3))
+                    .frame(height: 4)
+            }
+        }
+        .frame(width: UIScreen.main.bounds.width * 0.6, height: 10)
     }
     
     private var continueButton: some View {
@@ -142,19 +98,15 @@ struct UserInfoGender: View {
             Text("Continue")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(isGenderSelected ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
-                .foregroundColor(isGenderSelected ? .white : .white.opacity(0.5))
+                .background(!selectedGender.isEmpty ? AppColors.accentColor : AppColors.accentColor.opacity(0.3))
+                .foregroundColor(!selectedGender.isEmpty ? .white : .white.opacity(0.5))
                 .cornerRadius(10)
         }
         .padding(.horizontal)
-        .disabled(!isGenderSelected)
-        .simultaneousGesture(TapGesture().onEnded {
-            if isGenderSelected {
-                saveUserProfile()
-            }
-        })
+        .disabled(selectedGender.isEmpty)
         .padding(.bottom, UIScreen.main.bounds.height * 0.05)
     }
+    
     private func fetchUserProfile() {
         FirestoreManager.shared.getUserProfile { result in
             switch result {
@@ -162,10 +114,8 @@ struct UserInfoGender: View {
                 DispatchQueue.main.async {
                     if !fetchedProfile.gender.isEmpty && fetchedProfile.gender != "Not Set" {
                         self.selectedGender = fetchedProfile.gender
-                        print("Gender loaded from Firestore: \(fetchedProfile.gender)")
                     } else {
                         self.selectedGender = ""
-                        print("No valid gender found in Firestore")
                     }
                     self.isDataLoaded = true
                 }
@@ -192,6 +142,45 @@ struct UserInfoGender: View {
         } else {
             print("Gender unchanged, skipping save")
             self.navigateToNextView = true
+        }
+    }
+}
+
+struct GenderButton: View {
+    let gender: String
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing : 16) {
+                Image(systemName: icon)
+                    .font(.system(size: 32))
+                    .foregroundColor(isSelected ? AppColors.accentColor : AppColors.textColor.opacity(0.6))
+                    .frame(width: 40,height: 40)
+                
+                Text(gender)
+                    .font(.headline)
+                    .foregroundColor(isSelected ? AppColors.accentColor : AppColors.textColor)
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(AppColors.accentColor)
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? AppColors.accentColor.opacity(0.1) : AppColors.buttonBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? AppColors.accentColor : Color.gray.opacity(0.3), lineWidth: 4)
+            )
+            .cornerRadius(12) 
         }
     }
 }

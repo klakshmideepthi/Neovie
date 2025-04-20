@@ -14,13 +14,13 @@ struct UserInfoName: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
+            VStack(spacing: 20) {
                 progressBar
                 
                 Text("What is your name?")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .padding()
+                    .padding(.top, 20)
                 
                 Spacer()
                 
@@ -50,7 +50,7 @@ struct UserInfoName: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<10) { index in
+            ForEach(0..<9) { index in
                 Rectangle()
                     .fill(index < 1 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)

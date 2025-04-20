@@ -24,6 +24,7 @@ struct UserInfoHeight: View {
                         Text("What is your height?")
                             .font(.title2)
                             .fontWeight(.bold)
+                            .padding(.top, 20)
                         
                         heightUnitPicker
                         
@@ -54,7 +55,7 @@ struct UserInfoHeight: View {
     
     private var progressView: some View {
         HStack {
-            ForEach(0..<10) { index in
+            ForEach(0..<9) { index in
                 Rectangle()
                     .fill(index < 4 ? AppColors.accentColor : Color.gray.opacity(0.3))
                     .frame(height: 4)

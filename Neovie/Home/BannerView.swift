@@ -99,6 +99,7 @@ struct BannerContentView: View {
                     Text(content.subtitle)
                         .font(.subheadline)
                         .foregroundColor(.black)
+                        .multilineTextAlignment(.leading)
                     
                     Button(action: {
                         actionHandler(content.actionIdentifier)

@@ -116,5 +116,6 @@ let availableMedications = [
     MedicationInfo(name: "Mounjaro", dosages: ["2.5mg", "5mg", "7.5mg", "10mg", "12.5mg", "15mg"]),
     MedicationInfo(name: "Wegovy", dosages: ["0.25mg", "0.5mg", "1mg"]),
     MedicationInfo(name: "Ozempic", dosages: ["0.25mg", "0.5mg", "1mg"]),
-    MedicationInfo(name: "Zepbound", dosages: ["2.5mg", "5mg", "7.5mg", "10mg", "12.5mg", "15mg"])
+    MedicationInfo(name: "Zepbound", dosages: ["2.5mg", "5mg", "7.5mg", "10mg", "12.5mg", "15mg"]),
+    MedicationInfo(name: "No medication", dosages: [])
 ]

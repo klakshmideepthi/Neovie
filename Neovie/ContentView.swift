@@ -7,114 +7,73 @@ struct ContentView: View {
     @StateObject private var signInManager = GoogleSignInManager.shared
     @StateObject private var userStateManager = UserStateManager()
     @Environment(\.colorScheme) var colorScheme
-    @State private var isShowingOnboarding = false
+    @State private var isShowingUserInfo = false
     @State private var isShowingHomePage = false
     @State private var isLoading = true
     @StateObject private var waterReminderManager = WaterReminderManager()
     @StateObject private var notificationManager = NotificationManager()
+    @State private var userProfile = UserProfile()
     
     var body: some View {
         Group {
             if waterReminderManager.shouldShowWaterReminder {
-                            WaterReminderView()
-                        }
-            if signInManager.isSignedIn {
+                WaterReminderView()
+            } else if signInManager.isSignedIn {
                 if isShowingHomePage {
                     HomePage()
-                } else if isShowingOnboarding {
-                    OnboardingView()
+                } else if isShowingUserInfo {
+                    UserInfoName(userProfile: $userProfile).navigationBarBackButtonHidden(true)
                 } else {
                     SplashScreenView()
                         .onAppear(perform: checkUserStatus)
                 }
             } else {
-                signedOutView
+                OnboardingView()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .userDidSignOut)) { _ in
-            isShowingOnboarding = false
+            isShowingUserInfo = false
             isShowingHomePage = false
         }
         .onChange(of: signInManager.isSignedIn) { isSignedIn in
             if isSignedIn {
                 checkUserStatus()
                 Analytics.logEvent(AnalyticsEventLogin, parameters: [
-                                    AnalyticsParameterMethod: "Google"
-                                ])
+                    AnalyticsParameterMethod: "Google"
+                ])
+            }
+        }
+        .onAppear {
+            userStateManager.checkUserInfoStatus { _ in
+                // You can add any additional logic here if needed
             }
         }
     }
     
-    private var signedOutView: some View {
-        GeometryReader { geometry in
-            NavigationView {
-                ZStack {
-                    AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
-                    
-                    VStack(spacing: 20) {
-                        Spacer()
-                        
-                        Image("Icon4")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: geometry.size.width * 0.5, height: geometry.size.width * 0.5)
-                        
-                        Text("Welcome to Neovie")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(AppColors.textColor)
-                        
-                        Text("Sign in to start your personalized weight loss journey")
-                            .font(.title3)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                            .foregroundColor(AppColors.textColor)
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            signInManager.signIn()
-                        }) {
-                            HStack {
-                                Image("google_logo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25, height: 25)
-                                Text("Sign In with Google")
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(AppColors.accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
-                    }
-                    .padding()
-                }
+    var destinationView: some View {
+        Group {
+            if userStateManager.hasCompletedUserInfo {
+                HomePage().navigationBarBackButtonHidden(true)
+            } else {
+                UserInfoName(userProfile: $userProfile).navigationBarBackButtonHidden(true)
             }
-            .navigationViewStyle(StackNavigationViewStyle())
-            .navigationBarHidden(true)
         }
     }
     
     private func checkUserStatus() {
-            userStateManager.checkUserInfoStatus { hasCompletedUserInfo in
-                DispatchQueue.main.async {
-                    if hasCompletedUserInfo {
-                        isShowingHomePage = true
-                        isShowingOnboarding = false
-                    } else {
-                        isShowingOnboarding = true
-                        isShowingHomePage = false
-                    }
-                    isLoading = false
+        userStateManager.checkUserInfoStatus { hasCompletedUserInfo in
+            DispatchQueue.main.async {
+                if hasCompletedUserInfo {
+                    isShowingHomePage = true
+                    isShowingUserInfo = false
+                } else {
+                    isShowingUserInfo = true
+                    isShowingHomePage = false
                 }
+                isLoading = false
             }
         }
+    }
 }
 
 
@@ -127,5 +86,34 @@ struct WaterReminderView: View {
         .padding()
         .background(Color.blue.opacity(0.1))
         .cornerRadius(10)
+    }
+}
+
+class UserStateManager: ObservableObject {
+    @Published var hasCompletedOnboarding: Bool = false
+    @Published var hasCompletedUserInfo: Bool = false
+    
+    func checkUserInfoStatus(completion: @escaping (Bool) -> Void) {
+        FirestoreManager.shared.getUserProfile { result in
+            switch result {
+            case .success(let userProfile):
+                let hasCompletedInfo = !userProfile.name.isEmpty &&
+                                       !userProfile.gender.isEmpty &&
+                                       userProfile.dateOfBirth != Date() &&
+                                       userProfile.heightCm > 0 &&
+                                       userProfile.weight > 0 &&
+                                       userProfile.targetWeight > 0
+                
+                DispatchQueue.main.async {
+                    self.hasCompletedUserInfo = hasCompletedInfo
+                    completion(hasCompletedInfo)
+                }
+            case .failure:
+                DispatchQueue.main.async {
+                    self.hasCompletedUserInfo = false
+                    completion(false)
+                }
+            }
+        }
     }
 }

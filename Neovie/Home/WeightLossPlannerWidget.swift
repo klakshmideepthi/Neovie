@@ -33,6 +33,7 @@ struct WeightLossPlannerWidget: View {
             Text(snippets.randomElement() ?? "")
                 .font(.subheadline)
                 .foregroundColor(AppColors.textColor)
+                .multilineTextAlignment(.leading)
 //                .lineLimit(3)
                 .truncationMode(.tail)
             

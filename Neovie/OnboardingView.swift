@@ -1,134 +1,146 @@
 import SwiftUI
-import Lottie
 
 struct OnboardingView: View {
-    @State private var userProfile = UserProfile()
-    @StateObject private var userStateManager = UserStateManager()
-    @State private var navigateToHomePage = false
+    @State private var currentPage = 0
+    @State private var isAnimating = false
+    @State private var navigateToSignedOutView = false
 
+    let onboardingPages: [OnboardingPage] = [
+        OnboardingPage(image: "onboarding1", title: "The only study app you'll ever need", description: "Upload class study materials, create electronic flashcards to study.", buttonText: "Know more"),
+        OnboardingPage(image: "onboarding2", title: "LEARN HUB", description: "Access a wealth of information and resources to stay informed and knowledgeable anytime.", buttonText: "Know more"),
+        OnboardingPage(image: "onboarding3", title: "BUILD SKILLS", description: "Enhance your skills with targeted development programs and track your progress for continuous growth.", buttonText: "Let's start")
+    ]
+    
     var body: some View {
         NavigationView {
             GeometryReader { geometry in
                 ZStack {
                     AppColors.backgroundColor.edgesIgnoringSafeArea(.all)
                     
-                    VStack {
-                        Spacer()
-                        
-                        VStack(spacing: geometry.size.height * 0.05) {
-                            LottieView(name: "network-fitness-app-and-healthy-lifestyle",play: true)
-                                .frame(width: geometry.size.width * 0.9, height: geometry.size.width * 0.9)
-                            
-                            Text("Welcome to Neovie")
-                                .font(.system(size: 34, weight: .bold))
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(AppColors.textColor)
-                            
-                            Text("Your personalized weight loss journey")
-                                .font(.title2)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(nil)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal)
-                                .foregroundColor(AppColors.textColor)
-                            
-                            NavigationLink(destination: destinationView) {
-                                Text("Great!")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(AppColors.accentColor)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
+                    VStack(spacing: 0) {
+                        HStack {
+                            ForEach(0..<onboardingPages.count, id: \.self) { index in
+                                Circle()
+                                    .fill(currentPage == index ? AppColors.accentColor : Color.gray.opacity(0.5))
+                                    .frame(width: 8, height: 8)
                             }
-                            .padding()
                         }
+                        .padding(.top, 20)
+                        .padding(.bottom, 20)
                         
-                        Spacer()
+                        TabView(selection: $currentPage) {
+                            ForEach(0..<onboardingPages.count, id: \.self) { index in
+                                OnboardingPageView(page: onboardingPages[index], isLastPage: index == onboardingPages.count - 1, action: {
+                                    if index == onboardingPages.count - 1 {
+                                        navigateToSignedOutView = true
+                                    } else {
+                                        withAnimation {
+                                            currentPage += 1
+                                        }
+                                    }
+                                })
+                                .tag(index)
+                            }
+                        }
+                        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                        .animation(.easeInOut, value: currentPage)
+                        .transition(.slide)
                     }
-                    .padding()
                 }
             }
             .navigationBarHidden(true)
+            .background(
+                NavigationLink(destination: SignedOutView(), isActive: $navigateToSignedOutView) {
+                    EmptyView()
+                }
+            )
         }
         .onAppear {
-            userStateManager.checkUserInfoStatus { _ in
-                // You can add any additional logic here if needed
-            }
-        }
-    }
-
-    @ViewBuilder
-    var destinationView: some View {
-        if userStateManager.hasCompletedUserInfo {
-            HomePage().navigationBarBackButtonHidden(true)
-        } else {
-            UserInfoName(userProfile: $userProfile).navigationBarBackButtonHidden(true)
+            isAnimating = true
         }
     }
 }
 
-struct LottieView: UIViewRepresentable {
-    var name: String
-    var loopMode: LottieLoopMode = .loop
-    var play: Bool
-    
-    func makeUIView(context: UIViewRepresentableContext<LottieView>) -> UIView {
-        let view = UIView(frame: .zero)
-        
-        let animationView = LottieAnimationView()
-        let animation = LottieAnimation.named(name)
-        animationView.animation = animation
-        animationView.contentMode = .scaleAspectFit
-        animationView.loopMode = loopMode
-        
-        animationView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(animationView)
-        NSLayoutConstraint.activate([
-            animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
-            animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
-        ])
-        
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        guard let animationView = uiView.subviews.first as? LottieAnimationView else { return }
-        
-        if play {
-            animationView.play()
-        } else {
-            animationView.stop()
-            animationView.currentProgress = 0
-        }
-    }
+struct OnboardingPage: Identifiable {
+    let id = UUID()
+    let image: String
+    let title: String
+    let description: String
+    let buttonText: String
 }
 
-class UserStateManager: ObservableObject {
-    @Published var hasCompletedOnboarding: Bool = false
-    @Published var hasCompletedUserInfo: Bool = false
+struct OnboardingPageView: View {
+    let page: OnboardingPage
+    let isLastPage: Bool
+    let action: () -> Void
+    @State private var isAnimating = false
     
-    func checkUserInfoStatus(completion: @escaping (Bool) -> Void) {
-        FirestoreManager.shared.getUserProfile { result in
-            switch result {
-            case .success(let userProfile):
-                let hasCompletedInfo = !userProfile.name.isEmpty &&
-                                       !userProfile.gender.isEmpty &&
-                                       userProfile.dateOfBirth != Date() &&
-                                       userProfile.heightCm > 0 &&
-                                       userProfile.weight > 0 &&
-                                       userProfile.targetWeight > 0
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 20) {
+                Image(page.image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: geometry.size.height * 0.5) // 50% of the page height
+                    .scaleEffect(isAnimating ? 1 : 0.5)
                 
-                DispatchQueue.main.async {
-                    self.hasCompletedUserInfo = hasCompletedInfo
-                    completion(hasCompletedInfo)
+                Spacer()
+                Text(page.title)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(isAnimating ? 1 : 0)
+                
+                Text(page.description)
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                    .opacity(isAnimating ? 1 : 0)
+                
+                Spacer()
+                
+                if(isLastPage) {
+                    Button(action: action) {
+                        Text(page.buttonText)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(AppColors.accentColor)
+                            .foregroundColor(AppColors.textColor)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(AppColors.accentColor, lineWidth: isLastPage ? 0 : 2)
+                            )
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 30)
                 }
-            case .failure:
-                DispatchQueue.main.async {
-                    self.hasCompletedUserInfo = false
-                    completion(false)
+                else {
+                    Button(action: action) {
+                        HStack {
+                            Text(page.buttonText)
+                                .fontWeight(.bold)
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 20, weight: .bold))
+                        }
+                        .padding()
+                        .foregroundColor(AppColors.accentColor)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 30)
                 }
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.5)) {
+                isAnimating = true
+            }
+        }
+        .onDisappear {
+            isAnimating = false
         }
     }
 }

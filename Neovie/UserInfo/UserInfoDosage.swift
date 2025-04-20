@@ -21,6 +21,7 @@ struct UserInfoDosage: View {
                         Text("Dosage Information")
                             .font(.title2)
                             .fontWeight(.bold)
+                            .padding(.top, 20)
                         
                         dosageGrid
                     }
