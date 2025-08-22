@@ -25,9 +25,8 @@ struct StatsView: View {
                     stepsSection
                 }
                 
-                waterIntakeSection
-                    .padding(.horizontal)
-                    .frame(maxWidth: .infinity)
+//                waterIntakeSection
+//                    .frame(maxWidth: .infinity)
             }
         }
         .onAppear {
@@ -67,22 +66,22 @@ struct StatsView: View {
         }
     }
     
-    private var waterIntakeSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Water Intake")
-                .font(.title2)
-                .fontWeight(.bold)
+    // private var waterIntakeSection: some View {
+    //     VStack(alignment: .leading, spacing: 20) {
+    //         Text("Water Intake")
+    //             .font(.title2)
+    //             .fontWeight(.bold)
             
-            WaterIntakeGraphView(waterIntakes: viewModel.weeklyWaterIntake)
-                .frame(height: 200)
-                .frame(maxWidth: .infinity)
-                .background(AppColors.secondaryBackgroundColor)
-                .padding()
-                .cornerRadius(15)
+    //         WaterIntakeGraphView(waterIntakes: viewModel.weeklyWaterIntake)
+    //             .frame(height: 200)
+    //             .frame(maxWidth: .infinity)
+    //             .background(AppColors.secondaryBackgroundColor)
+    //             .padding()
+    //             .cornerRadius(15)
             
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
+    //     }
+    //     .padding()
+    //     .frame(maxWidth: .infinity)
         
-    }
+    // }
 }

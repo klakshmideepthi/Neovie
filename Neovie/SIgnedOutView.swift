@@ -34,6 +34,7 @@ struct SignedOutView: View {
                             .font(.caption)
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                         
                         Button(action: {
                             signInManager.signIn()

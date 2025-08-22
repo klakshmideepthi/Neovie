@@ -11,7 +11,7 @@ class AnthropicService {
     }
 
     func sendMessage(_ message: String, userId: String, onPartialResponse: @escaping (String) -> Void, completion: @escaping (Result<Void, Error>) -> Void) {
-            functions.httpsCallable("callAnthropicAPI").call(["message": message, "userId": userId]) { result, error in
+            functions.httpsCallable("callGeminiAPI").call(["message": message, "userId": userId]) { result, error in
                 if let error = error as NSError? {
                     print("Error calling Cloud Function: \(error.localizedDescription)")
                     completion(.failure(error))

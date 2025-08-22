@@ -248,6 +248,7 @@ function createContext(userData) {
     `;
 }
 
+// Switched to Gemini (gemini-2.0-flash)
 exports.generateWeightLossPlan = functions
     .region("us-west1")
     .https.onCall(async (data, context) => {
@@ -267,7 +268,7 @@ exports.generateWeightLossPlan = functions
         );
       }
 
-      const apiKey = functions.config().anthropic.api_key;
+      const apiKey = functions.config().gemini.api_key;
 
       try {
         const userData = await getUserData(userId);
@@ -277,27 +278,35 @@ exports.generateWeightLossPlan = functions
         console.log("Prompt:", prompt);
 
         const response = await axios.post(
-            "https://api.anthropic.com/v1/messages",
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
             {
-              model: "claude-3-5-sonnet-20240620",
-              messages: [
+              contents: [
                 {
                   role: "user",
-                  content: prompt,
+                  parts: [{text: prompt}],
                 },
               ],
-              max_tokens: 1000,
+              generationConfig: {
+                maxOutputTokens: 1000,
+              },
             },
             {
               headers: {
                 "Content-Type": "application/json",
-                "x-api-key": apiKey,
-                "anthropic-version": "2023-06-01",
               },
             },
         );
 
-        return response.data.content[0].text;
+        // Gemini returns candidates[0].content.parts[0].text
+        return (
+          response.data &&
+          response.data.candidates &&
+          response.data.candidates[0] &&
+          response.data.candidates[0].content &&
+          response.data.candidates[0].content.parts &&
+          response.data.candidates[0].content.parts[0] &&
+          response.data.candidates[0].content.parts[0].text
+        ) || "";
       } catch (error) {
         console.error("Error generating weight loss plan:", error);
         if (error.response) {
@@ -312,7 +321,8 @@ exports.generateWeightLossPlan = functions
       }
     });
 
-exports.callAnthropicAPI = functions
+// Switched to Gemini (gemini-2.0-flash)
+exports.callGeminiAPI = functions
     .region("us-west1")
     .https.onCall(async (data, context) => {
       if (!context.auth) {
@@ -322,7 +332,7 @@ exports.callAnthropicAPI = functions
         );
       }
 
-      const apiKey = functions.config().anthropic.api_key;
+      const apiKey = functions.config().gemini.api_key;
       const {message, userId} = data;
 
       if (!message || !userId) {
@@ -353,60 +363,36 @@ exports.callAnthropicAPI = functions
             `;
 
         const response = await axios.post(
-            "https://api.anthropic.com/v1/messages",
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
             {
-              model: "claude-3-5-sonnet-20240620",
-              messages: [
+              contents: [
                 {
                   role: "user",
-                  content: prompt,
+                  parts: [{text: prompt}],
                 },
               ],
-              max_tokens: 500,
-              stream: true,
+              generationConfig: {
+                maxOutputTokens: 500,
+              },
             },
             {
               headers: {
                 "Content-Type": "application/json",
-                "x-api-key": apiKey,
-                "anthropic-version": "2023-06-01",
               },
-              responseType: "stream",
             },
         );
 
-        return new Promise((resolve, reject) => {
-          let responseText = "";
-          response.data.on("data", (chunk) => {
-            const lines = chunk
-                .toString()
-                .split("\n")
-                .filter((line) => line.trim() !== "");
-            for (const line of lines) {
-              if (line.startsWith("data:")) {
-                const data = JSON.parse(line.slice(5));
-                if (data.type === "content_block_delta") {
-                  responseText += data.delta.text;
-                }
-              }
-            }
-          });
-
-          response.data.on("end", () => {
-            resolve(responseText);
-          });
-
-          response.data.on("error", (error) => {
-            reject(
-                new functions.https.HttpsError(
-                    "internal",
-                    "Stream error: " + error.message,
-                ),
-            );
-          });
-        });
+        return (
+          response.data &&
+          response.data.candidates &&
+          response.data.candidates[0] &&
+          response.data.candidates[0].content &&
+          response.data.candidates[0].content.parts &&
+          response.data.candidates[0].content.parts[0] &&
+          response.data.candidates[0].content.parts[0].text
+        ) || "";
       } catch (error) {
-        console.error("Error calling Anthropic API:", error);
+        console.error("Error calling Gemini API:", error);
         throw new functions.https.HttpsError(
             "internal",
             "Error calling API: " + error.message,

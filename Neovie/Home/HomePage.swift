@@ -19,26 +19,15 @@ struct HomePage: View {
                     .edgesIgnoringSafeArea(.all)
 
                 TabView(selection: $selectedTab) {
-                    NavigationLink(destination: HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog, showingWeightLossAdvice: $showingWeightLossAdvice, showingSideEffects: $showingSideEffects)) {
-                        HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog, showingWeightLossAdvice: $showingWeightLossAdvice, showingSideEffects: $showingSideEffects)
-                    }
-                    .tag(0)
-                    .zIndex(0)
-                    
-                    NavigationLink(destination: StatsView(viewModel: viewModel)) {
-                        StatsView(viewModel: viewModel)
-                    }
-                    .tag(1)
-                    
-                    NavigationLink(destination: ExploreView()) {
-                        ExploreView()
-                    }
-                    .tag(2)
-                    
-                    NavigationLink(destination: ChatbotHomeView()) {
-                        ChatbotHomeView()
-                    }
-                    .tag(3)
+                    HomeTabContent(viewModel: viewModel, showingSettingsHome: $showingSettingsHome, showingNewLog: $showingNewLog, showingWeightLossAdvice: $showingWeightLossAdvice, showingSideEffects: $showingSideEffects)
+                        .tag(0)
+                        .zIndex(0)
+                    StatsView(viewModel: viewModel)
+                        .tag(1)
+                    ExploreView()
+                        .tag(2)
+                    ChatbotHomeView()
+                        .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .edgesIgnoringSafeArea(.all)

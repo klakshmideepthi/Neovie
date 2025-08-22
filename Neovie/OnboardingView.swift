@@ -6,9 +6,24 @@ struct OnboardingView: View {
     @State private var navigateToSignedOutView = false
 
     let onboardingPages: [OnboardingPage] = [
-        OnboardingPage(image: "onboarding1", title: "The only study app you'll ever need", description: "Upload class study materials, create electronic flashcards to study.", buttonText: "Know more"),
-        OnboardingPage(image: "onboarding2", title: "LEARN HUB", description: "Access a wealth of information and resources to stay informed and knowledgeable anytime.", buttonText: "Know more"),
-        OnboardingPage(image: "onboarding3", title: "BUILD SKILLS", description: "Enhance your skills with targeted development programs and track your progress for continuous growth.", buttonText: "Let's start")
+        OnboardingPage(
+            image: "onboarding1", 
+            title: "Your GLP-1 Journey Companion", 
+            description: "Track medications, manage side effects, and get personalized support for your weight loss journey.", 
+            buttonText: "Know more"
+        ),
+        OnboardingPage(
+            image: "onboarding2", 
+            title: "Holistic Progress Tracking", 
+            description: "Monitor more than just weight - track water intake, protein goals, side effects, and celebrate non-scale victories.", 
+            buttonText: "Know more"
+        ),
+        OnboardingPage(
+            image: "onboarding3", 
+            title: "Evidence-Based Support", 
+            description: "Access reliable information, medication reminders, and expert guidance for sustainable results.", 
+            buttonText: "Let's start"
+        )
     ]
     
     var body: some View {

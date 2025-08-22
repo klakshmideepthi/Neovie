@@ -35,9 +35,10 @@ struct ChatbotHomeView: View {
                 
                 promptsView
                 
-                Spacer()
+                
                 
                 askMeAnythingButton
+                Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding()

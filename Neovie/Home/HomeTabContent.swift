@@ -47,6 +47,7 @@ struct HomeTabContent: View {
                 WaterView()
                 ProteinView(proteinManager: viewModel.proteinManager)
                 BMIView(viewModel: viewModel)
+                Spacer(minLength: 50)
 //                quickActionsSection
 //                weightLossAdviceButton
 //                sideEffectsButton
